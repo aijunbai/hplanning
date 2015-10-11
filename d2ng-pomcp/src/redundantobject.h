@@ -55,6 +55,8 @@ public:
 
 protected:
     int GetObservation(const REDUNDANT_OBJECT_STATE& state) const;
+    int Encode(const REDUNDANT_OBJECT_STATE &rstate) const;
+    REDUNDANT_OBJECT_STATE Decode(int index) const;
 
     bool mStateAbstraction;
     GRID<int> mGrid;

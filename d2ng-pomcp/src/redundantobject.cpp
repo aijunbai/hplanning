@@ -15,10 +15,10 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction):
     mStartPos(0, 0),
     mGoalPos(size-1, size-1)
 {
-    NumActions = 2; //动作数
+    NumActions = 4; //动作数
     int grids = mGrid.GetSize();
     NumObservations = mStateAbstraction? grids: grids * grids;
-    Discount = 0.99;
+    Discount = 0.9;
     mName << "redundant_object_" << size << "_" << state_abstraction;
     mHierarchicalPlanning = true;
 }
@@ -48,7 +48,7 @@ STATE* REDUNDANT_OBJECT::CreateStartState() const
 {
     REDUNDANT_OBJECT_STATE* rstate = mMemoryPool.Allocate();
     rstate->AgentPos = mStartPos;
-    rstate->ObjectPos = mStartPos;
+    rstate->ObjectPos = mGoalPos;
     return rstate;
 }
 
@@ -64,10 +64,10 @@ bool REDUNDANT_OBJECT::Step(STATE& state, int action,
     assert(action < NumActions);
 
     REDUNDANT_OBJECT_STATE& rstate = safe_cast<REDUNDANT_OBJECT_STATE&>(state);
-    reward = action == COORD::E_NORTH? -0.5: -1.0;
+    reward = -1.0;
 
     if (SimpleRNG::ins().Bernoulli(0.1)) { //fail
-        action = action == COORD::E_NORTH? COORD::E_EAST: COORD::E_NORTH;
+        action = coord::Opposite(action);
     }
 
     COORD pos = rstate.AgentPos + coord::Compass[action];
@@ -78,7 +78,7 @@ bool REDUNDANT_OBJECT::Step(STATE& state, int action,
 
     action = SimpleRNG::ins().Random(NumActions);
     pos = rstate.ObjectPos + coord::Compass[action];
-    if (!mGrid.Inside(pos)) {
+    if (!mGrid.Inside(pos) || pos == rstate.AgentPos) {
         pos = rstate.ObjectPos;
     }
     rstate.ObjectPos = pos;
@@ -111,6 +111,8 @@ void REDUNDANT_OBJECT::GenerateLegal(const STATE& state, /*const HISTORY& ,*/
 
     legal.push_back(COORD::E_NORTH);
     legal.push_back(COORD::E_EAST);
+    legal.push_back(COORD::E_SOUTH);
+    legal.push_back(COORD::E_WEST);
 }
 
 void REDUNDANT_OBJECT::GeneratePreferred(const STATE& state, const HISTORY&, //手工策略
@@ -119,19 +121,34 @@ void REDUNDANT_OBJECT::GeneratePreferred(const STATE& state, const HISTORY&, //�
     GenerateLegal(state, actions, status);
 }
 
-int REDUNDANT_OBJECT::GetObservation(const REDUNDANT_OBJECT_STATE& rstate) const
+int REDUNDANT_OBJECT::Encode(const REDUNDANT_OBJECT_STATE &rstate) const
 {
-    return mStateAbstraction? mGrid.Index(rstate.AgentPos):
-                              (mGrid.Index(rstate.AgentPos) * mGrid.GetSize() + mGrid.Index(rstate.ObjectPos));
+    int index = mGrid.Index(rstate.AgentPos) * mGrid.GetSize() + mGrid.Index(rstate.ObjectPos);
+    return index;
 }
 
-void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE& belief,
-    std::ostream& ostr) const
+REDUNDANT_OBJECT_STATE REDUNDANT_OBJECT::Decode(int index) const
+{
+    int agent = index / mGrid.GetSize();
+    int object = index % mGrid.GetSize();
+
+    REDUNDANT_OBJECT_STATE rstate;
+    rstate.AgentPos = mGrid.Coord(agent);
+    rstate.ObjectPos = mGrid.Coord(object);
+    return rstate;
+}
+
+int REDUNDANT_OBJECT::GetObservation(const REDUNDANT_OBJECT_STATE& rstate) const
+{
+    return mStateAbstraction? mGrid.Index(rstate.AgentPos): Encode(rstate);
+}
+
+void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE& belief, std::ostream& ostr) const
 {
     boost::unordered_map<int, int> m;
     for (int i = 0; i < belief.GetNumSamples(); ++i) {
-        const REDUNDANT_OBJECT_STATE& state = safe_cast<const REDUNDANT_OBJECT_STATE&>(*belief.GetSample(i));
-        int index = mGrid.Index(state.AgentPos) * mGrid.GetSize() + mGrid.Index(state.ObjectPos);
+        const REDUNDANT_OBJECT_STATE& rstate = safe_cast<const REDUNDANT_OBJECT_STATE&>(*belief.GetSample(i));
+        int index = Encode(rstate);
         m[index] += 1;
     }
 
@@ -144,31 +161,27 @@ void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE& belief,
 
     ostr << "#Belief: ";
     for (uint i = 0; i < sorted.size(); ++i) {
-        int index = sorted[i].second;
-        int agent = index / mGrid.GetSize();
-        int object = index % mGrid.GetSize();
-        ostr << "#" << mGrid.Coord(agent) << ":" << mGrid.Coord(object) << " (" << sorted[i].first << ") ";
+        REDUNDANT_OBJECT_STATE state = Decode(sorted[i].second);
+        ostr << "#" << state.AgentPos << ":" << state.ObjectPos << " (" << sorted[i].first << ") ";
     }
     ostr << std::endl;
 }
 
 void REDUNDANT_OBJECT::DisplayState(const STATE& state, std::ostream& ostr) const
 {
-    const REDUNDANT_OBJECT_STATE& REDUNDANT_OBJECT_state = safe_cast<const REDUNDANT_OBJECT_STATE&>(state);
+    const REDUNDANT_OBJECT_STATE& rstate = safe_cast<const REDUNDANT_OBJECT_STATE&>(state);
 
     ostr << "Y" << endl;
     for (int y = mGrid.GetYSize() - 1; y >= 0; --y) {
         for (int x = 0; x < mGrid.GetXSize(); ++x) {
-            char cell = mGrid.operator()(x, y);
-
-            if (REDUNDANT_OBJECT_state.AgentPos == COORD(x, y)) {
+            if (rstate.AgentPos == COORD(x, y)) {
                 ostr << "@";
             }
-            else if (cell != 'x') {
-                ostr << ".";
+            else if (rstate.ObjectPos == COORD(x, y)) {
+                ostr << "x";
             }
             else {
-                ostr << cell;
+                ostr << ".";
             }
         }
         if (y == 0) {
@@ -187,10 +200,8 @@ void REDUNDANT_OBJECT::DisplayObservation(const STATE&, int observation, std::os
     ostr << "Observation: " << "Agent " << mGrid.Coord(observation) << endl;
   }
   else {
-      int agent = observation / mGrid.GetSize();
-      int object = observation % mGrid.GetSize();
-    ostr << "Observation: " << "Agent " << mGrid.Coord(agent)
-         << " Object " << mGrid.Coord(object) << endl;
+      REDUNDANT_OBJECT_STATE rstate = Decode(observation);
+    ostr << "Observation: " << "Agent " << rstate.AgentPos << " Object " << rstate.ObjectPos << endl;
   }
 }
 

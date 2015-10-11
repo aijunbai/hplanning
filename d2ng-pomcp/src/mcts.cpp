@@ -42,7 +42,7 @@ MCTS::MCTS(const SIMULATOR& simulator, const PARAMS& params)
     Root->Beliefs().AddSample(state);
 
     for (int i = 1; i < Params.NumStartStates; i++) {
-        Root->Beliefs().AddSample(Simulator.CreateStartState()); //XXX 生成初始信念空间（样本集合） —— 至此 Root 节点构造完毕
+        Root->Beliefs().AddSample(Simulator.CreateStartState()); //生成初始信念空间（样本集合） —— 至此 Root 节点构造完毕
     }
 
     StatBeliefSize.Initialise();
@@ -160,7 +160,6 @@ bool MCTS::Update(int action, int observation)
 int MCTS::SelectAction()
 {
     Search();
-
     return ThompsonSampling(Root, false);
 }
 
@@ -171,6 +170,7 @@ void MCTS::SearchImp()
     STATE* state = Root->Beliefs().CreateSample(Simulator); //得到一个可能的状态样本 -- 只在根节点采样 Root Sampling
     Simulator.Validate(*state);
     Status.Phase = SIMULATOR::STATUS::TREE;
+
 //        if (Params.Verbose >= 2)
 //        {
 //            cout << "Starting simulation" << endl;

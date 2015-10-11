@@ -8,7 +8,6 @@
 class MCTS
 {
 public:
-
     struct PARAMS
     {
         PARAMS();
@@ -28,7 +27,7 @@ public:
     };
 
     MCTS(const SIMULATOR& simulator, const PARAMS& params);
-    ~MCTS();
+    virtual ~MCTS();
 
     int SelectAction();
     bool Update(int action, int observation); // update history
@@ -49,8 +48,7 @@ public:
     static void UnitTest();
     static void InitFastUCB(double exploration);
 
-private:
-
+protected:
     const SIMULATOR& Simulator;
     PARAMS Params;
     VNODE* Root;

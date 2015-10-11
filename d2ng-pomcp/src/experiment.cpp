@@ -34,7 +34,11 @@ void EXPERIMENT::Run()
     VNODE::PARTICLES_STAT.Initialise();
     VNODE::HASH_STAT.Initialise();
 
+#if 1
+    HierarchicalMCTS mcts(Simulator, SearchParams);
+#else
     MCTS mcts(Simulator, SearchParams);
+#endif
 
     double undiscountedReturn = 0.0;
     double discountedReturn = 0.0;

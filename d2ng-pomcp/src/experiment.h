@@ -1,7 +1,7 @@
 #ifndef EXPERIMENT_H
 #define EXPERIMENT_H
 
-#include "mcts.h"
+#include "hierarchicalmcts.h"
 #include "simulator.h"
 #include "statistic.h"
 #include <fstream>
@@ -37,9 +37,9 @@ public:
     struct PARAMS
     {
         PARAMS();
-        
-        int NumRuns; //XXX
-        int NumSteps; //XXX
+
+        int NumRuns;
+        int NumSteps;
         double TimeOut;
         int MinDoubles, MaxDoubles;
         int TransformDoubles;
@@ -48,8 +48,8 @@ public:
         int UndiscountedHorizon;
     };
 
-    EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator, 
-        const std::string& outputFile, 
+    EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator,
+        const std::string& outputFile,
         EXPERIMENT::PARAMS& expParams, MCTS::PARAMS& searchParams);
 
     void Run();

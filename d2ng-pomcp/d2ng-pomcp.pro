@@ -32,7 +32,8 @@ HEADERS += src/battleship.h \
            src/testsimulator.h \
            src/utils.h \
            src/distribution.h \
-           src/rooms.h
+           src/rooms.h \
+    src/hierarchicalmcts.h
 
 SOURCES += src/battleship.cpp \
            src/beliefstate.cpp \
@@ -49,4 +50,5 @@ SOURCES += src/battleship.cpp \
            src/testsimulator.cpp \
            src/utils.cpp \
            src/distribution.cpp \
-           src/rooms.cpp
+           src/rooms.cpp \
+    src/hierarchicalmcts.cpp

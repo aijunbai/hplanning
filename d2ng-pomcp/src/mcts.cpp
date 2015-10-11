@@ -24,7 +24,6 @@ MCTS::PARAMS::PARAMS():
     RaveDiscount(1.0),
     RaveConstant(0.01),
     ReuseTree(false),
-    ReuseDepth(2),
     TimeOutPerAction(-1)
 {
 }

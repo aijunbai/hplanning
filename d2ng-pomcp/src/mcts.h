@@ -24,7 +24,6 @@ public:
         double RaveDiscount;
         double RaveConstant;
         bool ReuseTree;
-        int ReuseDepth;
         double TimeOutPerAction;
     };
 

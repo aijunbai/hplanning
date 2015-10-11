@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROBLEM="rooms"
+PROBLEM="rooms_1"
 SIZE=7
 NUM=8
 LEVELT=1
@@ -9,19 +9,16 @@ RUNS=1
 VERBOSE=2
 USEPFILTER=1
 REUSETREE=1
-REUSEDEPTH=2
 MINPOWER2=12
 MAXPOWER2=12
-SEEDING=0
+SEEDING=1
 TIMEOUT=3600
 TIMEOUTPERACTION=-1
 
 OUTPUT="output-$$.txt"
 LOG="log-$$.txt"
 
-CPUS=`cat /proc/cpuinfo | grep processor | tail -n 1 | awk '{print $3}'`
-
-while getopts "p:s:n:t:r:R:v:u:d:L:H:S:P:N:h:a:" OPTION; do
+while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -31,7 +28,6 @@ while getopts "p:s:n:t:r:R:v:u:d:L:H:S:P:N:h:a:" OPTION; do
         R) RUNS=$OPTARG ;;
         v) VERBOSE=$OPTARG ;;
         u) REUSETREE=$OPTARG ;;
-        d) REUSEDEPTH=$OPTARG ;;
         L) MINPOWER2=$OPTARG ;;
         H) MAXPOWER2=$OPTARG ;;
         S) SEEDING=$OPTARG ;;
@@ -48,14 +44,11 @@ run() {
     exec $* 2>&1 | tee -a $LOG
 }
 
-
-make -j `expr $CPUS + 1`
 run ./d2ng-pomcp --outputfile $OUTPUT \
             --problem $PROBLEM \
             --size $SIZE \
             --number $NUM \
             --verbose $VERBOSE \
-            --reusedepth $REUSEDEPTH \
             --reusetree $REUSETREE \
             --useparticlefilter $USEPFILTER \
             --treeknowledge $LEVELT \

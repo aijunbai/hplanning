@@ -79,7 +79,6 @@ int main(int argc, char* argv[])
         ("smarttreecount", value<int>(&knowledge.SmartTreeCount), "Prior count for preferred actions during smart tree search")
         ("smarttreevalue", value<double>(&knowledge.SmartTreeValue), "Prior value for preferred actions during smart tree search")
         ("reusetree", value<bool>(&searchParams.ReuseTree), "Reuse tree generated during previous search")
-        ("reusedepth", value<int>(&searchParams.ReuseDepth), "The maximal depth for tree reusing")
         ("seeding", value<bool>(&seeding), "Use pid as random seed")
         ("timeoutperaction", value<double>(&searchParams.TimeOutPerAction), "timeout per action (seconds)")
         ;
@@ -159,15 +158,19 @@ int main(int argc, char* argv[])
         real = new TAG(number);
         simulator = new TAG(number);
     }
-    else if (problem == "rooms")
+    else if (problem == "rooms_0")
     {
-        bool state_abstration = true;
-        real = new ROOMS("rooms.map", state_abstration);
-        simulator = new ROOMS("rooms.map", state_abstration);
+        real = new ROOMS("rooms.map", false);
+        simulator = new ROOMS("rooms.map", false);
+    }
+    else if (problem == "rooms_1")
+    {
+        real = new ROOMS("rooms.map", true);
+        simulator = new ROOMS("rooms.map", true);
     }
     else
     {
-        cout << "Unknown problem" << endl;
+        cout << "Unknown problem: " << problem << endl;
         exit(1);
     }
 

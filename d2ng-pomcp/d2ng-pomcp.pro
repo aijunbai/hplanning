@@ -33,7 +33,8 @@ HEADERS += src/battleship.h \
            src/utils.h \
            src/distribution.h \
            src/rooms.h \
-    src/hierarchicalmcts.h
+    src/hierarchicalmcts.h \
+    src/redundantobject.h
 
 SOURCES += src/battleship.cpp \
            src/beliefstate.cpp \
@@ -51,4 +52,5 @@ SOURCES += src/battleship.cpp \
            src/utils.cpp \
            src/distribution.cpp \
            src/rooms.cpp \
-    src/hierarchicalmcts.cpp
+    src/hierarchicalmcts.cpp \
+    src/redundantobject.cpp

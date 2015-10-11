@@ -9,6 +9,7 @@
 #include "statistic.h"
 #include "utils.h"
 #include "distribution.h"
+#include "redundantobject.h"
 #include <boost/program_options.hpp>
 
 using namespace std;
@@ -167,6 +168,16 @@ int main(int argc, char* argv[])
     {
         real = new ROOMS("rooms.map", true);
         simulator = new ROOMS("rooms.map", true);
+    }
+    else if (problem == "redundant_object_0")
+    {
+        real = new REDUNDANT_OBJECT(size, false);
+        simulator = new REDUNDANT_OBJECT(size, false);
+    }
+    else if (problem == "redundant_object_1")
+    {
+        real = new REDUNDANT_OBJECT(size, true);
+        simulator = new REDUNDANT_OBJECT(size, true);
     }
     else
     {

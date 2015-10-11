@@ -47,14 +47,14 @@ struct COORD
 
     enum
     {
-        E_NORTH,
-        E_EAST,
-        E_SOUTH,
-        E_WEST,
-        E_NORTHEAST,
-        E_SOUTHEAST,
-        E_SOUTHWEST,
-        E_NORTHWEST
+        E_NORTH,  // 0
+        E_EAST,  // 1
+        E_SOUTH,  // 2
+        E_WEST,  // 3
+        E_NORTHEAST,  // 4
+        E_SOUTHEAST,  // 5
+        E_SOUTHWEST,  // 6
+        E_NORTHWEST  // 7
     };
 
     friend std::ostream &operator <<(std::ostream& os, const COORD &o) {

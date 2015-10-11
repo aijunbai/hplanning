@@ -2,6 +2,7 @@
 #define GRID_H
 
 #include "coord.h"
+#include "distribution.h"
 
 template <class T>
 class GRID
@@ -24,16 +25,17 @@ public:
 
     int GetXSize() const { return XSize; }
     int GetYSize() const { return YSize; }
+    int GetSize() const { return XSize * YSize; }
 
     T& operator()(int index)
     {
-        assert(index >= 0 && index < XSize * YSize);
+        assert(index >= 0 && index < GetSize());
         return Grid[index];
     }
 
     const T& operator()(int index) const
     {
-        assert(index >= 0 && index < XSize * YSize);
+        assert(index >= 0 && index < GetSize());
         return Grid[index];
     }
 
@@ -119,6 +121,10 @@ public:
     {
         assert(index >= 0 && index < XSize * YSize);
         return COORD(index % XSize, index / XSize);
+    }
+
+    COORD RandomPos() const {
+        return COORD(SimpleRNG::ins().Random(XSize), SimpleRNG::ins().Random(YSize));
     }
 
 public:

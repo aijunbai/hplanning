@@ -144,6 +144,9 @@ protected:
     double Discount;
     KNOWLEDGE Knowledge;
     std::stringstream mName;
+
+public:
+    bool mHierarchicalPlanning;
 };
 
 #endif // SIMULATOR_H

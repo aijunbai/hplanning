@@ -21,7 +21,8 @@ SIMULATOR::STATUS::STATUS()
 SIMULATOR::SIMULATOR()
 :   NumActions(0),
     NumObservations(0),
-    Discount(1.0)
+    Discount(1.0),
+    mHierarchicalPlanning(false)
 {
 }
 

@@ -80,7 +80,7 @@ void EXPERIMENT::Run()
             break;
         }
 
-        if (Real.Name().find("rooms_") == 0) { // test state abstraction method
+        if (Real.mHierarchicalPlanning) { // test state abstraction method
             if (!mcts.Update(action, observation, *state)) {
                 assert(0);
             }

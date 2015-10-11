@@ -19,6 +19,7 @@ ROOMS::ROOMS(const char *map_name, bool state_abstraction):
     NumObservations = mStateAbstraction? mRooms: mGrid->GetXSize() * mGrid->GetYSize();
     Discount = 0.9;
     mName << "rooms_" << map_name << "_" << state_abstraction;
+    mHierarchicalPlanning = true;
 }
 
 ROOMS::~ROOMS()
@@ -236,7 +237,7 @@ void ROOMS::DisplayState(const STATE& state, std::ostream& ostr) const
     ostr << endl;
 }
 
-void ROOMS::DisplayObservation(const STATE& , int observation, std::ostream& ostr) const
+void ROOMS::DisplayObservation(const STATE&, int observation, std::ostream& ostr) const
 {
   if (mStateAbstraction)
     ostr << "Observation: " << "Room" << observation << endl;

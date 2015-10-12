@@ -21,14 +21,14 @@
 #define safe_cast static_cast
 #endif
 
-#define PRINT_ERROR(error)                                                     \
-  do {                                                                         \
-    std::cerr << __FILE__ << ":" << __LINE__ << " : " << error << std::endl;   \
+#define PRINT_ERROR(error)                                                   \
+  do {                                                                       \
+    std::cerr << __FILE__ << ":" << __LINE__ << " : " << error << std::endl; \
   } while (0)
 
-#define PRINT_VALUE(x)                                                         \
-  do {                                                                         \
-    std::cerr << #x " = '" << x << "'" << std::endl;                           \
+#define PRINT_VALUE(x)                               \
+  do {                                               \
+    std::cerr << #x " = '" << x << "'" << std::endl; \
   } while (0)
 
 namespace UTILS {
@@ -41,11 +41,12 @@ inline bool CheckFlag(int flags, int bit) { return (flags & (1 << bit)) != 0; }
 
 inline void SetFlag(int &flags, int bit) { flags = (flags | (1 << bit)); }
 
-template <class T> inline bool Contains(std::vector<T> &vec, const T &item) {
+template <class T>
+inline bool Contains(std::vector<T> &vec, const T &item) {
   return std::find(vec.begin(), vec.end(), item) != vec.end();
 }
 
 void UnitTest();
 }
 
-#endif // UTILS_H
+#endif  // UTILS_H

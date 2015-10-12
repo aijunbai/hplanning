@@ -13,21 +13,21 @@ class BELIEF_STATE;
 class VNODE;
 
 class STATE : public MEMORY_OBJECT {
-public:
+ public:
   virtual ~STATE() {}
 
   virtual size_t hash() const = 0;
 };
 
 class SIMULATOR {
-public:
+ public:
   struct KNOWLEDGE {
     enum { PURE, LEGAL, SMART, NUM_LEVELS };
 
     KNOWLEDGE();
 
-    int TreeLevel;    //标记使用何种方式初始化为 vnode
-    int RolloutLevel; //标记使用何种方式 rollout
+    int TreeLevel;     //标记使用何种方式初始化为 vnode
+    int RolloutLevel;  //标记使用何种方式 rollout
     int SmartTreeCount;
     double SmartTreeValue;
 
@@ -117,16 +117,16 @@ public:
   bool IsEpisodic() const { return false; }
   double GetDiscount() const { return Discount; }
   double GetHorizon(double accuracy,
-                    int undiscountedHorizon = 100) const; // XXX 这是怎么算的？
+                    int undiscountedHorizon = 100) const;  // XXX 这是怎么算的？
 
-protected:
+ protected:
   int NumActions, NumObservations;
   double Discount;
   KNOWLEDGE Knowledge;
   std::stringstream mName;
 
-public:
+ public:
   bool mHierarchicalPlanning;
 };
 
-#endif // SIMULATOR_H
+#endif  // SIMULATOR_H

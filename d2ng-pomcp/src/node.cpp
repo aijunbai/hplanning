@@ -5,8 +5,6 @@
 
 using namespace std;
 
-//-----------------------------------------------------------------------------
-
 int QNODE::NumChildren = 0;
 
 void QNODE::Initialise() {
@@ -21,7 +19,7 @@ void QNODE::Initialise() {
   ImmediateReward.Clear();
 
   for (int observation = 0; observation < QNODE::NumChildren; observation++) {
-    Children[observation] = 0; //初始化为空指针
+    Children[observation] = 0;  //初始化为空指针
   }
 }
 
@@ -43,8 +41,7 @@ void QNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
     }
   }
 
-  if (history.Size() >= maxDepth)
-    return;
+  if (history.Size() >= maxDepth) return;
 
   for (int observation = 0; observation < NumChildren; observation++) {
     if (Children[observation]) {
@@ -61,8 +58,7 @@ void QNODE::DisplayPolicy(HISTORY &history, int maxDepth, ostream &ostr) const {
   Observation.Print(", o=", ostr);
   ostr << std::endl;
 
-  if (history.Size() >= maxDepth)
-    return;
+  if (history.Size() >= maxDepth) return;
 
   for (int observation = 0; observation < NumChildren; observation++) {
     if (Children[observation]) {
@@ -72,10 +68,7 @@ void QNODE::DisplayPolicy(HISTORY &history, int maxDepth, ostream &ostr) const {
   }
 }
 
-namespace vnode {
-MEMORY_POOL<VNODE> VNodePool;
-};
-
+MEMORY_POOL<VNODE> VNODE::VNodePool;
 int VNODE::NumChildren = 0;
 STATISTIC VNODE::PARTICLES_STAT;
 STATISTIC VNODE::HASH_STAT;
@@ -92,7 +85,7 @@ void VNODE::Initialise() {
 }
 
 VNODE *VNODE::Create() {
-  VNODE *vnode = vnode::VNodePool.Allocate();
+  VNODE *vnode = VNODE::VNodePool.Allocate();
   vnode->Initialise();
   return vnode;
 }
@@ -102,7 +95,7 @@ void VNODE::Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore) {
     PARTICLES_STAT.Add(root->CumulativeRewards.size());
 
     root->BeliefState.Free(simulator);
-    vnode::VNodePool.Free(root);
+    VNODE::VNodePool.Free(root);
 
     for (int action = 0; action < VNODE::NumChildren; action++)
       for (int observation = 0; observation < QNODE::NumChildren; observation++)
@@ -111,7 +104,7 @@ void VNODE::Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore) {
   }
 }
 
-void VNODE::FreeAll() { vnode::VNodePool.DeleteAll(); }
+void VNODE::FreeAll() { VNODE::VNodePool.DeleteAll(); }
 
 void VNODE::SetPrior(int count, double value, bool applicable) {
   for (int action = 0; action < NumChildren; action++) {
@@ -122,8 +115,7 @@ void VNODE::SetPrior(int count, double value, bool applicable) {
 
 void VNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
                          const std::vector<double> *qvalues) const {
-  if (history.Size() >= maxDepth)
-    return;
+  if (history.Size() >= maxDepth) return;
 
   for (int action = 0; action < NumChildren; action++) {
     history.Add(action);
@@ -143,8 +135,7 @@ void VNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
 
 void VNODE::DisplayPolicy(HISTORY &history, int maxDepth,
                           ostream & /*ostr*/) const {
-  if (history.Size() >= maxDepth)
-    return;
+  if (history.Size() >= maxDepth) return;
 
   //    double bestq = -Infinity;
   //    int besta = -1;
@@ -185,5 +176,3 @@ NormalGammaInfo &VNODE::GetCumulativeReward(const STATE &s) {
   return CumulativeRewards[0];
 #endif
 }
-
-//-----------------------------------------------------------------------------

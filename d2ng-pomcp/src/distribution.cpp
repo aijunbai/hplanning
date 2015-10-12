@@ -217,15 +217,13 @@ int SimpleRNG::PoissonLarge(double lambda) {
     double u = GetUniform();
     double x = (alpha - log((1.0 - u) / u)) / beta;
     int n = (int)floor(x + 0.5);
-    if (n < 0)
-      continue;
+    if (n < 0) continue;
     double v = GetUniform();
     double y = alpha - beta * x;
     double temp = 1.0 + exp(y);
     double lhs = y + log(v / (temp * temp));
     double rhs = k + n * log(lambda) - LogFactorial(n);
-    if (lhs <= rhs)
-      return n;
+    if (lhs <= rhs) return n;
   }
 
   assert(0);

@@ -7,7 +7,7 @@
 #include <cstdlib>
 
 class HISTORY {
-public:
+ public:
   struct ENTRY {
     ENTRY(int action = -1, int obs = -1) : Action(action), Observation(obs) {}
 
@@ -16,8 +16,7 @@ public:
   };
 
   bool operator==(const HISTORY &history) const {
-    if (history.History.size() != History.size())
-      return false;
+    if (history.History.size() != History.size()) return false;
     for (uint i = 0; i < History.size(); ++i)
       if (history.History[i].Action != History[i].Action ||
           history.History[i].Observation != History[i].Observation)
@@ -63,8 +62,8 @@ public:
     }
   }
 
-private:
+ private:
   std::vector<ENTRY> History;
 };
 
-#endif // HISTORY
+#endif  // HISTORY

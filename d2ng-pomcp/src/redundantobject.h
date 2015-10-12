@@ -6,7 +6,7 @@
 #include "grid.h"
 
 class REDUNDANT_OBJECT_STATE : public STATE {
-public:
+ public:
   COORD AgentPos;
   COORD ObjectPos;
 
@@ -27,7 +27,7 @@ public:
 };
 
 class REDUNDANT_OBJECT : public SIMULATOR {
-public:
+ public:
   REDUNDANT_OBJECT(int size, bool state_abstraction = false);
   ~REDUNDANT_OBJECT();
 
@@ -54,7 +54,7 @@ public:
                                   std::ostream &ostr) const;
   virtual void DisplayAction(int action, std::ostream &ostr) const;
 
-protected:
+ protected:
   int GetObservation(const REDUNDANT_OBJECT_STATE &state) const;
   int Encode(const REDUNDANT_OBJECT_STATE &rstate) const;
   REDUNDANT_OBJECT_STATE Decode(int index) const;
@@ -64,8 +64,8 @@ protected:
   COORD mStartPos;
   COORD mGoalPos;
 
-private:
+ private:
   mutable MEMORY_POOL<REDUNDANT_OBJECT_STATE> mMemoryPool;
 };
 
-#endif // REDUNDANT_OBJECT_H
+#endif  // REDUNDANT_OBJECT_H

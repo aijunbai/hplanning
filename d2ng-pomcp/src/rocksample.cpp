@@ -8,8 +8,8 @@ using namespace UTILS;
 
 ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
     : Grid(size, size), Size(size), NumRocks(rocks) {
-  NumActions = NumRocks + 5; //动作数
-  NumObservations = 3;       //观察数
+  NumActions = NumRocks + 5;  //动作数
+  NumObservations = 3;        //观察数
   Discount = 0.95;
   mName << "rocksample_" << size << "_" << rocks;
 
@@ -25,7 +25,7 @@ ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
 }
 
 void ROCKSAMPLE::InitGeneral() {
-  vector<COORD> rocks; //保持模拟器和真实环境一致性
+  vector<COORD> rocks;  //保持模拟器和真实环境一致性
 
   SimpleRNG::ins().RandomSeed(0);
 
@@ -85,7 +85,7 @@ STATE *ROCKSAMPLE::CreateStartState() const {
     RS_ENTRY entry;
 
     entry.Collected = false;
-    entry.Valuable = SimpleRNG::ins().Bernoulli(0.5); //随机决定（50/50）
+    entry.Valuable = SimpleRNG::ins().Bernoulli(0.5);  //随机决定（50/50）
     entry.Count = 0;
     entry.Measured = 0;
     entry.ProbValuable = 0.5;
@@ -105,49 +105,49 @@ void ROCKSAMPLE::FreeState(STATE *state) const {
 
 bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
                       double &reward)
-    const //进行一步模拟：state, action |-> state, reward, observation
+    const  //进行一步模拟：state, action |-> state, reward, observation
 {
   ROCKSAMPLE_STATE &rockstate = safe_cast<ROCKSAMPLE_STATE &>(state);
   reward = 0;
   observation = E_NONE;
 
-  if (action < E_SAMPLE) // move
+  if (action < E_SAMPLE)  // move
   {
     switch (action) {
-    case COORD::E_EAST:
-      if (rockstate.AgentPos.X + 1 < Size) {
-        rockstate.AgentPos.X++;
+      case COORD::E_EAST:
+        if (rockstate.AgentPos.X + 1 < Size) {
+          rockstate.AgentPos.X++;
+          break;
+        } else {
+          reward = +10;
+          rockstate.AgentPos.X++;
+          return true;  // terminated
+        }
+
+      case COORD::E_NORTH:
+        if (rockstate.AgentPos.Y + 1 < Size)
+          rockstate.AgentPos.Y++;
+        else
+          reward = -100;  //为什么设置 -100，原始论文里面好像没有？
         break;
-      } else {
-        reward = +10;
-        rockstate.AgentPos.X++;
-        return true; // terminated
-      }
 
-    case COORD::E_NORTH:
-      if (rockstate.AgentPos.Y + 1 < Size)
-        rockstate.AgentPos.Y++;
-      else
-        reward = -100; //为什么设置 -100，原始论文里面好像没有？
-      break;
+      case COORD::E_SOUTH:
+        if (rockstate.AgentPos.Y - 1 >= 0)
+          rockstate.AgentPos.Y--;
+        else
+          reward = -100;
+        break;
 
-    case COORD::E_SOUTH:
-      if (rockstate.AgentPos.Y - 1 >= 0)
-        rockstate.AgentPos.Y--;
-      else
-        reward = -100;
-      break;
-
-    case COORD::E_WEST:
-      if (rockstate.AgentPos.X - 1 >= 0)
-        rockstate.AgentPos.X--;
-      else
-        reward = -100;
-      break;
+      case COORD::E_WEST:
+        if (rockstate.AgentPos.X - 1 >= 0)
+          rockstate.AgentPos.X--;
+        else
+          reward = -100;
+        break;
     }
   }
 
-  if (action == E_SAMPLE) // sample
+  if (action == E_SAMPLE)  // sample
   {
     int rock = Grid(rockstate.AgentPos);
     if (rock >= 0 && !rockstate.Rocks[rock].Collected) {
@@ -161,11 +161,11 @@ bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
     }
   }
 
-  if (action > E_SAMPLE) // check
+  if (action > E_SAMPLE)  // check
   {
     int rock = action - E_SAMPLE - 1;
     assert(rock < NumRocks);
-    observation = GetObservation(rockstate, rock); //获得观察
+    observation = GetObservation(rockstate, rock);  //获得观察
     rockstate.Rocks[rock].Measured++;
 
     double distance =
@@ -189,26 +189,25 @@ bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
   }
 
   assert(reward != -100);
-  return false; // not terminated
+  return false;  // not terminated
 }
 
 bool ROCKSAMPLE::LocalMove(STATE &state, const HISTORY &history, int stepObs,
-                           const STATUS &) const //局部扰动
+                           const STATUS &) const  //局部扰动
 {
   if (NumRocks) {
     ROCKSAMPLE_STATE &rockstate = safe_cast<ROCKSAMPLE_STATE &>(state);
     int rock = SimpleRNG::ins().Random(NumRocks);
     rockstate.Rocks[rock].Valuable = !rockstate.Rocks[rock].Valuable;
 
-    if (history.Back().Action > E_SAMPLE) // check rock
+    if (history.Back().Action > E_SAMPLE)  // check rock
     {
       rock = history.Back().Action - E_SAMPLE - 1;
       int realObs = history.Back().Observation;
 
       // Condition new state on real observation
       int newObs = GetObservation(rockstate, rock);
-      if (newObs != realObs)
-        return false;
+      if (newObs != realObs) return false;
 
       // Update counts to be consistent with real observation
       if (realObs == E_GOOD && stepObs == E_BAD)
@@ -226,16 +225,13 @@ void ROCKSAMPLE::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
       safe_cast<const ROCKSAMPLE_STATE &>(state);
 
   if (Grid.Inside(rockstate.AgentPos)) {
-    if (rockstate.AgentPos.Y + 1 < Size)
-      legal.push_back(COORD::E_NORTH);
+    if (rockstate.AgentPos.Y + 1 < Size) legal.push_back(COORD::E_NORTH);
 
     legal.push_back(COORD::E_EAST);
 
-    if (rockstate.AgentPos.Y - 1 >= 0)
-      legal.push_back(COORD::E_SOUTH);
+    if (rockstate.AgentPos.Y - 1 >= 0) legal.push_back(COORD::E_SOUTH);
 
-    if (rockstate.AgentPos.X - 1 >= 0)
-      legal.push_back(COORD::E_WEST);
+    if (rockstate.AgentPos.X - 1 >= 0) legal.push_back(COORD::E_WEST);
 
     int rock = Grid(rockstate.AgentPos);
     if (rock >= 0 && !rockstate.Rocks[rock].Collected)
@@ -248,11 +244,10 @@ void ROCKSAMPLE::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
 }
 
 void ROCKSAMPLE::GeneratePreferred(const STATE &state,
-                                   const HISTORY &history, //手工策略
+                                   const HISTORY &history,  //手工策略
                                    vector<int> &actions,
-                                   const STATUS &) const //获得优先动作
+                                   const STATUS &) const  //获得优先动作
 {
-
   //	static const bool UseBlindPolicy = false;
   //
   //	if (UseBlindPolicy)
@@ -274,10 +269,8 @@ void ROCKSAMPLE::GeneratePreferred(const STATE &state,
     int total = 0;
     for (int t = 0; t < history.Size(); ++t) {
       if (history[t].Action == rock + 1 + E_SAMPLE) {
-        if (history[t].Observation == E_GOOD)
-          total++;
-        if (history[t].Observation == E_BAD)
-          total--;
+        if (history[t].Observation == E_GOOD) total++;
+        if (history[t].Observation == E_BAD) total--;
       }
     }
     if (total > 0) {
@@ -299,24 +292,18 @@ void ROCKSAMPLE::GeneratePreferred(const STATE &state,
       int total = 0;
       for (int t = 0; t < history.Size(); ++t) {
         if (history[t].Action == rock + 1 + E_SAMPLE) {
-          if (history[t].Observation == E_GOOD)
-            total++;
-          if (history[t].Observation == E_BAD)
-            total--;
+          if (history[t].Observation == E_GOOD) total++;
+          if (history[t].Observation == E_BAD) total--;
         }
       }
 
       if (total >= 0) {
         all_bad = false;
 
-        if (RockPos[rock].Y > rockstate.AgentPos.Y)
-          north_interesting = true;
-        if (RockPos[rock].Y < rockstate.AgentPos.Y)
-          south_interesting = true;
-        if (RockPos[rock].X < rockstate.AgentPos.X)
-          west_interesting = true;
-        if (RockPos[rock].X > rockstate.AgentPos.X)
-          east_interesting = true;
+        if (RockPos[rock].Y > rockstate.AgentPos.Y) north_interesting = true;
+        if (RockPos[rock].Y < rockstate.AgentPos.Y) south_interesting = true;
+        if (RockPos[rock].X < rockstate.AgentPos.X) west_interesting = true;
+        if (RockPos[rock].X > rockstate.AgentPos.X) east_interesting = true;
       }
     }
   }
@@ -337,8 +324,7 @@ void ROCKSAMPLE::GeneratePreferred(const STATE &state,
   if (rockstate.AgentPos.Y + 1 < Size && north_interesting)
     actions.push_back(COORD::E_NORTH);
 
-  if (east_interesting)
-    actions.push_back(COORD::E_EAST);
+  if (east_interesting) actions.push_back(COORD::E_EAST);
 
   if (rockstate.AgentPos.Y - 1 >= 0 && south_interesting)
     actions.push_back(COORD::E_SOUTH);
@@ -358,11 +344,11 @@ void ROCKSAMPLE::GeneratePreferred(const STATE &state,
 }
 
 int ROCKSAMPLE::GetObservation(const ROCKSAMPLE_STATE &rockstate,
-                               int rock) const // noisy observation
+                               int rock) const  // noisy observation
 {
   double distance = coord::EuclideanDistance(rockstate.AgentPos, RockPos[rock]);
   double efficiency =
-      (1 + pow(2, -distance / HalfEfficiencyDistance)) * 0.5; //[0.5, 1.0]
+      (1 + pow(2, -distance / HalfEfficiencyDistance)) * 0.5;  //[0.5, 1.0]
 
   if (SimpleRNG::ins().Bernoulli(efficiency))
     return rockstate.Rocks[rock].Valuable ? E_GOOD : E_BAD;
@@ -400,8 +386,7 @@ void ROCKSAMPLE::DisplayState(const STATE &state, std::ostream &ostr) const {
   const ROCKSAMPLE_STATE &rockstate =
       safe_cast<const ROCKSAMPLE_STATE &>(state);
 
-  for (int x = 0; x < Size + 2; x++)
-    ostr << "# ";
+  for (int x = 0; x < Size + 2; x++) ostr << "# ";
   ostr << endl;
   for (int y = Size - 1; y >= 0; y--) {
     ostr << "# ";
@@ -418,38 +403,34 @@ void ROCKSAMPLE::DisplayState(const STATE &state, std::ostream &ostr) const {
     }
     ostr << "#" << endl;
   }
-  for (int x = 0; x < Size + 2; x++)
-    ostr << "# ";
+  for (int x = 0; x < Size + 2; x++) ostr << "# ";
   ostr << endl;
 }
 
 void ROCKSAMPLE::DisplayObservation(const STATE &, int observation,
                                     std::ostream &ostr) const {
   switch (observation) {
-  case E_NONE:
-    break;
-  case E_GOOD:
-    ostr << "Observed good" << endl;
-    break;
-  case E_BAD:
-    ostr << "Observed bad" << endl;
-    break;
+    case E_NONE:
+      break;
+    case E_GOOD:
+      ostr << "Observed good" << endl;
+      break;
+    case E_BAD:
+      ostr << "Observed bad" << endl;
+      break;
   }
 }
 
 void ROCKSAMPLE::DisplayAction(int action, std::ostream &ostr) const {
-  if (action < E_SAMPLE)
-    ostr << coord::CompassString[action] << endl;
-  if (action == E_SAMPLE)
-    ostr << "Sample" << endl;
-  if (action > E_SAMPLE)
-    ostr << "Check " << action - E_SAMPLE - 1 << endl;
+  if (action < E_SAMPLE) ostr << coord::CompassString[action] << endl;
+  if (action == E_SAMPLE) ostr << "Sample" << endl;
+  if (action > E_SAMPLE) ostr << "Check " << action - E_SAMPLE - 1 << endl;
 }
 
 FieldVisionRockSample::FieldVisionRockSample(int size, int rocks)
     : ROCKSAMPLE(size, rocks) {
-  NumActions = 5;               //动作数
-  NumObservations = 1 << rocks; //观察数
+  NumActions = 5;                //动作数
+  NumObservations = 1 << rocks;  //观察数
   mName.clear();
   mName << "fieldvisionrocksample_" << size << "_" << rocks;
 }
@@ -477,16 +458,13 @@ void FieldVisionRockSample::GenerateLegal(
       safe_cast<const ROCKSAMPLE_STATE &>(state);
 
   if (Grid.Inside(rockstate.AgentPos)) {
-    if (rockstate.AgentPos.Y + 1 < Size)
-      legal.push_back(COORD::E_NORTH);
+    if (rockstate.AgentPos.Y + 1 < Size) legal.push_back(COORD::E_NORTH);
 
     legal.push_back(COORD::E_EAST);
 
-    if (rockstate.AgentPos.Y - 1 >= 0)
-      legal.push_back(COORD::E_SOUTH);
+    if (rockstate.AgentPos.Y - 1 >= 0) legal.push_back(COORD::E_SOUTH);
 
-    if (rockstate.AgentPos.X - 1 >= 0)
-      legal.push_back(COORD::E_WEST);
+    if (rockstate.AgentPos.X - 1 >= 0) legal.push_back(COORD::E_WEST);
 
     int rock = Grid(rockstate.AgentPos);
     if (rock >= 0 && !rockstate.Rocks[rock].Collected)

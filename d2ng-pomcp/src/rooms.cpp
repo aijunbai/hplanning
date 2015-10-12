@@ -13,7 +13,7 @@ ROOMS::ROOMS(const char *map_name, bool state_abstraction)
     : mStateAbstraction(state_abstraction), mGrid(0), mRooms(0) {
   Parse(map_name);
 
-  NumActions = 4; //动作数
+  NumActions = 4;  //动作数
   NumObservations =
       mStateAbstraction ? mRooms : mGrid->GetXSize() * mGrid->GetYSize();
   Discount = 0.9;
@@ -85,19 +85,19 @@ void ROOMS::FreeState(STATE *state) const {
 }
 
 bool ROOMS::Step(STATE &state, int action, int &observation, double &reward)
-    const //进行一步模拟：state, action |-> state, reward, observation
+    const  //进行一步模拟：state, action |-> state, reward, observation
 {
   assert(action < NumActions);
 
   ROOMS_STATE &rooms_state = safe_cast<ROOMS_STATE &>(state);
   reward = -1.0;
 
-  if (SimpleRNG::ins().Bernoulli(4.0 / 9.0)) { // fail
+  if (SimpleRNG::ins().Bernoulli(4.0 / 9.0)) {  // fail
     action = SimpleRNG::ins().Random(NumActions);
   }
 
   COORD pos = rooms_state.AgentPos + coord::Compass[action];
-  if (mGrid->operator()(pos) != 'x') { // not wall
+  if (mGrid->operator()(pos) != 'x') {  // not wall
     rooms_state.AgentPos = pos;
   }
   observation = GetObservation(rooms_state);
@@ -106,11 +106,11 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward)
     return true;
   }
 
-  return false; // not terminated
+  return false;  // not terminated
 }
 
 bool ROOMS::LocalMove(STATE &state, const HISTORY &history, int,
-                      const STATUS &) const //局部扰动
+                      const STATUS &) const  //局部扰动
 {
   ROOMS_STATE rooms_state = safe_cast<ROOMS_STATE &>(state);
   if (GetObservation(rooms_state) == history.Back().Observation) {
@@ -131,9 +131,9 @@ void ROOMS::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
   legal.push_back(COORD::E_WEST);
 }
 
-void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &, //手工策略
+void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &,  //手工策略
                               vector<int> &actions,
-                              const STATUS &status) const //获得优先动作
+                              const STATUS &status) const  //获得优先动作
 {
   if (mStateAbstraction) {
     const ROOMS_STATE &rooms_state = safe_cast<const ROOMS_STATE &>(state);

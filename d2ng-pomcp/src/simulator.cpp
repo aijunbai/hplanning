@@ -5,17 +5,22 @@ using namespace std;
 using namespace UTILS;
 
 SIMULATOR::KNOWLEDGE::KNOWLEDGE()
-    : TreeLevel(LEGAL), RolloutLevel(LEGAL), SmartTreeCount(10),
+    : TreeLevel(LEGAL),
+      RolloutLevel(LEGAL),
+      SmartTreeCount(10),
       SmartTreeValue(1.0) {}
 
 SIMULATOR::STATUS::STATUS() : Phase(TREE), Particles(CONSISTENT) {}
 
 SIMULATOR::SIMULATOR()
-    : NumActions(0), NumObservations(0), Discount(1.0),
+    : NumActions(0),
+      NumObservations(0),
+      Discount(1.0),
       mHierarchicalPlanning(false) {}
 
 SIMULATOR::SIMULATOR(int numActions, int numObservations, double discount)
-    : NumActions(numActions), NumObservations(numObservations),
+    : NumActions(numActions),
+      NumObservations(numObservations),
       Discount(discount) {
   assert(discount > 0 && discount <= 1);
 }
@@ -30,8 +35,7 @@ bool SIMULATOR::LocalMove(STATE &, const HISTORY &, int, const STATUS &) const {
 
 void SIMULATOR::GenerateLegal(const STATE &, /*const HISTORY& ,*/
                               std::vector<int> &actions, const STATUS &) const {
-  for (int a = 0; a < NumActions; ++a)
-    actions.push_back(a);
+  for (int a = 0; a < NumActions; ++a) actions.push_back(a);
 }
 
 void SIMULATOR::GeneratePreferred(const STATE &, const HISTORY &,
@@ -63,11 +67,11 @@ void SIMULATOR::Prior(const STATE *state, const HISTORY &history, VNODE *vnode,
   static std::vector<int> actions;
 
   if (Knowledge.TreeLevel == KNOWLEDGE::PURE || state == 0) {
-    vnode->SetPrior(0, 0, true); //所有动作初始化为 (0, 0)
+    vnode->SetPrior(0, 0, true);  //所有动作初始化为 (0, 0)
     return;
   } else {
     vnode->SetPrior(+LargeInteger, -Infinity,
-                    false); //为后面设置做准备，所有动作初始化为 (+inf, -inf)
+                    false);  //为后面设置做准备，所有动作初始化为 (+inf, -inf)
   }
 
   if (Knowledge.TreeLevel >= KNOWLEDGE::LEGAL) {
@@ -84,7 +88,7 @@ void SIMULATOR::Prior(const STATE *state, const HISTORY &history, VNODE *vnode,
 
   if (Knowledge.TreeLevel >= KNOWLEDGE::SMART) {
     actions.clear();
-    GeneratePreferred(*state, history, actions, status); //产生优先动作
+    GeneratePreferred(*state, history, actions, status);  //产生优先动作
 
     for (vector<int>::const_iterator i_action = actions.begin();
          i_action != actions.end(); ++i_action) {
@@ -113,7 +117,6 @@ void SIMULATOR::DisplayReward(double reward, std::ostream &ostr) const {
 }
 
 double SIMULATOR::GetHorizon(double accuracy, int undiscountedHorizon) const {
-  if (Discount == 1)
-    return undiscountedHorizon;
+  if (Discount == 1) return undiscountedHorizon;
   return log(accuracy) / log(Discount);
 }

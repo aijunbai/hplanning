@@ -6,7 +6,7 @@
 #include "statistic.h"
 
 class MCTS {
-public:
+ public:
   struct PARAMS {
     PARAMS();
 
@@ -28,9 +28,9 @@ public:
   virtual ~MCTS();
 
   int SelectAction();
-  bool Update(int action, int observation); // update history
+  bool Update(int action, int observation);  // update history
   bool Update(int action, int observation,
-              STATE &state); // update history and ground state
+              STATE &state);  // update history and ground state
 
   void Search();
   void SearchImp();
@@ -47,20 +47,20 @@ public:
   static void UnitTest();
   static void InitFastUCB(double exploration);
 
-protected:
+ protected:
   const SIMULATOR &Simulator;
   PARAMS Params;
   VNODE *Root;
   HISTORY History;
-  SIMULATOR::STATUS Status; //标记树搜索的阶段和样本状态
+  SIMULATOR::STATUS Status;  //标记树搜索的阶段和样本状态
   int TreeDepth, PeakTreeDepth;
 
-  STATISTIC StatBeliefSize;    //统计每次 UCTSearch 开始时信念大小
-  STATISTIC StatNumSimulation; //统计 Any time 模式下每次 simulation 次数
+  STATISTIC StatBeliefSize;     //统计每次 UCTSearch 开始时信念大小
+  STATISTIC StatNumSimulation;  //统计 Any time 模式下每次 simulation 次数
 
-  STATISTIC StatBeginTreeSize; //统计每次 UCTSearch 开始时树的大小
-  STATISTIC StatEndTreeSize;   //统计每次 UCTSearch 结束时树的大小
-  STATISTIC StatIncTreeSize; //统计每次 UCTSearch 结束时树的大小变化
+  STATISTIC StatBeginTreeSize;  //统计每次 UCTSearch 开始时树的大小
+  STATISTIC StatEndTreeSize;    //统计每次 UCTSearch 结束时树的大小
+  STATISTIC StatIncTreeSize;  //统计每次 UCTSearch 结束时树的大小变化
 
   STATISTIC StatTreeDepth;
   STATISTIC StatRolloutDepth;
@@ -77,7 +77,7 @@ protected:
   STATE *CreateTransform() const;
   void Resample(BELIEF_STATE &beliefs);
 
-  double QValue(QNODE &qnode, bool sampling) const; // XXX state?
+  double QValue(QNODE &qnode, bool sampling) const;  // XXX state?
   double HValue(VNODE *vnode, bool sampling) const;
 
   static void UnitTestGreedy();
@@ -88,4 +88,4 @@ protected:
   static const int Rollouts = MULTI_ROLLOUTS;
 };
 
-#endif // MCTS_H
+#endif  // MCTS_H

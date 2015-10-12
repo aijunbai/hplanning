@@ -22,7 +22,7 @@ class QNODE;
 class VNODE;
 
 class QNODE {
-public:
+ public:
   QNODE() : mApplicable(false), mCount(0) {}
 
   void Initialise();
@@ -68,7 +68,7 @@ public:
 
   static int NumChildren;
 
-private:
+ private:
   void Assertion(int c) const {
     assert(c >= 0 && c < int(Children.size()) && c < NumChildren);
   }
@@ -82,10 +82,8 @@ private:
   DirichletInfo_POMCP<double> ImmediateReward;
 };
 
-//-----------------------------------------------------------------------------
-
 class VNODE : public MEMORY_OBJECT {
-public:
+ public:
   void Initialise();
 
   static VNODE *Create();
@@ -132,11 +130,14 @@ public:
     return sum / count;
   }
 
+  static MEMORY_POOL<VNODE> VNodePool;
   static int NumChildren;
   static STATISTIC PARTICLES_STAT;
   static STATISTIC HASH_STAT;
 
-private:
+  static int GetNumAllocated() { return VNodePool.GetNumAllocated(); }
+
+ private:
   void Assertion(int c) const {
     assert(c >= 0 && c < int(Children.size()) && c < NumChildren);
   }
@@ -146,10 +147,4 @@ private:
   BELIEF_STATE BeliefState;
 };
 
-namespace vnode {
-extern MEMORY_POOL<VNODE> VNodePool;
-
-inline int GetNumAllocated() { return VNodePool.GetNumAllocated(); }
-};
-
-#endif // NODE_H
+#endif  // NODE_H

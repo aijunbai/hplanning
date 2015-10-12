@@ -63,9 +63,9 @@ int main(int argc, char *argv[]) {
       "minimum power of two simulations")("maxdoubles",
                                           value<int>(&expParams.MaxDoubles),
                                           "maximum power of two simulations")(
-      "runs", value<int>(&expParams.NumRuns),
-      "number of runs")("accuracy", value<double>(&expParams.Accuracy),
-                        "accuracy level used to determine horizon")(
+      "runs", value<int>(&expParams.NumRuns), "number of runs")(
+      "accuracy", value<double>(&expParams.Accuracy),
+      "accuracy level used to determine horizon")(
       "horizon", value<int>(&expParams.UndiscountedHorizon),
       "horizon to use when not discounting")(
       "num steps", value<int>(&expParams.NumSteps),
@@ -121,29 +121,29 @@ int main(int argc, char *argv[]) {
     SimpleRNG::ins().RandomSeed(getpid());
   }
 
-  SIMULATOR *real = 0;      //真实环境
-  SIMULATOR *simulator = 0; //模拟器
+  SIMULATOR *real = 0;       //真实环境
+  SIMULATOR *simulator = 0;  //模拟器
 
   if (problem == "battleship") {
     real = new BATTLESHIP(size, size, number);
     simulator = new BATTLESHIP(size, size, number);
   } else if (problem == "pocman") {
     switch (size) {
-    case 0:
-      real = new MICRO_POCMAN;
-      simulator = new MICRO_POCMAN;
-      break;
-    case 1:
-      real = new MINI_POCMAN;
-      simulator = new MINI_POCMAN;
-      break;
-    case 2:
-      real = new FULL_POCMAN;
-      simulator = new FULL_POCMAN;
-      break;
-    default:
-      cout << "PocMan size 0|1|2" << endl;
-      return 1;
+      case 0:
+        real = new MICRO_POCMAN;
+        simulator = new MICRO_POCMAN;
+        break;
+      case 1:
+        real = new MINI_POCMAN;
+        simulator = new MINI_POCMAN;
+        break;
+      case 2:
+        real = new FULL_POCMAN;
+        simulator = new FULL_POCMAN;
+        break;
+      default:
+        cout << "PocMan size 0|1|2" << endl;
+        return 1;
     }
   } else if (problem == "network") {
     real = new NETWORK(size, number);

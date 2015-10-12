@@ -29,7 +29,7 @@ inline void RESULTS::Clear() {
 //----------------------------------------------------------------------------
 
 class EXPERIMENT {
-public:
+ public:
   struct PARAMS {
     PARAMS();
 
@@ -52,7 +52,7 @@ public:
   void DiscountedReturn();
   //    void AverageReward();
 
-private:
+ private:
   const SIMULATOR &Real;
   const SIMULATOR &Simulator;
   EXPERIMENT::PARAMS &ExpParams;
@@ -64,4 +64,4 @@ private:
 
 //----------------------------------------------------------------------------
 
-#endif // EXPERIMENT_H
+#endif  // EXPERIMENT_H

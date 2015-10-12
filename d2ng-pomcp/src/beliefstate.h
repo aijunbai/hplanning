@@ -10,7 +10,7 @@ class STATE;
 class SIMULATOR;
 
 class BELIEF_STATE {
-public:
+ public:
   BELIEF_STATE();
 
   // Free memory for all states
@@ -37,8 +37,8 @@ public:
 
   static STATISTIC SAMPLES_STAT;
 
-private:
+ private:
   std::vector<STATE *> Samples;
 };
 
-#endif // BELIEF_STATE_H
+#endif  // BELIEF_STATE_H

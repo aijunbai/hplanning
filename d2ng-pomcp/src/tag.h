@@ -6,7 +6,7 @@
 #include "grid.h"
 
 class TAG_STATE : public STATE {
-public:
+ public:
   COORD AgentPos;
   std::vector<COORD> OpponentPos;
   int NumAlive;
@@ -29,7 +29,7 @@ public:
 };
 
 class TAG : public SIMULATOR {
-public:
+ public:
   TAG(int numrobots);
 
   virtual STATE *Copy(const STATE &state) const;
@@ -51,7 +51,7 @@ public:
                                   std::ostream &ostr) const;
   virtual void DisplayAction(int action, std::ostream &ostr) const;
 
-protected:
+ protected:
   void MoveOpponent(TAG_STATE &tagstate, int opp) const;
   int GetObservation(const TAG_STATE &tagstate, int action) const;
   bool Inside(const COORD &coord) const;
@@ -64,7 +64,7 @@ protected:
   int NumOpponents;
   static const int NumCells;
 
-private:
+ private:
   mutable MEMORY_POOL<TAG_STATE> MemoryPool;
 };
 

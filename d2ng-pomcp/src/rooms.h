@@ -6,7 +6,7 @@
 #include "grid.h"
 
 class ROOMS_STATE : public STATE {
-public:
+ public:
   COORD AgentPos;
 
   virtual size_t hash() const {
@@ -25,7 +25,7 @@ public:
 };
 
 class ROOMS : public SIMULATOR {
-public:
+ public:
   ROOMS(const char *map_name, bool state_abstraction = false);
   virtual ~ROOMS();
 
@@ -52,7 +52,7 @@ public:
                                   std::ostream &ostr) const;
   virtual void DisplayAction(int action, std::ostream &ostr) const;
 
-protected:
+ protected:
   void Parse(const char *file_name);
   int GetObservation(const ROOMS_STATE &state) const;
 
@@ -62,8 +62,8 @@ protected:
   COORD mStartPos;
   COORD mGoalPos;
 
-private:
+ private:
   mutable MEMORY_POOL<ROOMS_STATE> mMemoryPool;
 };
 
-#endif // ROOMS_H
+#endif  // ROOMS_H

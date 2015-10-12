@@ -5,7 +5,7 @@
 #include <ostream>
 
 class MEMORY_OBJECT {
-public:
+ public:
   MEMORY_OBJECT() : Allocated(false) {}
 
   const MEMORY_OBJECT &operator=(const MEMORY_OBJECT &) { return *this; }
@@ -16,12 +16,13 @@ public:
 
   bool IsAllocated() const { return Allocated; }
 
-private:
+ private:
   bool Allocated;
 };
 
-template <class T> class MEMORY_POOL {
-public:
+template <class T>
+class MEMORY_POOL {
+ public:
   MEMORY_POOL() : NumAllocated(0) {}
 
   ~MEMORY_POOL() { DeleteAll(); }
@@ -74,7 +75,7 @@ public:
 
   int GetNumAllocated() const { return NumAllocated; }
 
-private:
+ private:
   struct CHUNK {
     static const int Size = 4096;
 
@@ -97,4 +98,4 @@ private:
   typedef typename std::vector<CHUNK *>::iterator ChunkIterator;
 };
 
-#endif // MEMORY_POOL_H
+#endif  // MEMORY_POOL_H

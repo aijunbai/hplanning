@@ -4,9 +4,9 @@
 #include "mcts.h"
 
 class HierarchicalMCTS : public MCTS {
-public:
+ public:
   HierarchicalMCTS(const SIMULATOR &simulator, const PARAMS &params);
   virtual ~HierarchicalMCTS();
 };
 
-#endif // HIERARCHICALMCTS_H
+#endif  // HIERARCHICALMCTS_H

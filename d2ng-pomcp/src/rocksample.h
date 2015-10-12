@@ -8,11 +8,11 @@
 struct RS_ENTRY {
   bool Valuable;
   bool Collected;
-  int Count;                  // Smart knowledge
-  int Measured;               // Smart knowledge
-  double LikelihoodValuable;  // Smart knowledge
-  double LikelihoodWorthless; // Smart knowledge
-  double ProbValuable;        // Smart knowledge
+  int Count;                   // Smart knowledge
+  int Measured;                // Smart knowledge
+  double LikelihoodValuable;   // Smart knowledge
+  double LikelihoodWorthless;  // Smart knowledge
+  double ProbValuable;         // Smart knowledge
 };
 
 inline std::size_t hash_value(const RS_ENTRY &v) {
@@ -31,9 +31,9 @@ inline std::size_t hash_value(const RS_ENTRY &v) {
 }
 
 class ROCKSAMPLE_STATE : public STATE {
-public:
-  COORD AgentPos;              //机器人位置
-  std::vector<RS_ENTRY> Rocks; //每个石头的状态
+ public:
+  COORD AgentPos;               //机器人位置
+  std::vector<RS_ENTRY> Rocks;  //每个石头的状态
 
   virtual size_t hash() const {
     using boost::hash_combine;
@@ -52,7 +52,7 @@ public:
 };
 
 class ROCKSAMPLE : public SIMULATOR {
-public:
+ public:
   ROCKSAMPLE(int size, int rocks);
 
   virtual STATE *Copy(const STATE &state) const;
@@ -78,7 +78,7 @@ public:
                                   std::ostream &ostr) const;
   virtual void DisplayAction(int action, std::ostream &ostr) const;
 
-protected:
+ protected:
   enum { E_NONE, E_GOOD, E_BAD };
 
   enum { E_SAMPLE = 4 };
@@ -87,7 +87,8 @@ protected:
   void Init_7_8();
   void Init_11_11();
 
-  template <typename T> void FillField(T rocks) {
+  template <typename T>
+  void FillField(T rocks) {
     Grid.SetAllValues(-1);
 
     for (int i = 0; i < NumRocks; ++i) {
@@ -102,14 +103,14 @@ protected:
   std::vector<COORD> RockPos;
   int Size, NumRocks;
   COORD StartPos;
-  double HalfEfficiencyDistance; //控制观察函数的阈值
+  double HalfEfficiencyDistance;  //控制观察函数的阈值
 
-private:
+ private:
   mutable MEMORY_POOL<ROCKSAMPLE_STATE> MemoryPool;
 };
 
 class FieldVisionRockSample : public ROCKSAMPLE {
-public:
+ public:
   FieldVisionRockSample(int size, int rocks);
 
   virtual bool Step(STATE &state, int action, int &observation,

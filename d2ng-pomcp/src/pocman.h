@@ -7,11 +7,11 @@
 #include "beliefstate.h"
 
 class POCMAN_STATE : public STATE {
-public:
+ public:
   COORD PocmanPos;
   std::vector<COORD> GhostPos;
   std::vector<int> GhostDir;
-  std::vector<bool> Food; // bit vector
+  std::vector<bool> Food;  // bit vector
   int NumFood;
   int PowerSteps;
 
@@ -36,7 +36,7 @@ public:
 };
 
 class POCMAN : public SIMULATOR {
-public:
+ public:
   virtual STATE *Copy(const STATE &state) const;
   virtual void Validate(const STATE &state) const;
   virtual STATE *CreateStartState() const;
@@ -58,7 +58,7 @@ public:
                                   std::ostream &ostr) const;
   virtual void DisplayAction(int action, std::ostream &ostr) const;
 
-protected:
+ protected:
   POCMAN(int xsize, int ysize);
 
   enum { E_PASSABLE, E_SEED, E_POWER };
@@ -71,7 +71,7 @@ protected:
   double RewardEatFood, RewardEatGhost, RewardHitWall;
   int PowerNumSteps;
 
-private:
+ private:
   void MoveGhost(POCMAN_STATE &pocstate, int g) const;
   void MoveGhostAggressive(POCMAN_STATE &pocstate, int g) const;
   void MoveGhostDefensive(POCMAN_STATE &pocstate, int g) const;
@@ -90,21 +90,21 @@ private:
 };
 
 class MICRO_POCMAN : public POCMAN {
-public:
+ public:
   MICRO_POCMAN();
   virtual ~MICRO_POCMAN() {}
 };
 
 class MINI_POCMAN : public POCMAN {
-public:
+ public:
   MINI_POCMAN();
   virtual ~MINI_POCMAN() {}
 };
 
 class FULL_POCMAN : public POCMAN {
-public:
+ public:
   FULL_POCMAN();
   virtual ~FULL_POCMAN() {}
 };
 
-#endif // POCMAN_H
+#endif  // POCMAN_H

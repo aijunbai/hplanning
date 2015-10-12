@@ -4,14 +4,22 @@
 using namespace std;
 
 EXPERIMENT::PARAMS::PARAMS()
-    : NumRuns(1000), NumSteps(100000), TimeOut(3600), MinDoubles(0),
-      MaxDoubles(20), TransformDoubles(-4), TransformAttempts(1000),
-      Accuracy(0.001), UndiscountedHorizon(1000) {}
+    : NumRuns(1000),
+      NumSteps(100000),
+      TimeOut(3600),
+      MinDoubles(0),
+      MaxDoubles(20),
+      TransformDoubles(-4),
+      TransformAttempts(1000),
+      Accuracy(0.001),
+      UndiscountedHorizon(1000) {}
 
 EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
                        const string &outputFile, EXPERIMENT::PARAMS &expParams,
                        MCTS::PARAMS &searchParams)
-    : Real(real), Simulator(simulator), ExpParams(expParams),
+    : Real(real),
+      Simulator(simulator),
+      ExpParams(expParams),
       SearchParams(searchParams),
       OutputFile(outputFile.c_str(), fstream::out | fstream::app) {}
 
@@ -34,22 +42,21 @@ void EXPERIMENT::Run() {
   bool outOfParticles = false;
   int t;
 
-  STATE *state = Real.CreateStartState(); //真实的世界状态
+  STATE *state = Real.CreateStartState();  //真实的世界状态
 
-  if (SearchParams.Verbose >= 1)
-    Real.DisplayState(*state, cout);
+  if (SearchParams.Verbose >= 1) Real.DisplayState(*state, cout);
 
   for (t = 0; t < ExpParams.NumSteps; t++) {
     int observation;
     double reward;
 
     boost::timer timer_per_action;
-    int action = mcts.SelectAction(); // XXX 用 Monte Carlo 方法选择一个动作
+    int action = mcts.SelectAction();  // XXX 用 Monte Carlo 方法选择一个动作
 
     Results.TimePerAction.Add(timer_per_action.elapsed());
     terminal = Real.Step(
         *state, action, observation,
-        reward); //根据 state 和 action 转移到下一个状态，获得实际观察和回报
+        reward);  //根据 state 和 action 转移到下一个状态，获得实际观察和回报
     Results.Reward.Add(reward);
     undiscountedReturn += reward;
     discountedReturn += reward * discount;
@@ -69,17 +76,17 @@ void EXPERIMENT::Run() {
       break;
     }
 
-    if (Real.mHierarchicalPlanning) { // test state abstraction method
+    if (Real.mHierarchicalPlanning) {  // test state abstraction method
       if (!mcts.Update(action, observation, *state)) {
         assert(0);
       }
     } else {
       outOfParticles = !mcts.Update(
           action,
-          observation); //更新历史信息，得到新的 Root 节点，设置好初始信念状态
+          observation);  //更新历史信息，得到新的 Root 节点，设置好初始信念状态
 
       if (outOfParticles) {
-        break; // Out of particles, finishing episode with SelectRandom
+        break;  // Out of particles, finishing episode with SelectRandom
       }
     }
 
@@ -90,7 +97,7 @@ void EXPERIMENT::Run() {
     }
   }
 
-  if (outOfParticles) //特殊情况处理
+  if (outOfParticles)  //特殊情况处理
   {
     cout << "Out of particles, finishing episode with SelectRandom" << endl;
     HISTORY history = mcts.GetHistory();
@@ -143,13 +150,13 @@ void EXPERIMENT::Run() {
 }
 
 void EXPERIMENT::MultiRun() {
-  for (int n = 0; n < ExpParams.NumRuns; n++) //实验次数
+  for (int n = 0; n < ExpParams.NumRuns; n++)  //实验次数
   {
     cout << "Starting run " << n + 1 << " with " << SearchParams.NumSimulations
          << " simulations... " << endl;
 
     Run();
-    assert(vnode::GetNumAllocated() == 0);
+    assert(VNODE::GetNumAllocated() == 0);
 
     if (Results.Time.GetTotal() > ExpParams.TimeOut) {
       cout << "Timed out after " << n << " runs in " << Results.Time.GetTotal()
@@ -166,20 +173,21 @@ void EXPERIMENT::DiscountedReturn() {
                 "error\tTime\tTimePerAction\n";
 
   SearchParams.MaxDepth = Simulator.GetHorizon(
-      ExpParams.Accuracy, ExpParams.UndiscountedHorizon); //搜索过程中的最大深度
+      ExpParams.Accuracy,
+      ExpParams.UndiscountedHorizon);  //搜索过程中的最大深度
   ExpParams.NumSteps = Real.GetHorizon(
-      ExpParams.Accuracy, ExpParams.UndiscountedHorizon); //实验的最大步长
+      ExpParams.Accuracy, ExpParams.UndiscountedHorizon);  //实验的最大步长
 
   for (int i = ExpParams.MinDoubles; i <= ExpParams.MaxDoubles; i++) {
-    SearchParams.NumSimulations = 1 << i; //迭代次数 iterations
+    SearchParams.NumSimulations = 1 << i;  //迭代次数 iterations
 
-    if (SearchParams.TimeOutPerAction < 0.0) { //非anytime模式
-      SearchParams.NumStartStates = 1 << i;    //初始粒子数
+    if (SearchParams.TimeOutPerAction < 0.0) {  //非anytime模式
+      SearchParams.NumStartStates = 1 << i;     //初始粒子数
     }
 
     if (i + ExpParams.TransformDoubles >= 0)
       SearchParams.NumTransforms = 1
-                                   << (i + ExpParams.TransformDoubles); // 1/16
+                                   << (i + ExpParams.TransformDoubles);  // 1/16
     else
       SearchParams.NumTransforms = 1;
     SearchParams.MaxAttempts =

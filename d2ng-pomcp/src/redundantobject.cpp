@@ -10,9 +10,11 @@ using namespace std;
 using namespace UTILS;
 
 REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
-    : mStateAbstraction(state_abstraction), mGrid(size, size), mStartPos(0, 0),
+    : mStateAbstraction(state_abstraction),
+      mGrid(size, size),
+      mStartPos(0, 0),
       mGoalPos(size - 1, size - 1) {
-  NumActions = 4; //动作数
+  NumActions = 4;  //动作数
   int grids = mGrid.GetSize();
   NumObservations = mStateAbstraction ? grids : grids * grids;
   Discount = 0.9;
@@ -51,14 +53,14 @@ void REDUNDANT_OBJECT::FreeState(STATE *state) const {
 
 bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation,
                             double &reward)
-    const //进行一步模拟：state, action |-> state, reward, observation
+    const  //进行一步模拟：state, action |-> state, reward, observation
 {
   assert(action < NumActions);
 
   REDUNDANT_OBJECT_STATE &rstate = safe_cast<REDUNDANT_OBJECT_STATE &>(state);
   reward = -1.0;
 
-  if (SimpleRNG::ins().Bernoulli(0.1)) { // fail
+  if (SimpleRNG::ins().Bernoulli(0.1)) {  // fail
     action = coord::Opposite(action);
   }
 
@@ -81,11 +83,11 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation,
     return true;
   }
 
-  return false; // not terminated
+  return false;  // not terminated
 }
 
 bool REDUNDANT_OBJECT::LocalMove(STATE &state, const HISTORY &history, int,
-                                 const STATUS &) const //局部扰动
+                                 const STATUS &) const  //局部扰动
 {
   REDUNDANT_OBJECT_STATE rstate = safe_cast<REDUNDANT_OBJECT_STATE &>(state);
   if (GetObservation(rstate) == history.Back().Observation) {
@@ -108,8 +110,8 @@ void REDUNDANT_OBJECT::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
 }
 
 void REDUNDANT_OBJECT::GeneratePreferred(
-    const STATE &state, const HISTORY &,              //手工策略
-    vector<int> &actions, const STATUS &status) const //获得优先动作
+    const STATE &state, const HISTORY &,               //手工策略
+    vector<int> &actions, const STATUS &status) const  //获得优先动作
 {
   GenerateLegal(state, actions, status);
 }

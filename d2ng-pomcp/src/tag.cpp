@@ -46,7 +46,7 @@ bool TAG::Step(STATE &state, int action, int &observation,
   TAG_STATE &tagstate = safe_cast<TAG_STATE &>(state);
 
   // Tag action
-  if (action == 4) // tag
+  if (action == 4)  // tag
   {
     observation = GetIndex(tagstate.AgentPos);
     bool tagged = false;
@@ -65,15 +65,13 @@ bool TAG::Step(STATE &state, int action, int &observation,
 
   // Move opponents
   for (int opp = 0; opp < NumOpponents; ++opp)
-    if (IsAlive(tagstate, opp))
-      MoveOpponent(tagstate, opp);
+    if (IsAlive(tagstate, opp)) MoveOpponent(tagstate, opp);
 
   // Move action
   if (action < 4) {
     reward = -1;
     COORD nextpos = tagstate.AgentPos + coord::Compass[action];
-    if (Inside(nextpos))
-      tagstate.AgentPos = nextpos;
+    if (Inside(nextpos)) tagstate.AgentPos = nextpos;
   }
 
   // Observation occurs in final positions, not start positions
@@ -85,8 +83,7 @@ inline int TAG::GetObservation(const TAG_STATE &tagstate, int action) const {
   int obs = GetIndex(tagstate.AgentPos);
   if (action < 4)
     for (int opp = 0; opp < NumOpponents; ++opp)
-      if (tagstate.OpponentPos[opp] == tagstate.AgentPos)
-        obs = NumCells;
+      if (tagstate.OpponentPos[opp] == tagstate.AgentPos) obs = NumCells;
   return obs;
 }
 
@@ -101,8 +98,7 @@ inline bool TAG::Inside(const COORD &coord) const {
 inline COORD TAG::GetCoord(int index) const {
   assert(NumCells == 29);
   assert(index >= 0 && index < 29);
-  if (index < 20)
-    return COORD(index % 10, index / 10);
+  if (index < 20) return COORD(index % 10, index / 10);
   index -= 20;
   return COORD(index % 3 + 5, index / 3 + 2);
 }
@@ -110,8 +106,7 @@ inline COORD TAG::GetCoord(int index) const {
 inline int TAG::GetIndex(const COORD &coord) const {
   assert(coord.X >= 0 && coord.X < 10);
   assert(coord.Y >= 0 && coord.Y < 5);
-  if (coord.Y < 2)
-    return coord.Y * 10 + coord.X;
+  if (coord.Y < 2) return coord.Y * 10 + coord.X;
   assert(coord.X >= 5 && coord.X < 8);
   return 20 + (coord.Y - 2) * 3 + coord.X - 5;
 }
@@ -121,8 +116,7 @@ inline bool TAG::IsAlive(const TAG_STATE &tagstate, int opp) const {
 }
 
 inline bool TAG::IsCorner(const COORD &coord) const {
-  if (!Inside(coord))
-    return false;
+  if (!Inside(coord)) return false;
   if (coord.Y < 2)
     return coord.X == 0 || coord.X == 9;
   else
@@ -132,18 +126,18 @@ inline bool TAG::IsCorner(const COORD &coord) const {
 inline COORD TAG::GetRandomCorner() const {
   int c = SimpleRNG::ins().Random(6);
   switch (c) {
-  case 0:
-    return COORD(0, 0);
-  case 1:
-    return COORD(0, 1);
-  case 2:
-    return COORD(9, 0);
-  case 3:
-    return COORD(9, 1);
-  case 4:
-    return COORD(5, 4);
-  case 5:
-    return COORD(7, 4);
+    case 0:
+      return COORD(0, 0);
+    case 1:
+      return COORD(0, 1);
+    case 2:
+      return COORD(9, 0);
+    case 3:
+      return COORD(9, 1);
+    case 4:
+      return COORD(5, 4);
+    case 5:
+      return COORD(7, 4);
   }
 }
 
@@ -154,14 +148,10 @@ void TAG::MoveOpponent(TAG_STATE &tagstate, int opp) const {
   static vector<int> actions;
   actions.clear();
 
-  if (opponent.X >= agent.X)
-    actions.push_back(COORD::E_EAST);
-  if (opponent.Y >= agent.Y)
-    actions.push_back(COORD::E_NORTH);
-  if (opponent.X <= agent.X)
-    actions.push_back(COORD::E_WEST);
-  if (opponent.Y <= agent.Y)
-    actions.push_back(COORD::E_SOUTH);
+  if (opponent.X >= agent.X) actions.push_back(COORD::E_EAST);
+  if (opponent.Y >= agent.Y) actions.push_back(COORD::E_NORTH);
+  if (opponent.X <= agent.X) actions.push_back(COORD::E_WEST);
+  if (opponent.Y <= agent.Y) actions.push_back(COORD::E_SOUTH);
   if (opponent.X == agent.X && opponent.Y > agent.Y)
     actions.push_back(COORD::E_NORTH);
   if (opponent.Y == agent.Y && opponent.X > agent.X)
@@ -184,8 +174,7 @@ bool TAG::LocalMove(STATE &state, const HISTORY &history, int /*stepObs*/,
   TAG_STATE &tagstate = safe_cast<TAG_STATE &>(state);
 
   int opp = SimpleRNG::ins().Random(NumOpponents);
-  if (!IsAlive(tagstate, opp))
-    return false;
+  if (!IsAlive(tagstate, opp)) return false;
   tagstate.OpponentPos[opp] = GetCoord(SimpleRNG::ins().Random(NumCells));
 
   int realObs = history.Back().Observation;
@@ -200,8 +189,7 @@ void TAG::GeneratePreferred(const STATE &state, const HISTORY &history,
   const TAG_STATE &tagstate = safe_cast<const TAG_STATE &>(state);
 
   // If history is empty then we don't know where we are yet
-  if (history.Size() == 0)
-    return;
+  if (history.Size() == 0) return;
 
   // If we just saw an opponent and we are in a corner then TAG
   if (history.Back().Observation == NumCells && IsCorner(tagstate.AgentPos)) {
@@ -223,8 +211,7 @@ void TAG::DisplayState(const STATE &state, std::ostream &ostr) const {
   GRID<char> cgrid(10, 5);
   cgrid.SetAllValues('.');
   for (int opp = 0; opp < NumOpponents; ++opp)
-    if (IsAlive(tagstate, opp))
-      cgrid(tagstate.OpponentPos[opp]) = '@';
+    if (IsAlive(tagstate, opp)) cgrid(tagstate.OpponentPos[opp]) = '@';
   cgrid(tagstate.AgentPos) = '*';
 
   for (int y = 4; y >= 0; y--) {

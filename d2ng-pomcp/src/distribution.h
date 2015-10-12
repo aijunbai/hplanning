@@ -17,10 +17,10 @@
 // Its primary benefit is that it is simple to extract its state.
 
 class SimpleRNG {
-private:
+ private:
   SimpleRNG();
 
-public:
+ public:
   static SimpleRNG &ins();
 
   int GetRand();
@@ -75,7 +75,7 @@ public:
 
   bool Bernoulli(double p) { return RandomDouble(0.0, 1.0) < p; }
 
-private:
+ private:
   int PoissonLarge(double lambda);
   int PoissonSmall(double lambda);
   double LogFactorial(int n);

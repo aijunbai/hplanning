@@ -85,7 +85,7 @@ bool BATTLESHIP::Step(STATE &state, int action, int &observation,
     DisplayAction(action, cout);
     assert(false);
   } else {
-    if (cell.Occupied) // hit
+    if (cell.Occupied)  // hit
     {
       reward = -1;
       observation = 1;
@@ -95,7 +95,7 @@ bool BATTLESHIP::Step(STATE &state, int action, int &observation,
       for (int d = 4; d < 8; ++d)
         if (bsstate.Cells.Inside(actionPos + coord::Compass[d]))
           bsstate.Cells(actionPos + coord::Compass[d]).Diagonal = true;
-    } else // miss
+    } else  // miss
     {
       reward = -1;
       observation = 0;
@@ -121,22 +121,20 @@ bool BATTLESHIP::LocalMove(STATE &state, const HISTORY &history,
   int mode = SimpleRNG::ins().Random(3);
   bool success = false;
   switch (mode) {
-  case 0:
-    success = MoveShips(bsstate);
-    break;
-  case 1:
-    success = SwitchTwoShips(bsstate);
-    break;
-  case 2:
-    success = SwitchThreeShips(bsstate);
-    break;
+    case 0:
+      success = MoveShips(bsstate);
+      break;
+    case 1:
+      success = SwitchTwoShips(bsstate);
+      break;
+    case 2:
+      success = SwitchThreeShips(bsstate);
+      break;
   }
-  if (!success)
-    return false;
+  if (!success) return false;
 
   if (refreshDiagonals)
-    for (int i = 0; i < XSize * YSize; ++i)
-      bsstate.Cells(i).Diagonal = false;
+    for (int i = 0; i < XSize * YSize; ++i) bsstate.Cells(i).Diagonal = false;
 
   for (int t = 0; t < history.Size(); ++t) {
     // Ensure that ships are consistent with observation history
@@ -144,8 +142,7 @@ bool BATTLESHIP::LocalMove(STATE &state, const HISTORY &history,
     COORD pos = bsstate.Cells.Coord(a);
     const CELL &cell = bsstate.Cells(a);
     assert(cell.Visited);
-    if (cell.Occupied != history[t].Observation)
-      return false;
+    if (cell.Occupied != history[t].Observation) return false;
 
     if (refreshDiagonals && cell.Occupied)
       for (int d = 4; d < 8; ++d)
@@ -164,8 +161,7 @@ bool BATTLESHIP::MoveShips(BATTLESHIP_STATE &bsstate) const {
 
   for (int move = 0; move < numMoves; ++move) {
     int shipIndex = SimpleRNG::ins().Random(bsstate.Ships.size());
-    if (Contains(shipIndices, shipIndex))
-      return false;
+    if (Contains(shipIndices, shipIndex)) return false;
     shipIndices.push_back(shipIndex);
     UnmarkShip(bsstate, bsstate.Ships[shipIndex]);
   }
@@ -175,8 +171,7 @@ bool BATTLESHIP::MoveShips(BATTLESHIP_STATE &bsstate) const {
     ship.Direction = SimpleRNG::ins().Random(4);
     ship.Position =
         COORD(SimpleRNG::ins().Random(XSize), SimpleRNG::ins().Random(YSize));
-    if (Collision(bsstate, ship))
-      return false;
+    if (Collision(bsstate, ship)) return false;
     MarkShip(bsstate, ship);
   }
 
@@ -190,8 +185,7 @@ bool BATTLESHIP::SwitchTwoShips(BATTLESHIP_STATE &bsstate) const {
   SHIP &shortShip = bsstate.Ships[shortShipIndex];
 
   int sizeDiff = longShip.Length - shortShip.Length;
-  if (sizeDiff <= 0)
-    return false;
+  if (sizeDiff <= 0) return false;
 
   int longOffset = SimpleRNG::ins().Random(0, sizeDiff + 1);
   int shortOffset = SimpleRNG::ins().Random(0, sizeDiff + 1);
@@ -209,11 +203,9 @@ bool BATTLESHIP::SwitchTwoShips(BATTLESHIP_STATE &bsstate) const {
   UnmarkShip(bsstate, oldLongShip);
   UnmarkShip(bsstate, oldShortShip);
 
-  if (Collision(bsstate, longShip))
-    return false;
+  if (Collision(bsstate, longShip)) return false;
   MarkShip(bsstate, longShip);
-  if (Collision(bsstate, shortShip))
-    return false;
+  if (Collision(bsstate, shortShip)) return false;
   MarkShip(bsstate, shortShip);
 
   return true;
@@ -228,8 +220,7 @@ bool BATTLESHIP::SwitchThreeShips(BATTLESHIP_STATE &bsstate) const {
   SHIP &shortShip2 = bsstate.Ships[shortShipIndex2];
 
   int sizeDiff = longShip.Length - shortShip1.Length - shortShip2.Length;
-  if (sizeDiff <= 0 || shortShipIndex1 == shortShipIndex2)
-    return false;
+  if (sizeDiff <= 0 || shortShipIndex1 == shortShipIndex2) return false;
 
   int longOffset =
       SimpleRNG::ins().Random(0, longShip.Length - shortShip1.Length + 1);
@@ -255,14 +246,11 @@ bool BATTLESHIP::SwitchThreeShips(BATTLESHIP_STATE &bsstate) const {
   UnmarkShip(bsstate, oldShortShip1);
   UnmarkShip(bsstate, oldShortShip2);
 
-  if (Collision(bsstate, longShip))
-    return false;
+  if (Collision(bsstate, longShip)) return false;
   MarkShip(bsstate, longShip);
-  if (Collision(bsstate, shortShip1))
-    return false;
+  if (Collision(bsstate, shortShip1)) return false;
   MarkShip(bsstate, shortShip1);
-  if (Collision(bsstate, shortShip2))
-    return false;
+  if (Collision(bsstate, shortShip2)) return false;
   MarkShip(bsstate, shortShip2);
 
   return true;
@@ -278,8 +266,7 @@ void BATTLESHIP::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
         legal.push_back(a);
   } else {
     for (int a = 0; a < NumActions; ++a)
-      if (!bsstate.Cells(a).Visited)
-        legal.push_back(a);
+      if (!bsstate.Cells(a).Visited) legal.push_back(a);
   }
 }
 
@@ -287,11 +274,9 @@ bool BATTLESHIP::Collision(const BATTLESHIP_STATE &bsstate,
                            const SHIP &ship) const {
   COORD pos = ship.Position;
   for (int i = 0; i < ship.Length; ++i) {
-    if (!bsstate.Cells.Inside(pos))
-      return true;
+    if (!bsstate.Cells.Inside(pos)) return true;
     const CELL &cell = bsstate.Cells(pos);
-    if (cell.Occupied)
-      return true;
+    if (cell.Occupied) return true;
     for (int adj = 0; adj < 8; ++adj)
       if (bsstate.Cells.Inside(pos + coord::Compass[adj]) &&
           bsstate.Cells(pos + coord::Compass[adj]).Occupied)
@@ -307,8 +292,7 @@ void BATTLESHIP::MarkShip(BATTLESHIP_STATE &bsstate, const SHIP &ship) const {
     CELL &cell = bsstate.Cells(pos);
     assert(!cell.Occupied);
     cell.Occupied = true;
-    if (!cell.Visited)
-      bsstate.NumRemaining++;
+    if (!cell.Visited) bsstate.NumRemaining++;
     pos += coord::Compass[ship.Direction];
   }
 }
@@ -318,8 +302,7 @@ void BATTLESHIP::UnmarkShip(BATTLESHIP_STATE &bsstate, const SHIP &ship) const {
   for (int i = 0; i < ship.Length; ++i) {
     CELL &cell = bsstate.Cells(pos);
     assert(cell.Occupied);
-    if (!cell.Visited)
-      bsstate.NumRemaining--;
+    if (!cell.Visited) bsstate.NumRemaining--;
     cell.Occupied = false;
     pos += coord::Compass[ship.Direction];
   }
@@ -353,8 +336,7 @@ void BATTLESHIP::DisplayState(const STATE &state, ostream &ostr) const {
   const BATTLESHIP_STATE &bsstate = safe_cast<const BATTLESHIP_STATE &>(state);
   ostr << endl
        << "  ";
-  for (int x = 0; x < XSize; x++)
-    ostr << setw(1) << x << ' ';
+  for (int x = 0; x < XSize; x++) ostr << setw(1) << x << ' ';
   ostr << "  " << endl;
   for (int y = YSize - 1; y >= 0; y--) {
     ostr << setw(1) << y << ' ';
@@ -374,8 +356,7 @@ void BATTLESHIP::DisplayState(const STATE &state, ostream &ostr) const {
     ostr << setw(1) << y << endl;
   }
   ostr << "  ";
-  for (int x = 0; x < XSize; x++)
-    ostr << setw(1) << x << ' ';
+  for (int x = 0; x < XSize; x++) ostr << setw(1) << x << ' ';
   ostr << "  " << endl;
   ostr << "NumRemaining = " << bsstate.NumRemaining << endl;
 }
@@ -393,21 +374,18 @@ void BATTLESHIP::DisplayAction(int action, ostream &ostr) const {
 
   ostr << endl
        << "  ";
-  for (int x = 0; x < XSize; x++)
-    ostr << setw(1) << x << ' ';
+  for (int x = 0; x < XSize; x++) ostr << setw(1) << x << ' ';
   ostr << "  " << endl;
   for (int y = YSize - 1; y >= 0; y--) {
     ostr << setw(1) << y << ' ';
     for (int x = 0; x < XSize; x++) {
       char c = ' ';
-      if (actionPos == COORD(x, y))
-        c = '@';
+      if (actionPos == COORD(x, y)) c = '@';
       ostr << c << ' ';
     }
     ostr << setw(1) << y << endl;
   }
   ostr << "  ";
-  for (int x = 0; x < XSize; x++)
-    ostr << setw(1) << x << ' ';
+  for (int x = 0; x < XSize; x++) ostr << setw(1) << x << ' ';
   ostr << "  " << endl;
 }

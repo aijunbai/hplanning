@@ -30,14 +30,14 @@ struct COORD {
   COORD operator*(int mul) const { return COORD(X * mul, Y * mul); }
 
   enum {
-    E_NORTH,     // 0
-    E_EAST,      // 1
-    E_SOUTH,     // 2
-    E_WEST,      // 3
-    E_NORTHEAST, // 4
-    E_SOUTHEAST, // 5
-    E_SOUTHWEST, // 6
-    E_NORTHWEST  // 7
+    E_NORTH,      // 0
+    E_EAST,       // 1
+    E_SOUTH,      // 2
+    E_WEST,       // 3
+    E_NORTHEAST,  // 4
+    E_SOUTHEAST,  // 5
+    E_SOUTHWEST,  // 6
+    E_NORTHWEST   // 7
   };
 
   friend std::ostream &operator<<(std::ostream &os, const COORD &o) {
@@ -85,17 +85,17 @@ inline int ManhattanDistance(const COORD &lhs, const COORD &rhs) {
 inline int DirectionalDistance(const COORD &lhs, const COORD &rhs,
                                int direction) {
   switch (direction) {
-  case COORD::E_NORTH:
-    return rhs.Y - lhs.Y;
-  case COORD::E_EAST:
-    return rhs.X - lhs.X;
-  case COORD::E_SOUTH:
-    return lhs.Y - rhs.Y;
-  case COORD::E_WEST:
-    return lhs.X - rhs.X;
-  default:
-    assert(false);
-    return 0;
+    case COORD::E_NORTH:
+      return rhs.Y - lhs.Y;
+    case COORD::E_EAST:
+      return rhs.X - lhs.X;
+    case COORD::E_SOUTH:
+      return lhs.Y - rhs.Y;
+    case COORD::E_WEST:
+      return lhs.X - rhs.X;
+    default:
+      assert(false);
+      return 0;
   }
 }
 };
@@ -105,4 +105,4 @@ inline std::ostream &operator<<(std::ostream &ostr, COORD &coord) {
   return ostr;
 }
 
-#endif // COORD_H
+#endif  // COORD_H

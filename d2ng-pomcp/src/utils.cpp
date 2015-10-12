@@ -10,8 +10,7 @@ void UnitTest() {
 
   int n[6] = {0};
   for (int i = 0; i < 10000; i++)
-    for (int j = 1; j < 6; j++)
-      n[j] += (SimpleRNG::ins().Random(j) == 0);
+    for (int j = 1; j < 6; j++) n[j] += (SimpleRNG::ins().Random(j) == 0);
   assert(Near(n[1], 10000, 0));
   assert(Near(n[2], 5000, 250));
   assert(Near(n[3], 3333, 250));
@@ -19,8 +18,7 @@ void UnitTest() {
   assert(Near(n[5], 2000, 250));
 
   int c = 0;
-  for (int i = 0; i < 10000; i++)
-    c += SimpleRNG::ins().Bernoulli(0.5);
+  for (int i = 0; i < 10000; i++) c += SimpleRNG::ins().Bernoulli(0.5);
   assert(Near(c, 5000, 250));
   assert(CheckFlag(5, 0));
   assert(!CheckFlag(5, 1));

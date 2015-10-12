@@ -9,7 +9,7 @@
 #include <boost/program_options.hpp>
 #include "distribution.h"
 
-#define MULTI_ROLLOUTS 1 // multi rollouts 个数，默认为 1
+#define MULTI_ROLLOUTS 1  // multi rollouts 个数，默认为 1
 #define MIXTURE_NORMAL 1
 #define SAMPLE_REWARD 1
 
@@ -45,11 +45,13 @@ inline void DumpDistribution(Generator gen, int samples, const char *file_name,
   }
 }
 
-template <typename _Tp> inline const _Tp &Max(const _Tp &x, const _Tp &y) {
+template <typename _Tp>
+inline const _Tp &Max(const _Tp &x, const _Tp &y) {
   return std::max(x, y);
 }
 
-template <typename _Tp> inline const _Tp &Min(const _Tp &x, const _Tp &y) {
+template <typename _Tp>
+inline const _Tp &Min(const _Tp &x, const _Tp &y) {
   return std::min(x, y);
 }
 
@@ -58,8 +60,9 @@ inline const _Tp &MinMax(const _Tp &min, const _Tp &x, const _Tp &max) {
   return Min(Max(min, x), max);
 }
 
-template <class COUNT> class VALUE {
-public:
+template <class COUNT>
+class VALUE {
+ public:
   VALUE() {
     Count = 0;
     Total = 0;
@@ -84,27 +87,27 @@ public:
 
   COUNT GetCount() const { return Count; }
 
-private:
+ private:
   COUNT Count;
   double Total;
 };
 
 class STATISTIC {
-public:
+ public:
   STATISTIC();
 
   ~STATISTIC() {}
 
   int GetCount() const;
-  double GetValue() const; // merge from VALUE
-  void Set(int count, double value); // merge from VALUE
+  double GetValue() const;            // merge from VALUE
+  void Set(int count, double value);  // merge from VALUE
 
   void Initialise();
   double GetTotal() const;
   double GetMean() const;
   double GetVariance() const;
-  double GetStdDev() const; //标准差
-  double GetStdErr() const; //标准误差（平均值的标准差）
+  double GetStdDev() const;  //标准差
+  double GetStdErr() const;  //标准误差（平均值的标准差）
   double GetMax() const;
   double GetMin() const;
 
@@ -120,10 +123,10 @@ public:
   void Print(const std::string &name, std::ostream &ostr) const;
   void Add(double val);
 
-private:
+ private:
   double Count;
-  double Mean;     //平均值
-  double Variance; //方差
+  double Mean;      //平均值
+  double Variance;  //方差
   double Min, Max;
 };
 
@@ -141,17 +144,14 @@ inline void STATISTIC::Add(double val) {
   int countOld = Count;
 
   ++Count;
-  assert(Count > 0); // overflow
+  assert(Count > 0);  // overflow
   Mean += (val - Mean) / Count;
   Variance = (countOld * (Variance + meanOld * meanOld) + val * val) / Count -
              Mean * Mean;
 
-  if (Variance < 0.0)
-    Variance = 0.0;
-  if (val > Max)
-    Max = val;
-  if (val < Min)
-    Min = val;
+  if (Variance < 0.0) Variance = 0.0;
+  if (val > Max) Max = val;
+  if (val < Min) Min = val;
 }
 
 inline void STATISTIC::Initialise() {
@@ -188,7 +188,7 @@ inline void STATISTIC::Print(const std::string &name,
 }
 
 class UniformGenerator {
-public:
+ public:
   UniformGenerator(double low, double high) : mLow(low), mHigh(high) {}
 
   double operator()() { return SimpleRNG::ins().GetUniform(mLow, mHigh); }
@@ -198,7 +198,7 @@ public:
 };
 
 class NormalGammaGenerator {
-public:
+ public:
   NormalGammaGenerator(double mu, double lambda, double alpha, double beta)
       : Mu(mu), Lambda(lambda), Alpha(alpha), Beta(beta) {}
 
@@ -210,7 +210,7 @@ public:
     return m;
   }
 
-private:
+ private:
   const double Mu;
   const double Lambda;
   const double Alpha;
@@ -218,7 +218,7 @@ private:
 };
 
 class BetaInfo {
-public:
+ public:
   BetaInfo() { Initialise(); }
 
   ~BetaInfo() {}
@@ -236,7 +236,7 @@ public:
     }
   }
 
-  void Add(double value) { // add a new sample
+  void Add(double value) {  // add a new sample
     double prob = (value - MIN) / (MAX - MIN);
 
     if (prob <= 0.0) {
@@ -246,7 +246,7 @@ public:
     } else {
       double trial = SimpleRNG::ins().GetUniform();
 
-      if (trial < prob) { // sucess
+      if (trial < prob) {  // sucess
         Alpha += 1.0;
       } else {
         Beta += 1.0;
@@ -257,7 +257,7 @@ public:
   double GetExpectation() const { return ThompsonSampling(false); }
 
   double ThompsonSampling(bool sampling = true)
-      const { // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
+      const {  // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
     if (sampling) {
       double x = SimpleRNG::ins().GetGamma(Alpha);
       double y = SimpleRNG::ins().GetGamma(Beta);
@@ -279,7 +279,7 @@ public:
     MAX = max;
   }
 
-private:
+ private:
   static double MIN;
   static double MAX;
   static double ALPHA;
@@ -290,7 +290,7 @@ private:
 };
 
 class NormalGammaInfo {
-public:
+ public:
   NormalGammaInfo() : Mu(0.0), Lambda(0.0), Alpha(ALPHA), Beta(BETA) {
     Initialise();
   }
@@ -321,7 +321,7 @@ public:
     Beta = BETA;
   }
 
-  void Add(const std::vector<double> &values) { // add a new sample
+  void Add(const std::vector<double> &values) {  // add a new sample
     STATISTIC samples;
     for (uint i = 0; i < values.size(); ++i) {
       samples.Add(values[i]);
@@ -344,7 +344,7 @@ public:
   }
 
   double ThompsonSampling(bool sampling = true)
-      const { // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
+      const {  // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
     return sampling ? NormalGammaGenerator(Mu, Lambda, Alpha, Beta)() : Mu;
   }
 
@@ -359,7 +359,7 @@ public:
 
   static void SetBETA(double beta) { BETA = beta; }
 
-private:
+ private:
   double Mu;
   double Lambda;
   double Alpha;
@@ -369,8 +369,9 @@ private:
   static double BETA;
 };
 
-template <class T, class H> class DirichletInfo {
-public:
+template <class T, class H>
+class DirichletInfo {
+ public:
   const DirichletInfo<T, H> &operator=(const DirichletInfo<T, H> &o) {
     Alpha = o.Alpha;
 
@@ -393,9 +394,9 @@ public:
     }
   }
 
-  const std::vector<std::pair<T, double>> &
-  ThompsonSampling(bool sampling = true)
-      const { // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
+  const std::vector<std::pair<T, double>> &ThompsonSampling(
+      bool sampling = true)
+      const {  // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
     outcomes_.clear();
 
     double sum = 0.0;
@@ -431,7 +432,7 @@ public:
     ostr << "]";
   }
 
-private:
+ private:
   mutable H Alpha;
   mutable std::vector<std::pair<T, double>> outcomes_;
 };
@@ -443,4 +444,4 @@ class DirichletInfo_POMCP
 class NormalGammaInfo_POMCP
     : public boost::unordered_map<size_t, NormalGammaInfo> {};
 
-#endif // STATISTIC
+#endif  // STATISTIC

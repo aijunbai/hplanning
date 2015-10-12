@@ -4,7 +4,7 @@
 #include "simulator.h"
 
 class TEST_STATE : public STATE {
-public:
+ public:
   int Depth;
 
   TEST_STATE() : Depth(0) {}
@@ -25,7 +25,7 @@ public:
 };
 
 class TEST_SIMULATOR : public SIMULATOR {
-public:
+ public:
   TEST_SIMULATOR(int actions, int observations, int maxDepth)
       : SIMULATOR(actions, observations), MaxDepth(maxDepth) {}
 
@@ -38,8 +38,8 @@ public:
   double OptimalValue() const;
   double MeanValue() const;
 
-private:
+ private:
   int MaxDepth;
 };
 
-#endif // TEST_SIMULATOR_H
+#endif  // TEST_SIMULATOR_H

@@ -4,8 +4,9 @@
 #include "coord.h"
 #include "distribution.h"
 
-template <class T> class GRID {
-public:
+template <class T>
+class GRID {
+ public:
   GRID(int xsize = 0, int ysize = 0) : XSize(xsize), YSize(ysize) {
     Grid.resize(xsize * ysize);
   }
@@ -64,34 +65,31 @@ public:
   int DistToEdge(const COORD &coord, int direction) {
     assert(Inside(coord));
     switch (direction) {
-    case COORD::E_NORTH:
-      return YSize - 1 - coord.Y;
-    case COORD::E_EAST:
-      return XSize - 1 - coord.X;
-    case COORD::E_SOUTH:
-      return coord.Y;
-    case COORD::E_WEST:
-      return coord.X;
-    default:
-      assert(false);
-      return -1;
+      case COORD::E_NORTH:
+        return YSize - 1 - coord.Y;
+      case COORD::E_EAST:
+        return XSize - 1 - coord.X;
+      case COORD::E_SOUTH:
+        return coord.Y;
+      case COORD::E_WEST:
+        return coord.X;
+      default:
+        assert(false);
+        return -1;
     }
   }
 
   void SetAllValues(const T &value) {
     for (int x = 0; x < XSize; x++)
-      for (int y = 0; y < YSize; y++)
-        Grid[Index(x, y)] = value;
+      for (int y = 0; y < YSize; y++) Grid[Index(x, y)] = value;
   }
 
   void SetRow(int y, T *values) {
-    for (int x = 0; x < XSize; x++)
-      Grid[Index(x, y)] = values[x];
+    for (int x = 0; x < XSize; x++) Grid[Index(x, y)] = values[x];
   }
 
   void SetCol(int x, T *values) {
-    for (int y = 0; y < YSize; y++)
-      Grid[Index(x, y)] = values[y];
+    for (int y = 0; y < YSize; y++) Grid[Index(x, y)] = values[y];
   }
 
   COORD Coord(int index) const {
@@ -104,12 +102,13 @@ public:
                  SimpleRNG::ins().Random(YSize));
   }
 
-public:
+ public:
   int XSize, YSize;
   std::vector<T> Grid;
 };
 
-template <class T> inline std::size_t hash_value(const GRID<T> &v) {
+template <class T>
+inline std::size_t hash_value(const GRID<T> &v) {
   using boost::hash_value;
   using boost::hash_combine;
 
@@ -126,4 +125,4 @@ template <class T> inline std::size_t hash_value(const GRID<T> &v) {
   return seed;
 }
 
-#endif // GRID_H
+#endif  // GRID_H

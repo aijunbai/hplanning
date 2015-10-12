@@ -4,7 +4,7 @@
 #include "simulator.h"
 
 class NETWORK_STATE : public STATE {
-public:
+ public:
   std::vector<bool> Machines;
 
   virtual size_t hash() const {
@@ -23,7 +23,7 @@ public:
 };
 
 class NETWORK : public SIMULATOR {
-public:
+ public:
   enum { E_CYCLE, E_3LEGS };
 
   NETWORK(int numMachines, int ntype);
@@ -45,7 +45,7 @@ public:
                                   std::ostream &ostr) const;
   virtual void DisplayAction(int action, std::ostream &ostr) const;
 
-private:
+ private:
   void MakeRingNeighbours();
   void Make3LegsNeighbours();
 
@@ -56,4 +56,4 @@ private:
   mutable MEMORY_POOL<NETWORK_STATE> MemoryPool;
 };
 
-#endif // NETWORK_H
+#endif  // NETWORK_H

@@ -6,11 +6,22 @@ using namespace std;
 using namespace UTILS;
 
 POCMAN::POCMAN(int xsize, int ysize)
-    : Maze(xsize, ysize), NumGhosts(-1), PassageY(-1), GhostRange(-1),
-      SmellRange(1), HearRange(2), FoodProb(0.5), ChaseProb(0.75),
-      DefensiveSlip(0.25), RewardClearLevel(+1000), RewardDefault(-1),
-      RewardDie(-100), RewardEatFood(+10), RewardEatGhost(+25),
-      RewardHitWall(-25), PowerNumSteps(15) {
+    : Maze(xsize, ysize),
+      NumGhosts(-1),
+      PassageY(-1),
+      GhostRange(-1),
+      SmellRange(1),
+      HearRange(2),
+      FoodProb(0.5),
+      ChaseProb(0.75),
+      DefensiveSlip(0.25),
+      RewardClearLevel(+1000),
+      RewardDefault(-1),
+      RewardDie(-100),
+      RewardEatFood(+10),
+      RewardEatGhost(+25),
+      RewardHitWall(-25),
+      PowerNumSteps(15) {
   NumActions = 4;
   NumObservations = 1 << 10;
   // See ghost N
@@ -37,8 +48,7 @@ MICRO_POCMAN::MICRO_POCMAN() : POCMAN(7, 7) {
                     {3, 3, 0, 3, 0, 3, 3},
                     {3, 3, 3, 3, 3, 3, 3}};
 
-  for (int x = 0; x < 7; x++)
-    Maze.SetCol(x, maze[x]);
+  for (int x = 0; x < 7; x++) Maze.SetCol(x, maze[x]);
   NumGhosts = 1;
   GhostRange = 3;
   PocmanHome = COORD(3, 0);
@@ -57,8 +67,7 @@ MINI_POCMAN::MINI_POCMAN() : POCMAN(10, 10) {
                       {3, 0, 0, 3, 0, 0, 3, 0, 0, 3},
                       {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}};
 
-  for (int x = 0; x < 10; x++)
-    Maze.SetCol(x, maze[x]);
+  for (int x = 0; x < 10; x++) Maze.SetCol(x, maze[x]);
 
   NumGhosts = 3;
   GhostRange = 4;
@@ -126,8 +135,7 @@ FULL_POCMAN::FULL_POCMAN() : POCMAN(17, 19) {
                       {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}};
 
   // Transpose to rows
-  for (int x = 0; x < 19; x++)
-    Maze.SetRow(x, maze[18 - x]);
+  for (int x = 0; x < 19; x++) Maze.SetRow(x, maze[18 - x]);
 
   NumGhosts = 4;
   GhostRange = 6;
@@ -196,16 +204,13 @@ bool POCMAN::Step(STATE &state, int action, int &observation,
   else
     reward += RewardHitWall;
 
-  if (pocstate.PowerSteps > 0)
-    pocstate.PowerSteps--;
+  if (pocstate.PowerSteps > 0) pocstate.PowerSteps--;
 
   int hitGhost = -1;
   for (int g = 0; g < NumGhosts; g++) {
-    if (pocstate.GhostPos[g] == pocstate.PocmanPos)
-      hitGhost = g;
+    if (pocstate.GhostPos[g] == pocstate.PocmanPos) hitGhost = g;
     MoveGhost(pocstate, g);
-    if (pocstate.GhostPos[g] == pocstate.PocmanPos)
-      hitGhost = g;
+    if (pocstate.GhostPos[g] == pocstate.PocmanPos) hitGhost = g;
   }
 
   if (hitGhost >= 0) {
@@ -240,16 +245,12 @@ bool POCMAN::Step(STATE &state, int action, int &observation,
 int POCMAN::MakeObservations(const POCMAN_STATE &pocstate) const {
   int observation = 0;
   for (int d = 0; d < 4; d++) {
-    if (SeeGhost(pocstate, d) >= 0)
-      SetFlag(observation, d);
+    if (SeeGhost(pocstate, d) >= 0) SetFlag(observation, d);
     COORD wpos = NextPos(pocstate.PocmanPos, d);
-    if (wpos.Valid() && Passable(wpos))
-      SetFlag(observation, d + 4);
+    if (wpos.Valid() && Passable(wpos)) SetFlag(observation, d + 4);
   }
-  if (SmellFood(pocstate))
-    SetFlag(observation, 8);
-  if (HearGhost(pocstate))
-    SetFlag(observation, 9);
+  if (SmellFood(pocstate)) SetFlag(observation, 8);
+  if (HearGhost(pocstate)) SetFlag(observation, 9);
   return observation;
 }
 
@@ -258,7 +259,7 @@ bool POCMAN::LocalMove(STATE &state, const HISTORY &history, int,
   POCMAN_STATE &pocstate = safe_cast<POCMAN_STATE &>(state);
 
   int numGhosts =
-      SimpleRNG::ins().Random(1, 3); // Change 1 or 2 ghosts at a time
+      SimpleRNG::ins().Random(1, 3);  // Change 1 or 2 ghosts at a time
   for (int i = 0; i < numGhosts; ++i) {
     int g = SimpleRNG::ins().Random(NumGhosts);
     pocstate.GhostPos[g] = COORD(SimpleRNG::ins().Random(Maze.GetXSize()),
@@ -280,8 +281,7 @@ bool POCMAN::LocalMove(STATE &state, const HISTORY &history, int,
   }
 
   // Just check the last time-step, don't check for full consistency
-  if (history.Size() == 0)
-    return true;
+  if (history.Size() == 0) return true;
   int observation = MakeObservations(pocstate);
   return history.Back().Observation == observation;
 }
@@ -391,8 +391,7 @@ int POCMAN::SeeGhost(const POCMAN_STATE &pocstate, int action) const {
   COORD eyepos = pocstate.PocmanPos + coord::Compass[action];
   while (Maze.Inside(eyepos) && Passable(eyepos)) {
     for (int g = 0; g < NumGhosts; g++)
-      if (pocstate.GhostPos[g] == eyepos)
-        return g;
+      if (pocstate.GhostPos[g] == eyepos) return g;
     eyepos += coord::Compass[action];
   }
   return -1;
@@ -423,8 +422,7 @@ void POCMAN::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
   // Don't move into walls
   for (int a = 0; a < 4; ++a) {
     COORD newpos = NextPos(pocstate.PocmanPos, a);
-    if (newpos.Valid())
-      legal.push_back(a);
+    if (newpos.Valid()) legal.push_back(a);
   }
 }
 
@@ -438,8 +436,7 @@ void POCMAN::GeneratePreferred(const STATE &state, const HISTORY &history,
     // If power pill and can see a ghost then chase it
     if (pocstate.PowerSteps > 0 && ((observation & 15) != 0)) {
       for (int a = 0; a < 4; ++a)
-        if (CheckFlag(observation, a))
-          actions.push_back(a);
+        if (CheckFlag(observation, a)) actions.push_back(a);
     }
 
     // Otherwise avoid observed ghosts and avoid changing directions
@@ -462,8 +459,7 @@ void POCMAN::DisplayBeliefs(const BELIEF_STATE &beliefState,
     const POCMAN_STATE *pocstate =
         safe_cast<const POCMAN_STATE *>(beliefState.GetSample(i));
 
-    for (int g = 0; g < NumGhosts; g++)
-      counts(pocstate->GhostPos[g])++;
+    for (int g = 0; g < NumGhosts; g++) counts(pocstate->GhostPos[g])++;
   }
 
   for (int y = Maze.GetYSize() - 1; y >= 0; y--) {
@@ -479,8 +475,7 @@ void POCMAN::DisplayBeliefs(const BELIEF_STATE &beliefState,
 void POCMAN::DisplayState(const STATE &state, ostream &ostr) const {
   const POCMAN_STATE &pocstate = safe_cast<const POCMAN_STATE &>(state);
   ostr << endl;
-  for (int x = 0; x < Maze.GetXSize() + 2; x++)
-    ostr << "# ";
+  for (int x = 0; x < Maze.GetXSize() + 2; x++) ostr << "# ";
   ostr << endl;
   for (int y = Maze.GetYSize() - 1; y >= 0; y--) {
     if (y == PassageY)
@@ -491,17 +486,14 @@ void POCMAN::DisplayState(const STATE &state, ostream &ostr) const {
       COORD pos(x, y);
       int index = Maze.Index(pos);
       char c = ' ';
-      if (!Passable(pos))
-        c = '#';
-      if (pocstate.Food[index])
-        c = CheckFlag(Maze(x, y), E_POWER) ? '+' : '.';
+      if (!Passable(pos)) c = '#';
+      if (pocstate.Food[index]) c = CheckFlag(Maze(x, y), E_POWER) ? '+' : '.';
       for (int g = 0; g < NumGhosts; g++)
         if (pos == pocstate.GhostPos[g])
           c = (pos == pocstate.PocmanPos
                    ? 'O'
                    : (pocstate.PowerSteps == 0 ? 'A' + g : 'a' + g));
-      if (pos == pocstate.PocmanPos)
-        c = pocstate.PowerSteps > 0 ? '!' : '@';
+      if (pos == pocstate.PocmanPos) c = pocstate.PowerSteps > 0 ? '!' : '@';
       ostr << c << ' ';
     }
     if (y == PassageY)
@@ -509,8 +501,7 @@ void POCMAN::DisplayState(const STATE &state, ostream &ostr) const {
     else
       ostr << "#" << endl;
   }
-  for (int x = 0; x < Maze.GetXSize() + 2; x++)
-    ostr << "# ";
+  for (int x = 0; x < Maze.GetXSize() + 2; x++) ostr << "# ";
   ostr << endl;
 }
 
@@ -563,17 +554,14 @@ void POCMAN::DisplayObservation(const STATE &state, int observation,
   }
 
   ostr << endl;
-  for (int x = 0; x < Maze.GetXSize() + 2; x++)
-    ostr << "# ";
+  for (int x = 0; x < Maze.GetXSize() + 2; x++) ostr << "# ";
   ostr << endl;
   for (int y = Maze.GetYSize() - 1; y >= 0; y--) {
     ostr << "# ";
-    for (int x = 0; x < Maze.GetXSize(); x++)
-      ostr << obs(x, y) << ' ';
+    for (int x = 0; x < Maze.GetXSize(); x++) ostr << obs(x, y) << ' ';
     ostr << "#" << endl;
   }
-  for (int x = 0; x < Maze.GetXSize() + 2; x++)
-    ostr << "# ";
+  for (int x = 0; x < Maze.GetXSize() + 2; x++) ostr << "# ";
   ostr << endl;
 }
 

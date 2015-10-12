@@ -84,9 +84,9 @@ class QNODE {
 
 class VNODE : public MEMORY_OBJECT {
  public:
-  void Initialise();
+  void Initialise(size_t belief_hash);
 
-  static VNODE *Create();
+  static VNODE *Create(size_t belief_hash);
   static void Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore = 0);
   static void FreeAll();
 
@@ -131,11 +131,15 @@ class VNODE : public MEMORY_OBJECT {
   }
 
   static MEMORY_POOL<VNODE> VNodePool;
+  static boost::unordered_map<size_t, VNODE*> BeliefPool;
   static int NumChildren;
   static STATISTIC PARTICLES_STAT;
   static STATISTIC HASH_STAT;
 
-  static int GetNumAllocated() { return VNodePool.GetNumAllocated(); }
+  static int GetNumAllocated() {
+    assert(VNodePool.GetNumAllocated() == int(BeliefPool.size()));
+    return (VNodePool.GetNumAllocated() + BeliefPool.size()) / 2;
+  }
 
  private:
   void Assertion(int c) const {
@@ -145,6 +149,7 @@ class VNODE : public MEMORY_OBJECT {
   NormalGammaInfo_POMCP CumulativeRewards;
   std::vector<QNODE> Children;
   BELIEF_STATE BeliefState;
+  size_t BeliefHash;
 };
 
 #endif  // NODE_H

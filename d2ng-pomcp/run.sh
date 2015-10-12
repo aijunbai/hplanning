@@ -14,11 +14,12 @@ MAXPOWER2=10
 SEEDING=0
 TIMEOUT=3600
 TIMEOUTPERACTION=-1
+MEMORYSIZE=-1
 
 OUTPUT="output-$$.txt"
 LOG="log-$$.txt"
 
-while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:" OPTION; do
+while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:m:" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -35,6 +36,7 @@ while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:" OPTION; do
         N) MINPOWER2=$OPTARG; MAXPOWER2=$OPTARG ;;
         h) TIMEOUT=`expr $OPTARG \* 3600`;;
         a) TIMEOUTPERACTION=$OPTARG ;;
+        m) MEMORYSIZE=$OPTARG ;;
     esac
 done
 
@@ -58,5 +60,6 @@ run ./d2ng-pomcp --outputfile $OUTPUT \
             --runs $RUNS \
             --seeding $SEEDING \
             --timeout $TIMEOUT \
-            --timeoutperaction $TIMEOUTPERACTION
+            --timeoutperaction $TIMEOUTPERACTION \
+            --memorysize $MEMORYSIZE
 

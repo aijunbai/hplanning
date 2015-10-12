@@ -22,7 +22,8 @@ MCTS::PARAMS::PARAMS()
       RaveDiscount(1.0),
       RaveConstant(0.01),
       ReuseTree(false),
-      TimeOutPerAction(-1) {}
+      TimeOutPerAction(-1),
+      MemorySize(-1) {}
 
 MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
     : Simulator(simulator), Params(params), TreeDepth(0) {
@@ -31,7 +32,7 @@ MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
 
   STATE *state = Simulator.CreateStartState();  //可能的开始状态
 
-  Root = ExpandNode(state);  //生成根节点并初始化
+  Root = ExpandNode(state, History);  //生成根节点并初始化
   Root->Beliefs().AddSample(state);
 
   for (int i = 1; i < Params.NumStartStates; i++) {
@@ -66,9 +67,9 @@ MCTS::~MCTS() {
 }
 
 bool MCTS::Update(int action, int observation, STATE &state) {
-  History.Add(action, observation);  //更新历史
   VNODE::Free(Root, Simulator);
-  Root = ExpandNode(&state);
+  History.Add(action, observation, Params.MemorySize);  //更新历史
+  Root = ExpandNode(&state, History);
   AddSample(Root, state);
 
   if (Params.Verbose >= 1) Simulator.DisplayBeliefs(Root->Beliefs(), cout);
@@ -77,7 +78,7 @@ bool MCTS::Update(int action, int observation, STATE &state) {
 }
 
 bool MCTS::Update(int action, int observation) {
-  History.Add(action, observation);  //更新历史
+  History.Add(action, observation, Params.MemorySize);  //更新历史
   BELIEF_STATE beliefs;
 
   // Find matching vnode from the rest of the tree
@@ -115,10 +116,7 @@ bool MCTS::Update(int action, int observation) {
   // Find a state to initialise prior (only requires fully observed state)
   const STATE *state = 0;
   if (vnode && !vnode->Beliefs().Empty())
-    state =
-        vnode->Beliefs()
-            .GetSample();  //得到一个*可能*的状态，主要目的是用来初始化先验信息
-  // XXX
+    state = vnode->Beliefs().GetSample();  //得到一个*可能*的状态，主要目的是用来初始化先验信息
   else
     state = beliefs.GetSample();
 
@@ -131,14 +129,12 @@ bool MCTS::Update(int action, int observation) {
 
     Root = vnode;
     Root->Beliefs().Free(Simulator);
-  } else {
-    // Delete old tree and create new root
+  } else { // Delete old tree and create new root
     VNODE::Free(Root, Simulator);
-    Root = ExpandNode(state);
+    Root = ExpandNode(state, History);
   }
 
-  Root->Beliefs() =
-      beliefs;  //这里的 belief 是在搜索过程中产生的，没有显式进行 bayes 更新
+  Root->Beliefs() = beliefs;  //这里的 belief 是在搜索过程中产生的，没有显式进行 bayes 更新
 
   return true;
 }
@@ -151,31 +147,19 @@ int MCTS::SelectAction() {
 void MCTS::SearchImp() {
   int historyDepth = History.Size();
 
-  STATE *state = Root->Beliefs().CreateSample(
-      Simulator);  //得到一个可能的状态样本 -- 只在根节点采样 Root Sampling
+  STATE *state = Root->Beliefs().CreateSample(Simulator);  // 得到一个可能的状态样本 -- 只在根节点采样 Root Sampling
   Simulator.Validate(*state);
   Status.Phase = SIMULATOR::STATUS::TREE;
-
-  //        if (Params.Verbose >= 2)
-  //        {
-  //            cout << "Starting simulation" << endl;
-  //            Simulator.DisplayState(*state, cout);
-  //        }
-
   TreeDepth = 0;
   PeakTreeDepth = 0;
 
-  std::vector<double> totalReward =
-      SimulateV(*state, Root);  //通过 Monte Carlo 方法得到 V 值
+  std::vector<double> totalReward = SimulateV(*state, Root);  //通过 Monte Carlo 方法得到 V 值
 
   for (uint i = 0; i < totalReward.size(); ++i) {
     StatTotalReward.Add(totalReward[i]);
   }
 
   StatTreeDepth.Add(PeakTreeDepth);
-
-  //        if (Params.Verbose >= 2)
-  //            cout << "Total reward = " << totalReward << endl;
   if (Params.Verbose >= 3) DisplayValue(4, cout);
 
   Simulator.FreeState(state);
@@ -208,6 +192,7 @@ void MCTS::Search() {
   } else {
     for (int i = 0; i < Params.NumSimulations; i++)  //总共仿真（迭代）次数
     {
+      cerr << "Iteration " << i << " VNODE::Size " << VNODE::GetNumAllocated() << endl;
       SearchImp();
     }
   }
@@ -258,7 +243,7 @@ std::vector<double> MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
   qnode.Update(observation, immediateReward, 1);  //记录一次转移
 
   assert(observation >= 0 && observation < Simulator.GetNumObservations());
-  History.Add(action, observation);
+  History.Add(action, observation, Params.MemorySize);
 
   if (Params.Verbose >= 3) {
     Simulator.DisplayAction(action, cout);
@@ -275,8 +260,7 @@ std::vector<double> MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
     if (vnode) {  //已经在树上
       delayedReward = SimulateV(state, vnode);
     } else {                       //叶子节点
-      vnode = ExpandNode(&state);  //构造一个新节点 -- create new node according
-      // to history based hash
+      vnode = ExpandNode(&state, History);  //构造一个新节点
 
       for (int i = 0; i < Rollouts; ++i) {
         STATE *copy = Simulator.Copy(state);
@@ -290,7 +274,7 @@ std::vector<double> MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
     TreeDepth--;
   } else {
     if (!vnode) {
-      vnode = ExpandNode(&state);  //终端节点
+      vnode = ExpandNode(&state, History);  //终端节点
     }
 
     vnode->GetCumulativeReward(state).Add(std::vector<double>(Rollouts, 0.0));
@@ -308,18 +292,9 @@ std::vector<double> MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
   return delayedReward;
 }
 
-VNODE *MCTS::ExpandNode(const STATE *state) {
-  VNODE *vnode = VNODE::Create();
-
-  Simulator.Prior(state, History, vnode, Status);  //设置先验信息
-
-  //    if (Params.Verbose >= 2)
-  //    {
-  //        cout << "Expanding node: ";
-  //        History.Display(cout);
-  //        cout << endl;
-  //    }
-
+VNODE *MCTS::ExpandNode(const STATE *state, HISTORY &history) {
+  VNODE *vnode = VNODE::Create(history.Hash());
+  Simulator.Prior(state, history, vnode, Status);  //设置先验信息
   return vnode;
 }
 
@@ -420,8 +395,7 @@ double MCTS::QValue(QNODE &qnode, bool sampling) const  //改成多层调用？
   return qvalue;
 }
 
-double MCTS::Rollout(STATE &state)  //从 state 出发随机选择动作 ——
-//理论上讲应该基于历史 rollout？XXX
+double MCTS::Rollout(STATE &state)  //从 state 出发随机选择动作
 {
   Status.Phase = SIMULATOR::STATUS::ROLLOUT;
   if (Params.Verbose >= 3) cout << "Starting rollout" << endl;
@@ -430,16 +404,14 @@ double MCTS::Rollout(STATE &state)  //从 state 出发随机选择动作 ——
   double discount = 1.0;
   bool terminal = false;
   int numSteps;
-  for (numSteps = 0; numSteps + TreeDepth < Params.MaxDepth && !terminal;
-       ++numSteps) {
+  for (numSteps = 0; numSteps + TreeDepth < Params.MaxDepth && !terminal; ++numSteps) {
     int observation;
     double reward;
 
-    int action = Simulator.SelectRandom(
-        state, History, Status);  //根据 knowledge level 随机选择动作
+    int action = Simulator.SelectRandom(state, History, Status);  //根据 knowledge level 随机选择动作
     terminal = Simulator.Step(state, action, observation,
                               reward);  //根据 state 和 action 进行一次模拟
-    History.Add(action, observation);
+    History.Add(action, observation, Params.MemorySize);
 
     if (Params.Verbose >= 4) {
       Simulator.DisplayAction(action, cout);

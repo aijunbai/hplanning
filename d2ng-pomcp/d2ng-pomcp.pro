@@ -9,10 +9,11 @@ INCLUDEPATH += . src
 INCLUDEPATH -= qt
 LIBS += -lboost_program_options
 CONFIG -= qt
-CONFIG -= debug
-CONFIG += release
 CONFIG += c++11
 QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
+
+CONFIG -= debug
+CONFIG += release
 
 # Input
 HEADERS += src/battleship.h \

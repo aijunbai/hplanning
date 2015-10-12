@@ -22,6 +22,7 @@ class MCTS {
     double RaveConstant;
     bool ReuseTree;
     double TimeOutPerAction;
+    int MemorySize;
   };
 
   MCTS(const SIMULATOR &simulator, const PARAMS &params);
@@ -70,7 +71,7 @@ class MCTS {
   int SelectRandom() const;
   std::vector<double> SimulateV(STATE &state, VNODE *vnode);
   std::vector<double> SimulateQ(STATE &state, QNODE &qnode, int action);
-  VNODE *ExpandNode(const STATE *state);
+  VNODE *ExpandNode(const STATE *state, HISTORY &history);
   void AddSample(VNODE *node, const STATE &state);
   void ParticleFilter(BELIEF_STATE &beliefs);
   void AddTransforms(BELIEF_STATE &beliefs);

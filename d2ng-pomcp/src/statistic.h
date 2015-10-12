@@ -343,8 +343,8 @@ class NormalGammaInfo {
     Beta = beta;
   }
 
-  double ThompsonSampling(bool sampling = true)
-      const {  // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
+  double ThompsonSampling(bool sampling = true) const {
+    // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
     return sampling ? NormalGammaGenerator(Mu, Lambda, Alpha, Beta)() : Mu;
   }
 

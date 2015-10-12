@@ -128,7 +128,7 @@ void EXPERIMENT::Run() {
         break;
       }
 
-      history.Add(action, observation);
+      history.Add(action, observation, SearchParams.MemorySize);
     }
   }
 

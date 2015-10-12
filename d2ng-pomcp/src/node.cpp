@@ -69,14 +69,16 @@ void QNODE::DisplayPolicy(HISTORY &history, int maxDepth, ostream &ostr) const {
 }
 
 MEMORY_POOL<VNODE> VNODE::VNodePool;
+boost::unordered_map<size_t, VNODE*> VNODE::BeliefPool;
 int VNODE::NumChildren = 0;
 STATISTIC VNODE::PARTICLES_STAT;
 STATISTIC VNODE::HASH_STAT;
 
-void VNODE::Initialise() {
+void VNODE::Initialise(size_t belief_hash) {
   assert(NumChildren);
   assert(BeliefState.Empty());
 
+  BeliefHash = belief_hash;
   Children.resize(VNODE::NumChildren);
   for (int action = 0; action < VNODE::NumChildren; action++)
     Children[action].Initialise();
@@ -84,17 +86,25 @@ void VNODE::Initialise() {
   CumulativeRewards.clear();
 }
 
-VNODE *VNODE::Create() {
-  VNODE *vnode = VNODE::VNodePool.Allocate();
-  vnode->Initialise();
-  return vnode;
+VNODE *VNODE::Create(size_t belief_hash) {
+  if (BeliefPool.count(belief_hash)) {
+    cerr << "existing... " << belief_hash << endl;
+    return BeliefPool[belief_hash];
+  }
+  else {
+    VNODE *vnode = VNODE::VNodePool.Allocate();
+    BeliefPool[belief_hash] = vnode;
+    vnode->Initialise(belief_hash);
+    return vnode;
+  }
 }
 
 void VNODE::Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore) {
-  if (root != ignore) {
+  if (root->IsAllocated() && root != ignore) {
     PARTICLES_STAT.Add(root->CumulativeRewards.size());
 
     root->BeliefState.Free(simulator);
+    VNODE::BeliefPool.erase(root->BeliefHash);
     VNODE::VNodePool.Free(root);
 
     for (int action = 0; action < VNODE::NumChildren; action++)
@@ -104,7 +114,7 @@ void VNODE::Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore) {
   }
 }
 
-void VNODE::FreeAll() { VNODE::VNodePool.DeleteAll(); }
+void VNODE::FreeAll() { VNODE::VNodePool.DeleteAll(); VNODE::BeliefPool.clear(); }
 
 void VNODE::SetPrior(int count, double value, bool applicable) {
   for (int action = 0; action < NumChildren; action++) {
@@ -118,7 +128,7 @@ void VNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
   if (history.Size() >= maxDepth) return;
 
   for (int action = 0; action < NumChildren; action++) {
-    history.Add(action);
+    history.Add(action, -1, -1);
     const QNODE &qnode = Children[action];
 
     if (qnode.Applicable()) {

@@ -137,8 +137,8 @@ void EXPERIMENT::Run() {
   Results.Time.Add(timer.elapsed());
   Results.UndiscountedReturn.Add(undiscountedReturn);
   Results.DiscountedReturn.Add(discountedReturn);
-  Results.ExploredNodes.Add(mcts.StatAvgTreeSize.GetMean());
-  Results.ExploredDepth.Add(mcts.StatAvgPeakTreeDepth.GetMean());
+  Results.ExploredNodes.Add(mcts.StatTreeSize.GetMean());
+  Results.ExploredDepth.Add(mcts.StatPeakTreeDepth.GetMean());
 
   cout << "\n#End of experiment:" << endl;
   cout << "#Discounted return = " << discountedReturn

@@ -40,8 +40,6 @@ class MCTS {
   const BELIEF_STATE &BeliefState() const { return Root->Beliefs(); }
   const HISTORY &GetHistory() const { return History; }
   const SIMULATOR::STATUS &GetStatus() const { return Status; }
-  void ClearStatistics();
-  void DisplayStatistics(std::ostream &ostr) const;
   void DisplayValue(int depth, std::ostream &ostr) const;
   void DisplayPolicy(int depth, std::ostream &ostr) const;
 
@@ -52,8 +50,9 @@ public:
   STATISTIC StatBeliefSize;     //统计每次 UCTSearch 开始时信念大小
   STATISTIC StatNumSimulation;  //统计 Any time 模式下每次 simulation 次数
 
-  STATISTIC StatAvgTreeSize;    //统计每次 UCTSearch 结束时树的大小
-  STATISTIC StatAvgPeakTreeDepth;
+  STATISTIC StatTreeSize;    //统计每次 UCTSearch 结束时树的大小
+  STATISTIC StatPeakTreeDepth;
+  STATISTIC StatRedundantNodes;
 
  protected:
   const SIMULATOR &Simulator;

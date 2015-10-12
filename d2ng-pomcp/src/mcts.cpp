@@ -42,8 +42,9 @@ MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
   }
 
   StatBeliefSize.Initialise();
-  StatAvgTreeSize.Initialise();
-  StatAvgPeakTreeDepth.Initialise();
+  StatTreeSize.Initialise();
+  StatPeakTreeDepth.Initialise();
+  StatRedundantNodes.Initialise();
 
   assert(VNODE::GetNumAllocated() == 1);
 
@@ -53,8 +54,9 @@ MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
 MCTS::~MCTS() {
   if (Params.Verbose >= 1) {
     StatBeliefSize.Print("#Belief begin size", cout);
-    StatAvgTreeSize.Print("#Avg tree size", cout);
-    StatAvgPeakTreeDepth.Print("#Avg peak tree depth", cout);
+    StatTreeSize.Print("#Tree size", cout);
+    StatPeakTreeDepth.Print("#Peak tree depth", cout);
+    StatRedundantNodes.Print("#Redundant nodes rate", cout);
     StatNumSimulation.Print("#Num simulations", cout);
   }
 
@@ -149,19 +151,18 @@ void MCTS::SearchImp() {
   Simulator.Validate(*state);
   Status.Phase = SIMULATOR::STATUS::TREE;
   TreeDepth = 0;
+  PeakTreeDepth = 0;
 
   SimulateV(*state, Root);  //通过 Monte Carlo 方法得到 V 值
-
   if (Params.Verbose >= 3) DisplayValue(4, cout);
 
+  StatPeakTreeDepth.Add(PeakTreeDepth);
   Simulator.FreeState(state);
   History.Truncate(historyDepth);
 }
 
 void MCTS::Search() {
   assert(Root);
-  ClearStatistics();
-
   StatBeliefSize.Add(Root->Beliefs().GetNumSamples());
 
   if (Params.TimeOutPerAction > 0.0) {  // Anytime mode
@@ -184,9 +185,7 @@ void MCTS::Search() {
     }
   }
 
-  StatAvgTreeSize.Add(VNODE::GetNumAllocated());
-  StatAvgPeakTreeDepth.Add(PeakTreeDepth);
-  DisplayStatistics(cout);
+  StatTreeSize.Add(VNODE::GetNumAllocated());
 }
 
 std::vector<double> MCTS::SimulateV(STATE &state, VNODE *vnode) {
@@ -242,9 +241,12 @@ std::vector<double> MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
   if (!vnode) {  // try to retrieve from belief pool
     size_t belief_hash = History.BeliefHash();
     if (VNODE::BeliefPool.count(belief_hash)) {
-
+      StatRedundantNodes.Add(1.0);
       vnode = VNODE::BeliefPool[belief_hash];
       assert(vnode->GetBeliefHash() == belief_hash);
+    }
+    else {
+      StatRedundantNodes.Add(0.0);
     }
   }
 
@@ -493,17 +495,6 @@ STATE *MCTS::CreateTransform() const {
 
   Simulator.FreeState(state);
   return 0;
-}
-
-void MCTS::ClearStatistics() {
-  PeakTreeDepth = 0;
-}
-
-void MCTS::DisplayStatistics(ostream &ostr) const {
-  if (Params.Verbose >= 2) {
-    ostr << "Values after " << Params.NumSimulations << " simulations" << endl;
-    DisplayValue(1, ostr);
-  }
 }
 
 void MCTS::DisplayValue(int depth, ostream &ostr) const {

@@ -6,7 +6,7 @@
 #include "statistic.h"
 #include <fstream>
 
-//----------------------------------------------------------------------------
+
 
 struct RESULTS {
   void Clear();
@@ -16,6 +16,8 @@ struct RESULTS {
   STATISTIC Reward;
   STATISTIC DiscountedReturn;
   STATISTIC UndiscountedReturn;
+  STATISTIC ExploredNodes;
+  STATISTIC ExploredDepth;
 };
 
 inline void RESULTS::Clear() {
@@ -24,9 +26,11 @@ inline void RESULTS::Clear() {
   Reward.Initialise();
   DiscountedReturn.Initialise();
   UndiscountedReturn.Initialise();
+  ExploredNodes.Initialise();
+  ExploredDepth.Initialise();
 }
 
-//----------------------------------------------------------------------------
+
 
 class EXPERIMENT {
  public:
@@ -62,6 +66,6 @@ class EXPERIMENT {
   std::ofstream OutputFile;
 };
 
-//----------------------------------------------------------------------------
+
 
 #endif  // EXPERIMENT_H

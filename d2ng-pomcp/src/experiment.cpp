@@ -27,7 +27,7 @@ void EXPERIMENT::Run() {
   boost::timer timer;
   BELIEF_STATE::SAMPLES_STAT.Initialise();
   VNODE::PARTICLES_STAT.Initialise();
-  VNODE::HASH_STAT.Initialise();
+  VNODE::Reward_HASH_STAT.Initialise();
 
 #if 1
   HierarchicalMCTS mcts(Simulator, SearchParams);
@@ -40,7 +40,7 @@ void EXPERIMENT::Run() {
   double discount = 1.0;
   bool terminal = false;
   bool outOfParticles = false;
-  int t;
+  int t = 0;
 
   STATE *state = Real.CreateStartState();  //真实的世界状态
 
@@ -137,6 +137,8 @@ void EXPERIMENT::Run() {
   Results.Time.Add(timer.elapsed());
   Results.UndiscountedReturn.Add(undiscountedReturn);
   Results.DiscountedReturn.Add(discountedReturn);
+  Results.ExploredNodes.Add(mcts.StatAvgTreeSize.GetMean());
+  Results.ExploredDepth.Add(mcts.StatAvgPeakTreeDepth.GetMean());
 
   cout << "\n#End of experiment:" << endl;
   cout << "#Discounted return = " << discountedReturn
@@ -146,7 +148,7 @@ void EXPERIMENT::Run() {
 
   BELIEF_STATE::SAMPLES_STAT.Print("#Belief size", cout);
   VNODE::PARTICLES_STAT.Print("#Particle size", cout);
-  VNODE::HASH_STAT.Print("#Hash hit", cout);
+  VNODE::Reward_HASH_STAT.Print("#Reward hash hit", cout);
 }
 
 void EXPERIMENT::MultiRun() {
@@ -168,9 +170,9 @@ void EXPERIMENT::MultiRun() {
 
 void EXPERIMENT::DiscountedReturn() {
   cout << "Main runs" << endl;
-  OutputFile << "#Simulations\tRuns\tUndiscounted return\tUndiscounted "
-                "error\tDiscounted return\tDiscounted "
-                "error\tTime\tTimePerAction\n";
+  OutputFile << "#Simulations\tRuns\tUndiscounted return\tUndiscounted error\t"
+                "Discounted return\tDiscounted error\t"
+                "Time\tTimePerAction\tExploredNodes\tExploredDepth\n";
 
   SearchParams.MaxDepth = Simulator.GetHorizon(
       ExpParams.Accuracy,
@@ -203,7 +205,9 @@ void EXPERIMENT::DiscountedReturn() {
          << "#Discounted return = " << Results.DiscountedReturn.GetMean()
          << " +- " << Results.DiscountedReturn.GetStdErr() << endl
          << "#Time = " << Results.Time.GetMean() << endl
-         << "#TimePerAction = " << Results.TimePerAction.GetMean() << endl;
+         << "#TimePerAction = " << Results.TimePerAction.GetMean() << endl
+         << "#ExploredNodes = " << Results.ExploredNodes.GetMean() << endl
+         << "#ExploredDepth = " << Results.ExploredDepth.GetMean() << endl;
 
     OutputFile << SearchParams.NumSimulations << "\t" << Results.Time.GetCount()
                << "\t" << Results.UndiscountedReturn.GetMean() << "\t"
@@ -211,6 +215,9 @@ void EXPERIMENT::DiscountedReturn() {
                << Results.DiscountedReturn.GetMean() << "\t"
                << Results.DiscountedReturn.GetStdErr() << "\t"
                << Results.Time.GetMean() << "\t"
-               << Results.TimePerAction.GetMean() << "\t" << endl;
+               << Results.TimePerAction.GetMean() << "\t"
+               << Results.ExploredNodes.GetMean() << "\t"
+               << Results.ExploredDepth.GetMean() << "\t"
+               << endl;
   }
 }

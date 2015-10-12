@@ -12,33 +12,33 @@ class HISTORY {
  public:
   struct ENTRY {
     ENTRY(int action = -1, int obs = -1)
-      : Action(action), Observation(obs), Hash(0) {}
+      : Action(action), Observation(obs), Memory(0) {}
 
     int Action;
     int Observation;
-    size_t Hash;
+    size_t Memory;
   };
 
   bool operator==(const HISTORY &history) const {
     assert(0);
-    return Hash() == history.Hash();
-
-//    if (history.History.size() != History.size()) return false;
-//    for (uint i = 0; i < History.size(); ++i)
-//      if (history.History[i].Action != History[i].Action ||
-//          history.History[i].Observation != History[i].Observation)
-//        return false;
-//    return true;
+    return BeliefHash() == history.BeliefHash();
   }
 
   void Add(int action, int obs, int memory_size) {
     History.push_back(ENTRY(action, obs));
-    History.back().Hash = hash_value(memory_size);
-//    PRINT_VALUE(Hash());
+    History.back().Memory = memory_hash(memory_size);
   }
 
-  size_t Hash() const {
-    return Size()? History.back().Hash: 0;
+  size_t BeliefHash() const {
+    using boost::hash_combine;
+    std::size_t seed = 0;
+
+    if (Size()) {
+      hash_combine(seed, History.back().Memory); //fixed memory hash
+      hash_combine(seed, Size()); //depth dependent
+    }
+
+    return seed;
   }
 
   void Pop() { History.pop_back(); }
@@ -78,23 +78,24 @@ class HISTORY {
   }
 
 private:
-  virtual size_t hash_value(int memory_size) const {
+  virtual size_t memory_hash(int memory_size) const {
     assert(Size() >= 1);
 
     using boost::hash_combine;
     std::size_t seed = 0;
 
     if (memory_size < 0) {  // use whole history
-      seed = Size() >= 2? History[Size() - 2].Hash: 0;
+      seed = Size() >= 2? History[Size() - 2].Memory: 0;
       hash_combine(seed, History[Size() - 1].Observation);
       hash_combine(seed, History[Size() - 1].Action);
     }
     else {
       int size = History.size();
       for (int i = size - 1; i >= 0 && i > size - 1 - memory_size; --i) {
-        hash_combine(seed, History[i].Action);
         hash_combine(seed, History[i].Observation);
-//        std::cerr << "hash " << size - 1 - i << " " << History[i].Action << " " << History[i].Observation << " " << seed << std::endl;
+        if (i + 1 < size) {
+          hash_combine(seed, History[i+1].Action);
+        }
       }
     }
 

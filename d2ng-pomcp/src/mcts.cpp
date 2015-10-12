@@ -42,9 +42,8 @@ MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
   }
 
   StatBeliefSize.Initialise();
-  StatBeginTreeSize.Initialise();
-  StatEndTreeSize.Initialise();
-  StatIncTreeSize.Initialise();
+  StatAvgTreeSize.Initialise();
+  StatAvgPeakTreeDepth.Initialise();
 
   assert(VNODE::GetNumAllocated() == 1);
 
@@ -54,9 +53,8 @@ MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
 MCTS::~MCTS() {
   if (Params.Verbose >= 1) {
     StatBeliefSize.Print("#Belief begin size", cout);
-    StatBeginTreeSize.Print("#Tree begin size", cout);
-    StatEndTreeSize.Print("#Tree end size", cout);
-    StatIncTreeSize.Print("#Tree inc size", cout);
+    StatAvgTreeSize.Print("#Avg tree size", cout);
+    StatAvgPeakTreeDepth.Print("#Avg peak tree depth", cout);
     StatNumSimulation.Print("#Num simulations", cout);
   }
 
@@ -151,15 +149,9 @@ void MCTS::SearchImp() {
   Simulator.Validate(*state);
   Status.Phase = SIMULATOR::STATUS::TREE;
   TreeDepth = 0;
-  PeakTreeDepth = 0;
 
-  std::vector<double> totalReward = SimulateV(*state, Root);  //通过 Monte Carlo 方法得到 V 值
+  SimulateV(*state, Root);  //通过 Monte Carlo 方法得到 V 值
 
-  for (uint i = 0; i < totalReward.size(); ++i) {
-    StatTotalReward.Add(totalReward[i]);
-  }
-
-  StatTreeDepth.Add(PeakTreeDepth);
   if (Params.Verbose >= 3) DisplayValue(4, cout);
 
   Simulator.FreeState(state);
@@ -168,13 +160,9 @@ void MCTS::SearchImp() {
 
 void MCTS::Search() {
   assert(Root);
-
   ClearStatistics();
 
-  int treeBeginSize = VNODE::GetNumAllocated();
-
   StatBeliefSize.Add(Root->Beliefs().GetNumSamples());
-  StatBeginTreeSize.Add(treeBeginSize);
 
   if (Params.TimeOutPerAction > 0.0) {  // Anytime mode
     boost::timer timer;
@@ -192,21 +180,19 @@ void MCTS::Search() {
   } else {
     for (int i = 0; i < Params.NumSimulations; i++)  //总共仿真（迭代）次数
     {
-      cerr << "Iteration " << i << " VNODE::Size " << VNODE::GetNumAllocated() << endl;
       SearchImp();
     }
   }
 
-  StatEndTreeSize.Add(VNODE::GetNumAllocated());
-  StatIncTreeSize.Add(VNODE::GetNumAllocated() - treeBeginSize);
-
+  StatAvgTreeSize.Add(VNODE::GetNumAllocated());
+  StatAvgPeakTreeDepth.Add(PeakTreeDepth);
   DisplayStatistics(cout);
 }
 
 std::vector<double> MCTS::SimulateV(STATE &state, VNODE *vnode) {
   int action = ThompsonSampling(vnode, true);
 
-  PeakTreeDepth = TreeDepth;
+  PeakTreeDepth = max(PeakTreeDepth, TreeDepth);
   if (TreeDepth >= Params.MaxDepth) {  // search horizon reached
     return std::vector<double>(Rollouts, 0.0);
   }
@@ -253,6 +239,14 @@ std::vector<double> MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
   }
 
   VNODE *&vnode = qnode.Child(observation);
+  if (!vnode) {  // try to retrieve from belief pool
+    size_t belief_hash = History.BeliefHash();
+    if (VNODE::BeliefPool.count(belief_hash)) {
+
+      vnode = VNODE::BeliefPool[belief_hash];
+      assert(vnode->GetBeliefHash() == belief_hash);
+    }
+  }
 
   if (!terminal) {
     TreeDepth++;
@@ -293,7 +287,7 @@ std::vector<double> MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
 }
 
 VNODE *MCTS::ExpandNode(const STATE *state, HISTORY &history) {
-  VNODE *vnode = VNODE::Create(history.Hash());
+  VNODE *vnode = VNODE::Create(history.BeliefHash());
   Simulator.Prior(state, history, vnode, Status);  //设置先验信息
   return vnode;
 }
@@ -301,12 +295,6 @@ VNODE *MCTS::ExpandNode(const STATE *state, HISTORY &history) {
 void MCTS::AddSample(VNODE *node, const STATE &state) {
   STATE *sample = Simulator.Copy(state);
   node->Beliefs().AddSample(sample);
-
-  //    if (Params.Verbose >= 2)
-  //    {
-  //        cout << "Adding sample:" << endl;
-  //        Simulator.DisplayState(*sample, cout);
-  //    }
 }
 
 int MCTS::ThompsonSampling(VNODE *vnode, bool sampling) const {
@@ -424,7 +412,6 @@ double MCTS::Rollout(STATE &state)  //从 state 出发随机选择动作
     discount *= Simulator.GetDiscount();
   }
 
-  StatRolloutDepth.Add(numSteps);
   if (Params.Verbose >= 3)
     cout << "Ending rollout after " << numSteps << " steps, with total reward "
          << totalReward << endl;
@@ -509,25 +496,13 @@ STATE *MCTS::CreateTransform() const {
 }
 
 void MCTS::ClearStatistics() {
-  StatTreeDepth.Initialise();
-  StatRolloutDepth.Initialise();
-  StatTotalReward.Initialise();
+  PeakTreeDepth = 0;
 }
 
 void MCTS::DisplayStatistics(ostream &ostr) const {
-  if (Params.Verbose >= 1) {
-    StatTreeDepth.Print("#Tree depth", ostr);
-    StatRolloutDepth.Print("#Rollout depth", ostr);
-    StatTotalReward.Print("#Total reward", ostr);
-  }
-
   if (Params.Verbose >= 2) {
-    //        ostr << "Policy after " << Params.NumSimulations << " simulations"
-    //        << endl;
-    //        DisplayPolicy(1, ostr);
     ostr << "Values after " << Params.NumSimulations << " simulations" << endl;
     DisplayValue(1, ostr);
-    //        Root->GetCumulativeReward().Print("Root", ostr);
   }
 }
 

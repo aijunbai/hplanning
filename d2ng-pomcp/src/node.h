@@ -134,7 +134,7 @@ class VNODE : public MEMORY_OBJECT {
   static boost::unordered_map<size_t, VNODE*> BeliefPool;
   static int NumChildren;
   static STATISTIC PARTICLES_STAT;
-  static STATISTIC HASH_STAT;
+  static STATISTIC Reward_HASH_STAT;
 
   static int GetNumAllocated() {
     assert(VNodePool.GetNumAllocated() == int(BeliefPool.size()));
@@ -150,6 +150,11 @@ class VNODE : public MEMORY_OBJECT {
   std::vector<QNODE> Children;
   BELIEF_STATE BeliefState;
   size_t BeliefHash;
+
+public:
+  size_t GetBeliefHash() const {
+    return BeliefHash;
+  }
 };
 
 #endif  // NODE_H

@@ -72,7 +72,7 @@ MEMORY_POOL<VNODE> VNODE::VNodePool;
 boost::unordered_map<size_t, VNODE*> VNODE::BeliefPool;
 int VNODE::NumChildren = 0;
 STATISTIC VNODE::PARTICLES_STAT;
-STATISTIC VNODE::HASH_STAT;
+STATISTIC VNODE::Reward_HASH_STAT;
 
 void VNODE::Initialise(size_t belief_hash) {
   assert(NumChildren);
@@ -88,7 +88,8 @@ void VNODE::Initialise(size_t belief_hash) {
 
 VNODE *VNODE::Create(size_t belief_hash) {
   if (BeliefPool.count(belief_hash)) {
-    cerr << "existing... " << belief_hash << endl;
+    assert(0);
+    cerr << "existing in create... " << belief_hash << endl;
     return BeliefPool[belief_hash];
   }
   else {
@@ -175,10 +176,10 @@ NormalGammaInfo &VNODE::GetCumulativeReward(const STATE &s) {
   NormalGammaInfo_POMCP::iterator it = CumulativeRewards.find(key);
 
   if (it != CumulativeRewards.end()) {
-    HASH_STAT.Add(1.0);
+    Reward_HASH_STAT.Add(1.0);
     return it->second;
   } else {
-    HASH_STAT.Add(0.0);
+    Reward_HASH_STAT.Add(0.0);
     return CumulativeRewards[key];
   }
 #endif

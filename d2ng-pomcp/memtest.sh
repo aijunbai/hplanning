@@ -1,27 +1,4 @@
 #!/bin/bash
 
-SIZE=2
-NUM=2
-LOG="log-$$.txt"
-
-if [ ! -z $1 ]; then
-    SIZE=$1
-fi
-
-if [ ! -z $2 ]; then
-    NUM=$2
-fi
-
-valgrind -v --leak-check=full ./d2ng-pomcp --size $SIZE --number $NUM --problem fieldvisionrocksample \
-                                            --verbose 1 \
-                                            --reusedepth 2 \
-                                            --reusetree 1 \
-                                            --useparticlefilter 1 \
-                                            --treeknowledge 2 \
-                                            --rolloutknowledge 2 \
-                                            --mindoubles 10 \
-                                            --maxdoubles 10 \
-                                            --runs 1 \
-                                            --seeding 1 \
-                                            2>&1 | tee $LOG
+valgrind -v --leak-check=full ./d2ng-pomcp --outputfile output-valgrind.txt --problem redundant_object_1 --size 10 --number 8 --verbose 2 --reusetree 0 --useparticlefilter 0 --treeknowledge  1 --rolloutknowledge 2 --mindoubles 10 --maxdoubles 10 --runs 1 --seeding 0 --timeout 3600 --timeoutperaction -1 --memorysize 1
 

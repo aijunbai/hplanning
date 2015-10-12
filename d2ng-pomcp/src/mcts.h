@@ -48,6 +48,13 @@ class MCTS {
   static void UnitTest();
   static void InitFastUCB(double exploration);
 
+public:
+  STATISTIC StatBeliefSize;     //统计每次 UCTSearch 开始时信念大小
+  STATISTIC StatNumSimulation;  //统计 Any time 模式下每次 simulation 次数
+
+  STATISTIC StatAvgTreeSize;    //统计每次 UCTSearch 结束时树的大小
+  STATISTIC StatAvgPeakTreeDepth;
+
  protected:
   const SIMULATOR &Simulator;
   PARAMS Params;
@@ -55,17 +62,6 @@ class MCTS {
   HISTORY History;
   SIMULATOR::STATUS Status;  //标记树搜索的阶段和样本状态
   int TreeDepth, PeakTreeDepth;
-
-  STATISTIC StatBeliefSize;     //统计每次 UCTSearch 开始时信念大小
-  STATISTIC StatNumSimulation;  //统计 Any time 模式下每次 simulation 次数
-
-  STATISTIC StatBeginTreeSize;  //统计每次 UCTSearch 开始时树的大小
-  STATISTIC StatEndTreeSize;    //统计每次 UCTSearch 结束时树的大小
-  STATISTIC StatIncTreeSize;  //统计每次 UCTSearch 结束时树的大小变化
-
-  STATISTIC StatTreeDepth;
-  STATISTIC StatRolloutDepth;
-  STATISTIC StatTotalReward;
 
   int ThompsonSampling(VNODE *vnode, bool sampling) const;
   int SelectRandom() const;

@@ -8,64 +8,58 @@
 
 //----------------------------------------------------------------------------
 
-struct RESULTS
-{
-    void Clear();
+struct RESULTS {
+  void Clear();
 
-    STATISTIC Time;
-    STATISTIC TimePerAction;
-    STATISTIC Reward;
-    STATISTIC DiscountedReturn;
-    STATISTIC UndiscountedReturn;
+  STATISTIC Time;
+  STATISTIC TimePerAction;
+  STATISTIC Reward;
+  STATISTIC DiscountedReturn;
+  STATISTIC UndiscountedReturn;
 };
 
-inline void RESULTS::Clear()
-{
-    Time.Initialise();
-    TimePerAction.Initialise();
-    Reward.Initialise();
-    DiscountedReturn.Initialise();
-    UndiscountedReturn.Initialise();
+inline void RESULTS::Clear() {
+  Time.Initialise();
+  TimePerAction.Initialise();
+  Reward.Initialise();
+  DiscountedReturn.Initialise();
+  UndiscountedReturn.Initialise();
 }
 
 //----------------------------------------------------------------------------
 
-class EXPERIMENT
-{
+class EXPERIMENT {
 public:
+  struct PARAMS {
+    PARAMS();
 
-    struct PARAMS
-    {
-        PARAMS();
+    int NumRuns;
+    int NumSteps;
+    double TimeOut;
+    int MinDoubles, MaxDoubles;
+    int TransformDoubles;
+    int TransformAttempts;
+    double Accuracy;
+    int UndiscountedHorizon;
+  };
 
-        int NumRuns;
-        int NumSteps;
-        double TimeOut;
-        int MinDoubles, MaxDoubles;
-        int TransformDoubles;
-        int TransformAttempts;
-        double Accuracy;
-        int UndiscountedHorizon;
-    };
+  EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
+             const std::string &outputFile, EXPERIMENT::PARAMS &expParams,
+             MCTS::PARAMS &searchParams);
 
-    EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator,
-        const std::string& outputFile,
-        EXPERIMENT::PARAMS& expParams, MCTS::PARAMS& searchParams);
-
-    void Run();
-    void MultiRun();
-    void DiscountedReturn();
-//    void AverageReward();
+  void Run();
+  void MultiRun();
+  void DiscountedReturn();
+  //    void AverageReward();
 
 private:
+  const SIMULATOR &Real;
+  const SIMULATOR &Simulator;
+  EXPERIMENT::PARAMS &ExpParams;
+  MCTS::PARAMS &SearchParams;
+  RESULTS Results;
 
-    const SIMULATOR& Real;
-    const SIMULATOR& Simulator;
-    EXPERIMENT::PARAMS& ExpParams;
-    MCTS::PARAMS& SearchParams;
-    RESULTS Results;
-
-    std::ofstream OutputFile;
+  std::ofstream OutputFile;
 };
 
 //----------------------------------------------------------------------------

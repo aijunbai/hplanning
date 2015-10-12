@@ -21,127 +21,129 @@ class SIMULATOR;
 class QNODE;
 class VNODE;
 
-//-----------------------------------------------------------------------------
-
-class QNODE
-{
+class QNODE {
 public:
-	QNODE(): mApplicable(false), mCount(0)  {
+  QNODE() : mApplicable(false), mCount(0) {}
 
-	}
+  void Initialise();
 
-    void Initialise();
+  void Update(int observation, double reward, int count = 0) {
+    Observation.Add(observation);
+    ImmediateReward.Add(reward);
+    mCount += count;
+  }
 
-    void Update(int observation, double reward, int count = 0) {
-    	Observation.Add(observation);
-    	ImmediateReward.Add(reward);
-    	mCount += count;
+  bool Applicable() const { return mApplicable; }
+
+  int GetCount() const { return mCount; }
+
+  void SetPrior(int count, double value, int applicable) {
+    mApplicable = applicable;
+
+    if (mApplicable) {
+      ImmediateReward.Set(count, value);
+    } else {
+      ImmediateReward.Clear();
     }
+  }
 
-    bool Applicable() const {
-    	return mApplicable;
-    }
+  const DirichletInfo_POMCP<int> &GetObservation() const { return Observation; }
 
-    int GetCount() const {
-    	return mCount;
-    }
+  const DirichletInfo_POMCP<double> &GetImmediateReward() const {
+    return ImmediateReward;
+  }
 
-    void SetPrior(int count, double value, int applicable) {
-    	mApplicable = applicable;
+  VNODE *&Child(int c) {
+    Assertion(c);
+    return Children[c];
+  }
+  VNODE *Child(int c) const {
+    Assertion(c);
+    return Children[c];
+  }
 
-    	if (mApplicable) {
-    		ImmediateReward.Set(count, value);
-    	}
-    	else {
-    		ImmediateReward.Clear();
-    	}
-    }
+  void DisplayValue(HISTORY &history, int maxDepth, std::ostream &ostr,
+                    const double *qvalue = 0) const;
+  void DisplayPolicy(HISTORY &history, int maxDepth, std::ostream &ostr) const;
 
-    const DirichletInfo_POMCP<int> &GetObservation() const {
-    	return Observation;
-    }
-
-    const DirichletInfo_POMCP<double> &GetImmediateReward() const {
-    	return ImmediateReward;
-    }
-
-    VNODE*& Child(int c) { Assertion(c); return Children[c]; }
-    VNODE* Child(int c) const { Assertion(c); return Children[c]; }
-
-    void DisplayValue(HISTORY& history, int maxDepth, std::ostream& ostr, const double *qvalue = 0) const;
-    void DisplayPolicy(HISTORY& history, int maxDepth, std::ostream& ostr) const;
-
-    static int NumChildren;
+  static int NumChildren;
 
 private:
-    void Assertion(int c) const {
-    	assert(c >= 0 && c < int(Children.size()) && c < NumChildren);
-    }
+  void Assertion(int c) const {
+    assert(c >= 0 && c < int(Children.size()) && c < NumChildren);
+  }
 
-    std::vector<VNODE*> Children;
+  std::vector<VNODE *> Children;
 
-	bool mApplicable;
-	int mCount;
+  bool mApplicable;
+  int mCount;
 
-	DirichletInfo_POMCP<int> Observation;
-	DirichletInfo_POMCP<double> ImmediateReward;
+  DirichletInfo_POMCP<int> Observation;
+  DirichletInfo_POMCP<double> ImmediateReward;
 };
 
 //-----------------------------------------------------------------------------
 
-class VNODE : public MEMORY_OBJECT
-{
+class VNODE : public MEMORY_OBJECT {
 public:
-    void Initialise();
+  void Initialise();
 
-    static VNODE* Create();
-    static void Free(VNODE* root, const SIMULATOR& simulator, VNODE* ignore = 0);
-    static void FreeAll();
+  static VNODE *Create();
+  static void Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore = 0);
+  static void FreeAll();
 
-    QNODE& Child(int c) {  Assertion(c); return Children[c]; }
-    const QNODE& Child(int c) const { Assertion(c); return Children[c]; }
-    BELIEF_STATE& Beliefs() { return BeliefState; }
-    const BELIEF_STATE& Beliefs() const { return BeliefState; }
+  QNODE &Child(int c) {
+    Assertion(c);
+    return Children[c];
+  }
+  const QNODE &Child(int c) const {
+    Assertion(c);
+    return Children[c];
+  }
+  BELIEF_STATE &Beliefs() { return BeliefState; }
+  const BELIEF_STATE &Beliefs() const { return BeliefState; }
 
-    void SetPrior(int count, double value, bool applicable);
+  void SetPrior(int count, double value, bool applicable);
 
-    void DisplayValue(HISTORY& history, int maxDepth, std::ostream& ostr, const std::vector<double> *qvalues = 0) const;
-    void DisplayPolicy(HISTORY& history, int maxDepth, std::ostream& ostr) const;
+  void DisplayValue(HISTORY &history, int maxDepth, std::ostream &ostr,
+                    const std::vector<double> *qvalues = 0) const;
+  void DisplayPolicy(HISTORY &history, int maxDepth, std::ostream &ostr) const;
 
-    NormalGammaInfo& GetCumulativeReward(const STATE &s);
+  NormalGammaInfo &GetCumulativeReward(const STATE &s);
 
-    double ThompsonSampling(bool sampling) {
-    	double count = 0.0;
-    	double sum = 0.0;
+  double ThompsonSampling(bool sampling) {
+    double count = 0.0;
+    double sum = 0.0;
 
 #if not MIXTURE_NORMAL
-    	assert(CumulativeRewards.size() == 1);
+    assert(CumulativeRewards.size() == 1);
 #endif
 
-    	for (boost::unordered_map<size_t, NormalGammaInfo>::iterator it = CumulativeRewards.begin(); it != CumulativeRewards.end(); ++it) {
-    		if (it->second.GetCount() > 0.0) {
-    			sum += it->second.GetCount() * it->second.ThompsonSampling(sampling);
-    			count += it->second.GetCount();
-    		}
-    	}
-
-    	assert(count > 0.0);
-
-    	return sum / count;
+    for (boost::unordered_map<size_t, NormalGammaInfo>::iterator it =
+             CumulativeRewards.begin();
+         it != CumulativeRewards.end(); ++it) {
+      if (it->second.GetCount() > 0.0) {
+        sum += it->second.GetCount() * it->second.ThompsonSampling(sampling);
+        count += it->second.GetCount();
+      }
     }
 
-    static int NumChildren;
-    static STATISTIC PARTICLES_STAT;
-    static STATISTIC HASH_STAT;
+    assert(count > 0.0);
+    return sum / count;
+  }
+
+  static int NumChildren;
+  static STATISTIC PARTICLES_STAT;
+  static STATISTIC HASH_STAT;
 
 private:
-    void Assertion(int c) const {
-    	assert(c >= 0 && c < int(Children.size()) && c < NumChildren);
-    }
+  void Assertion(int c) const {
+    assert(c >= 0 && c < int(Children.size()) && c < NumChildren);
+  }
 
-    NormalGammaInfo_POMCP CumulativeRewards;
-    std::vector<QNODE> Children;
-    BELIEF_STATE BeliefState;
+  NormalGammaInfo_POMCP CumulativeRewards;
+  std::vector<QNODE> Children;
+  BELIEF_STATE BeliefState;
 };
 
 namespace vnode {

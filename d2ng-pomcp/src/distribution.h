@@ -10,12 +10,13 @@
 
 #include <vector>
 
-// A simple random number generator based on George Marsaglia's MWC (Multiply With Carry) generator.
-// This is not intended to take the place of the library's primary generator, Mersenne Twister.
+// A simple random number generator based on George Marsaglia's MWC (Multiply
+// With Carry) generator.
+// This is not intended to take the place of the library's primary generator,
+// Mersenne Twister.
 // Its primary benefit is that it is simple to extract its state.
 
-class SimpleRNG
-{
+class SimpleRNG {
 private:
   SimpleRNG();
 
@@ -51,7 +52,8 @@ public:
   // Student-t sample
   double GetStudentT(double degreesOfFreedom);
 
-  // The Laplace distribution is also known as the double exponential distribution.
+  // The Laplace distribution is also known as the double exponential
+  // distribution.
   double GetLaplace(double mean, double scale);
 
   // Log-normal sample
@@ -65,26 +67,13 @@ public:
 
   void RandomSeed(int seed);
 
-  int Random(int max)                                                                                                                                                       
-  {
-      return GetRand() % max;
-  }
+  int Random(int max) { return GetRand() % max; }
 
-  int Random(int min, int max)
-  {
-      return GetRand() % (max - min) + min;
-  }
+  int Random(int min, int max) { return GetRand() % (max - min) + min; }
 
-  double RandomDouble(double min, double max)
-  {
-      return GetUniform(min, max);
-  }
+  double RandomDouble(double min, double max) { return GetUniform(min, max); }
 
-  bool Bernoulli(double p)
-  {
-      return RandomDouble(0.0, 1.0) < p;
-  }
-
+  bool Bernoulli(double p) { return RandomDouble(0.0, 1.0) < p; }
 
 private:
   int PoissonLarge(double lambda);
@@ -93,6 +82,5 @@ private:
 
   static const double PI;
 };
-
 
 #endif /* GAUSSIAN_H_ */

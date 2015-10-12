@@ -6,12 +6,13 @@ TEMPLATE = app
 TARGET = d2ng-pomcp
 DEPENDPATH += . src
 INCLUDEPATH += . src
-LIBS += -lboost_program_options
-
 INCLUDEPATH -= qt
+LIBS += -lboost_program_options
 CONFIG -= qt
 CONFIG -= debug
 CONFIG += release
+CONFIG += c++11
+QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
 
 # Input
 HEADERS += src/battleship.h \

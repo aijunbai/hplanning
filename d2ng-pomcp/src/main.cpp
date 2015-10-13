@@ -161,11 +161,11 @@ int main(int argc, char *argv[]) {
     real = new TAG(number);
     simulator = new TAG(number);
   } else if (problem == "rooms_0") {
-    real = new ROOMS("rooms.map", false);
-    simulator = new ROOMS("rooms.map", false);
+    real = new ROOMS("data/rooms.map", false);
+    simulator = new ROOMS("data/rooms.map", false);
   } else if (problem == "rooms_1") {
-    real = new ROOMS("rooms.map", true);
-    simulator = new ROOMS("rooms.map", true);
+    real = new ROOMS("data/rooms.map", true);
+    simulator = new ROOMS("data/rooms.map", true);
   } else if (problem == "redundant_object_0") {
     real = new REDUNDANT_OBJECT(size, false);
     simulator = new REDUNDANT_OBJECT(size, false);

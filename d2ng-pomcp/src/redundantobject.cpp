@@ -17,7 +17,7 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
   NumActions = 4;  //动作数
   int grids = mGrid.GetSize();
   NumObservations = mStateAbstraction ? grids : grids * grids;
-  Discount = 0.9;
+  Discount = 0.95;
   mName << "redundant_object_" << size << "_" << state_abstraction;
   mHierarchicalPlanning = true;
 }
@@ -51,9 +51,7 @@ void REDUNDANT_OBJECT::FreeState(STATE *state) const {
   mMemoryPool.Free(rstate);
 }
 
-bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation,
-                            double &reward)
-    const  //进行一步模拟：state, action |-> state, reward, observation
+bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &reward) const
 {
   assert(action < NumActions);
 
@@ -72,13 +70,16 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation,
 
   action = SimpleRNG::ins().Random(NumActions);
   pos = rstate.ObjectPos + coord::Compass[action];
-  if (!mGrid.Inside(pos) || pos == rstate.AgentPos) {
+  if (!mGrid.Inside(pos)) {
     pos = rstate.ObjectPos;
   }
   rstate.ObjectPos = pos;
 
-  observation = GetObservation(rstate);
+  if (rstate.AgentPos == rstate.ObjectPos) {
+    reward = -10.0;
+  }
 
+  observation = GetObservation(rstate);
   if (rstate.AgentPos == mGoalPos) {
     return true;
   }

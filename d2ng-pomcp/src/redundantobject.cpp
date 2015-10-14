@@ -4,7 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 using namespace std;
 using namespace UTILS;
@@ -140,7 +140,7 @@ int REDUNDANT_OBJECT::GetObservation(
 
 void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE &belief,
                                       std::ostream &ostr) const {
-  boost::unordered_map<int, int> m;
+  unordered_map<int, int> m;
   for (int i = 0; i < belief.GetNumSamples(); ++i) {
     const REDUNDANT_OBJECT_STATE &rstate =
         safe_cast<const REDUNDANT_OBJECT_STATE &>(*belief.GetSample(i));
@@ -149,7 +149,7 @@ void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE &belief,
   }
 
   vector<pair<double, int>> sorted;
-  for (boost::unordered_map<int, int>::iterator it = m.begin(); it != m.end();
+  for (unordered_map<int, int>::iterator it = m.begin(); it != m.end();
        ++it) {
     double p = double(it->second) / double(belief.GetNumSamples());
     sorted.push_back(make_pair(p, it->first));

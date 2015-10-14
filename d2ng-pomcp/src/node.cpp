@@ -69,7 +69,7 @@ void QNODE::DisplayPolicy(HISTORY &history, int maxDepth, ostream &ostr) const {
 }
 
 MEMORY_POOL<VNODE> VNODE::VNodePool;
-boost::unordered_map<size_t, VNODE*> VNODE::BeliefPool;
+unordered_map<size_t, VNODE*> VNODE::BeliefPool;
 int VNODE::NumChildren = 0;
 STATISTIC VNODE::PARTICLES_STAT;
 STATISTIC VNODE::Reward_HASH_STAT;
@@ -89,7 +89,6 @@ void VNODE::Initialise(size_t belief_hash) {
 VNODE *VNODE::Create(size_t belief_hash) {
   if (BeliefPool.count(belief_hash)) {
     assert(0);
-    cerr << "existing in create... " << belief_hash << endl;
     return BeliefPool[belief_hash];
   }
   else {

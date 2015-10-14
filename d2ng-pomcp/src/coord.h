@@ -62,6 +62,16 @@ inline std::size_t hash_value(const COORD &v) {
   return seed;
 }
 
+namespace std {
+template<>
+struct hash<COORD>
+{
+  size_t operator()(const COORD &o) const {
+    return hash_value(o);
+  }
+};
+}
+
 namespace coord {
 extern const COORD Null;
 extern const COORD North, East, South, West;

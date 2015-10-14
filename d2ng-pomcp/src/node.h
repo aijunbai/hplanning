@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/program_options.hpp>
@@ -117,7 +118,7 @@ class VNODE : public MEMORY_OBJECT {
     assert(CumulativeRewards.size() == 1);
 #endif
 
-    for (boost::unordered_map<size_t, NormalGammaInfo>::iterator it =
+    for (std::unordered_map<size_t, NormalGammaInfo>::iterator it =
              CumulativeRewards.begin();
          it != CumulativeRewards.end(); ++it) {
       if (it->second.GetCount() > 0.0) {
@@ -131,14 +132,14 @@ class VNODE : public MEMORY_OBJECT {
   }
 
   static MEMORY_POOL<VNODE> VNodePool;
-  static boost::unordered_map<size_t, VNODE*> BeliefPool;
+  static std::unordered_map<size_t, VNODE*> BeliefPool;
   static int NumChildren;
   static STATISTIC PARTICLES_STAT;
   static STATISTIC Reward_HASH_STAT;
 
   static int GetNumAllocated() {
     assert(VNodePool.GetNumAllocated() == int(BeliefPool.size()));
-    return (VNodePool.GetNumAllocated() + BeliefPool.size()) / 2;
+    return VNodePool.GetNumAllocated();
   }
 
  private:

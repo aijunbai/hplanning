@@ -4,6 +4,7 @@
 #include "simulator.h"
 #include "node.h"
 #include "statistic.h"
+#include "dot_graph.h"
 
 class MCTS {
  public:

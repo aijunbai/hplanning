@@ -4,7 +4,7 @@
 #include <math.h>
 #include <iostream>
 #include <fstream>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include <boost/shared_ptr.hpp>
 #include <boost/program_options.hpp>
 #include "distribution.h"
@@ -439,9 +439,9 @@ class DirichletInfo {
 
 template <typename T>
 class DirichletInfo_POMCP
-    : public DirichletInfo<T, boost::unordered_map<T, double>> {};
+    : public DirichletInfo<T, std::unordered_map<T, double>> {};
 
 class NormalGammaInfo_POMCP
-    : public boost::unordered_map<size_t, NormalGammaInfo> {};
+    : public std::unordered_map<size_t, NormalGammaInfo> {};
 
 #endif  // STATISTIC

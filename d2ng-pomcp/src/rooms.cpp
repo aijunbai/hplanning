@@ -4,7 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 using namespace std;
 using namespace UTILS;
@@ -173,7 +173,7 @@ int ROOMS::GetObservation(const ROOMS_STATE &rooms_state) const {
 
 void ROOMS::DisplayBeliefs(const BELIEF_STATE &belief,
                            std::ostream &ostr) const {
-  boost::unordered_map<COORD, int> m;
+  unordered_map<COORD, int> m;
   for (int i = 0; i < belief.GetNumSamples(); ++i) {
     const ROOMS_STATE &state =
         safe_cast<const ROOMS_STATE &>(*belief.GetSample(i));
@@ -181,7 +181,7 @@ void ROOMS::DisplayBeliefs(const BELIEF_STATE &belief,
   }
 
   vector<pair<double, const COORD *>> sorted;
-  for (boost::unordered_map<COORD, int>::iterator it = m.begin(); it != m.end();
+  for (unordered_map<COORD, int>::iterator it = m.begin(); it != m.end();
        ++it) {
     double p = double(it->second) / double(belief.GetNumSamples());
     sorted.push_back(make_pair(p, &(it->first)));

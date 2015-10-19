@@ -18,6 +18,7 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
   int grids = mGrid.GetSize();
   NumObservations = mStateAbstraction ? grids : grids * grids;
   Discount = 0.95;
+  RewardRange = 9.0;
   mName << "redundant_object_" << size << "_" << state_abstraction;
   mHierarchicalPlanning = true;
 }

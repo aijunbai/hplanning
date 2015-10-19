@@ -9,10 +9,6 @@
 #include <boost/program_options.hpp>
 #include "distribution.h"
 
-#define MULTI_ROLLOUTS 1  // multi rollouts 个数，默认为 1
-#define MIXTURE_NORMAL 1
-#define SAMPLE_REWARD 1
-
 template <typename Generator>
 inline void DumpDistribution(Generator gen, int samples, const char *file_name,
                              bool append) {
@@ -321,15 +317,10 @@ class NormalGammaInfo {
     Beta = BETA;
   }
 
-  void Add(const std::vector<double> &values) {  // add a new sample
-    STATISTIC samples;
-    for (uint i = 0; i < values.size(); ++i) {
-      samples.Add(values[i]);
-    }
-
-    double n = samples.GetCount();
-    double m = samples.GetMean();
-    double s = samples.GetVariance();
+  void Add(const double value) {  // add a new sample
+    double n = 1;
+    double m = value;
+    double s = 0.0;
 
     double mu = (Lambda * Mu + n * m) / (Lambda + n);
     double lambda = Lambda + n;

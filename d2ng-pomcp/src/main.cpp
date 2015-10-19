@@ -79,10 +79,6 @@ int main(int argc, char *argv[]) {
       "Relative power of two for transforms compared to simulations")(
       "transformattempts", value<int>(&expParams.TransformAttempts),
       "Number of attempts for each transform")(
-      "ravediscount", value<double>(&searchParams.RaveDiscount),
-      "RAVE discount factor")("raveconstant",
-                              value<double>(&searchParams.RaveConstant),
-                              "RAVE bias constant")(
       "treeknowledge", value<int>(&knowledge.TreeLevel),
       "Knowledge level in tree (0=Pure, 1=Legal, 2=Smart)")(
       "rolloutknowledge", value<int>(&knowledge.RolloutLevel),
@@ -94,11 +90,12 @@ int main(int argc, char *argv[]) {
       "reusetree", value<bool>(&searchParams.ReuseTree),
       "Reuse tree generated during previous search")(
       "seeding", value<bool>(&seeding), "Use pid as random seed")(
+      "thompsonsampling", value<bool>(&searchParams.ThompsonSampling),
+      "use Thompson Sampling instead of UCB1")(
       "timeoutperaction", value<double>(&searchParams.TimeOutPerAction),
       "timeout per action (seconds)")(
       "memorysize", value<int>(&searchParams.MemorySize),
-      "number of observation-action pairs to represent a belief")
-      ;
+      "number of observation-action pairs to represent a belief");
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);

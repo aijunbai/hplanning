@@ -19,9 +19,9 @@ class MCTS {
     bool UseParticleFilter;
     int NumTransforms;
     int MaxAttempts;
-    double RaveDiscount;
-    double RaveConstant;
+    double ExplorationConstant;
     bool ReuseTree;
+    bool ThompsonSampling;
     double TimeOutPerAction;
     int MemorySize;
   };
@@ -47,6 +47,12 @@ class MCTS {
   static void UnitTest();
   static void InitFastUCB(double exploration);
 
+  // Fast lookup table for UCB
+  static const int UCB_N = 1 << 14, UCB_n = 1 << 7;
+  static double UCB[UCB_N][UCB_n];
+  static bool InitialisedFastUCB;
+  double FastUCB(int N, int n) const;
+
 public:
   STATISTIC StatBeliefSize;     //统计每次 UCTSearch 开始时信念大小
   STATISTIC StatNumSimulation;  //统计 Any time 模式下每次 simulation 次数
@@ -63,10 +69,11 @@ public:
   SIMULATOR::STATUS Status;  //标记树搜索的阶段和样本状态
   int TreeDepth, PeakTreeDepth;
 
+  int GreedyUCB(VNODE* vnode, bool ucb) const;
   int ThompsonSampling(VNODE *vnode, bool sampling) const;
   int SelectRandom() const;
-  std::vector<double> SimulateV(STATE &state, VNODE *vnode);
-  std::vector<double> SimulateQ(STATE &state, QNODE &qnode, int action);
+  double SimulateV(STATE &state, VNODE *vnode);
+  double SimulateQ(STATE &state, QNODE &qnode, int action);
   VNODE *ExpandNode(const STATE *state, HISTORY &history);
   void AddSample(VNODE *node, const STATE &state);
   void ParticleFilter(BELIEF_STATE &beliefs);
@@ -74,15 +81,13 @@ public:
   STATE *CreateTransform() const;
   void Resample(BELIEF_STATE &beliefs);
 
-  double QValue(QNODE &qnode, bool sampling) const;  // XXX state?
+  double QValue(QNODE &qnode, bool sampling) const;
   double HValue(VNODE *vnode, bool sampling) const;
 
   static void UnitTestGreedy();
   static void UnitTestUCB();
   static void UnitTestRollout();
   static void UnitTestSearch(int depth);
-
-  static const int Rollouts = MULTI_ROLLOUTS;
 };
 
 #endif  // MCTS_H

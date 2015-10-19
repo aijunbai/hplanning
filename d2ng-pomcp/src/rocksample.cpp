@@ -11,6 +11,7 @@ ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
   NumActions = NumRocks + 5;  //动作数
   NumObservations = 3;        //观察数
   Discount = 0.95;
+  RewardRange = 20;
   mName << "rocksample_" << size << "_" << rocks;
 
   HalfEfficiencyDistance = 20;

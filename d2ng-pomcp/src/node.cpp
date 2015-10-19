@@ -167,7 +167,6 @@ void VNODE::DisplayPolicy(HISTORY &history, int maxDepth,
 }
 
 NormalGammaInfo &VNODE::GetCumulativeReward(const STATE &s) {
-#if MIXTURE_NORMAL
 #ifdef NDEBUG
   return CumulativeRewards[s.hash()];
 #else
@@ -181,8 +180,5 @@ NormalGammaInfo &VNODE::GetCumulativeReward(const STATE &s) {
     Reward_HASH_STAT.Add(0.0);
     return CumulativeRewards[key];
   }
-#endif
-#else
-  return CumulativeRewards[0];
 #endif
 }

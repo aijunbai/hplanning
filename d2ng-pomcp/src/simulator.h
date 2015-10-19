@@ -118,10 +118,11 @@ class SIMULATOR {
   double GetDiscount() const { return Discount; }
   double GetHorizon(double accuracy,
                     int undiscountedHorizon = 100) const;  // XXX 这是怎么算的？
+  double GetRewardRange() const { return RewardRange; }
 
  protected:
   int NumActions, NumObservations;
-  double Discount;
+  double Discount, RewardRange;
   KNOWLEDGE Knowledge;
   std::stringstream mName;
 

@@ -14,6 +14,7 @@ BATTLESHIP::BATTLESHIP(int xsize, int ysize, int maxlength)
   NumObservations = 2;
   Discount = 1;
   TotalRemaining = MaxLength - 1;
+  RewardRange = NumActions / 4.0;
   mName << "battleship_" << XSize << "_" << YSize << "_" << MaxLength;
 }
 

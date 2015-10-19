@@ -81,6 +81,9 @@ class QNODE {
 
   DirichletInfo_POMCP<int> Observation;
   DirichletInfo_POMCP<double> ImmediateReward;
+
+public:
+  STATISTIC Value;  // for uct
 };
 
 class VNODE : public MEMORY_OBJECT {
@@ -113,10 +116,6 @@ class VNODE : public MEMORY_OBJECT {
   double ThompsonSampling(bool sampling) {
     double count = 0.0;
     double sum = 0.0;
-
-#if not MIXTURE_NORMAL
-    assert(CumulativeRewards.size() == 1);
-#endif
 
     for (std::unordered_map<size_t, NormalGammaInfo>::iterator it =
              CumulativeRewards.begin();
@@ -153,6 +152,8 @@ class VNODE : public MEMORY_OBJECT {
   size_t BeliefHash;
 
 public:
+  STATISTIC Value;  // for uct
+
   size_t GetBeliefHash() const {
     return BeliefHash;
   }

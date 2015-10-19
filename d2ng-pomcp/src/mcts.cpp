@@ -204,15 +204,18 @@ int MCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
   double bestq = -Infinity;
   int N = vnode->Value.GetCount();
 
-  for (int action = 0; action < Simulator.GetNumActions(); action++)
-  {
+  for (int action = 0; action < Simulator.GetNumActions(); action++) {
     double q;
     int n;
 
     QNODE& qnode = vnode->Child(action);
+
+    if (!qnode.Applicable()) {  //非合法动作
+      continue;
+    }
+
     q = qnode.Value.GetValue();
     n = qnode.Value.GetCount();
-
     if (ucb) {
       q += FastUCB(N, n);
     }
@@ -259,7 +262,6 @@ void MCTS::Search() {
 
 double MCTS::SimulateV(STATE &state, VNODE *vnode) {
   int action;
-
   if (Params.ThompsonSampling) {
     action = ThompsonSampling(vnode, true);
   }
@@ -309,7 +311,8 @@ double MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
   VNODE *&vnode = qnode.Child(observation);
   if (!vnode) {  // try to retrieve from belief pool
     size_t belief_hash = History.BeliefHash();
-    if (VNODE::BeliefPool.count(belief_hash)) {
+    if (Params.MemorySize >= 0 && History.Size() >= Params.MemorySize
+        && VNODE::BeliefPool.count(belief_hash)) {
       StatRedundantNodes.Add(1.0);
       vnode = VNODE::BeliefPool[belief_hash];
       assert(vnode->GetBeliefHash() == belief_hash);
@@ -363,7 +366,7 @@ double MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
 }
 
 VNODE *MCTS::ExpandNode(const STATE *state, HISTORY &history) {
-  VNODE *vnode = VNODE::Create(history.BeliefHash());
+  VNODE *vnode = VNODE::Create(history, Params.MemorySize);
   vnode->Value.Set(0, 0);
   Simulator.Prior(state, history, vnode, Status);  //设置先验信息
   return vnode;

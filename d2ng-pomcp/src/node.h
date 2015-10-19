@@ -40,6 +40,7 @@ class QNODE {
 
   void SetPrior(int count, double value, int applicable) {
     mApplicable = applicable;
+    Value.Set(count, value);
 
     if (mApplicable) {
       ImmediateReward.Set(count, value);
@@ -90,7 +91,7 @@ class VNODE : public MEMORY_OBJECT {
  public:
   void Initialise(size_t belief_hash);
 
-  static VNODE *Create(size_t belief_hash);
+  static VNODE *Create(HISTORY &history, int memory_size);
   static void Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore = 0);
   static void FreeAll();
 
@@ -137,7 +138,6 @@ class VNODE : public MEMORY_OBJECT {
   static STATISTIC Reward_HASH_STAT;
 
   static int GetNumAllocated() {
-    assert(VNodePool.GetNumAllocated() == int(BeliefPool.size()));
     return VNodePool.GetNumAllocated();
   }
 

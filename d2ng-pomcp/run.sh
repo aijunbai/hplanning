@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROBLEM="rocksample"
+PROBLEM="redundant_object_1"
 SIZE=7
 NUM=8
 LEVELT=1

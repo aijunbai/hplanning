@@ -86,9 +86,11 @@ void VNODE::Initialise(size_t belief_hash) {
   CumulativeRewards.clear();
 }
 
-VNODE *VNODE::Create(size_t belief_hash) {
-  if (BeliefPool.count(belief_hash)) {
-    assert(0);
+VNODE *VNODE::Create(HISTORY &history, int memory_size) {
+  size_t belief_hash = history.BeliefHash();
+
+  if (memory_size >= 0 && history.Size() >= memory_size && BeliefPool.count(belief_hash)) {
+    assert(0);  // will never create a replicate node according to MCTS algorithm
     return BeliefPool[belief_hash];
   }
   else {

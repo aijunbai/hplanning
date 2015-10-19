@@ -105,15 +105,13 @@ void ROCKSAMPLE::FreeState(STATE *state) const {
 }
 
 bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
-                      double &reward)
-    const  //进行一步模拟：state, action |-> state, reward, observation
+                      double &reward) const  // 进行一步模拟：state, action |-> state, reward, observation
 {
   ROCKSAMPLE_STATE &rockstate = safe_cast<ROCKSAMPLE_STATE &>(state);
   reward = 0;
   observation = E_NONE;
 
-  if (action < E_SAMPLE)  // move
-  {
+  if (action < E_SAMPLE) {  // move
     switch (action) {
       case COORD::E_EAST:
         if (rockstate.AgentPos.X + 1 < Size) {

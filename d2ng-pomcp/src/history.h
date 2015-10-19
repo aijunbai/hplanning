@@ -12,11 +12,11 @@ class HISTORY {
  public:
   struct ENTRY {
     ENTRY(int action = -1, int obs = -1)
-      : Action(action), Observation(obs), Memory(0) {}
+      : Action(action), Observation(obs), MemoryHash(0) {}
 
     int Action;
     int Observation;
-    size_t Memory;
+    size_t MemoryHash;
   };
 
   bool operator==(const HISTORY &history) const {
@@ -26,7 +26,7 @@ class HISTORY {
 
   void Add(int action, int obs, int memory_size) {
     History.push_back(ENTRY(action, obs));
-    History.back().Memory = memory_hash(memory_size);
+    History.back().MemoryHash = memory_hash(memory_size);
   }
 
   size_t BeliefHash() const {
@@ -34,7 +34,7 @@ class HISTORY {
     std::size_t seed = 0;
 
     if (Size()) {
-      hash_combine(seed, History.back().Memory); //fixed memory hash
+      hash_combine(seed, History.back().MemoryHash); //fixed memory hash
       hash_combine(seed, Size()); //depth dependent
     }
 
@@ -85,7 +85,7 @@ private:
     std::size_t seed = 0;
 
     if (memory_size < 0) {  // use whole history
-      seed = Size() >= 2? History[Size() - 2].Memory: 0;
+      seed = Size() >= 2? History[Size() - 2].MemoryHash: 0;
       hash_combine(seed, History[Size() - 1].Observation);
       hash_combine(seed, History[Size() - 1].Action);
     }

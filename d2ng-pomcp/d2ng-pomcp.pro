@@ -12,8 +12,8 @@ CONFIG -= qt
 CONFIG += c++11
 QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
 
-CONFIG += debug
-CONFIG -= release
+CONFIG -= debug
+CONFIG += release
 
 # Input
 HEADERS += src/battleship.h \

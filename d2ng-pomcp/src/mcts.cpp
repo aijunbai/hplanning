@@ -637,8 +637,7 @@ void MCTS::UnitTestUCB() {
     if (action == 3)
       vnode1->Child(action).Value.Set(99, 0/*, 1, 100*/);
     else
-      vnode1->Child(action).Value.Set(100 + action, 0/*, 1, 101 +
-                                                                              action*/);
+      vnode1->Child(action).Value.Set(100 + action, 0/*, 1, 101 +action*/);
   assert(mcts.GreedyUCB(vnode1, true) == 3);
 
   // With high counts, action with highest value is selected
@@ -646,11 +645,9 @@ void MCTS::UnitTestUCB() {
   vnode2->Value.Set(1, 0);
   for (int action = 0; action < numAct; action++)
     if (action == 3)
-      vnode2->Child(action).Value.Set(99 + numObs, 1/*, 100 + numObs,
-                                                                              1*/);
+      vnode2->Child(action).Value.Set(99 + numObs, 1/*, 100 + numObs,1*/);
     else
-      vnode2->Child(action).Value.Set(100 + numAct - action, 0/*, 1,
-                                                                              101 + numAct - action*/);
+      vnode2->Child(action).Value.Set(100 + numAct - action, 0/*, 1,101 + numAct - action*/);
   assert(mcts.GreedyUCB(vnode2, true) == 3);
 
   // Action with low value and low count beats actions with high counts
@@ -660,8 +657,7 @@ void MCTS::UnitTestUCB() {
     if (action == 3)
       vnode3->Child(action).Value.Set(1, 1/*, 2, 1*/);
     else
-      vnode3->Child(action).Value.Set(100 + action, 1/*, 101 + action,
-                                                                              1*/);
+      vnode3->Child(action).Value.Set(100 + action, 1/*, 101 + action,1*/);
   assert(mcts.GreedyUCB(vnode3, true) == 3);
 
   // Actions with zero count is always selected

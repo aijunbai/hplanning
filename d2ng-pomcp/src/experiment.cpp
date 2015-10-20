@@ -33,7 +33,7 @@ void EXPERIMENT::Run() {
   VNODE::PARTICLES_STAT.Initialise();
   VNODE::Reward_HASH_STAT.Initialise();
 
-#if 1
+#if 0
   HierarchicalMCTS mcts(Simulator, SearchParams);
 #else
   MCTS mcts(Simulator, SearchParams);

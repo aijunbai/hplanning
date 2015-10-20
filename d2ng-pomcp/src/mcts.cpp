@@ -297,6 +297,9 @@ double MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
   double delayedReward = 0.0;
 
   bool terminal = Simulator.Step(state, action, observation, immediateReward);  //一步模拟
+  if (Params.ThompsonSampling) {
+    qnode.Update(observation, immediateReward, 1);  //记录一次转移
+  }
 
   assert(observation >= 0 && observation < Simulator.GetNumObservations());
   History.Add(action, observation, Params.MemorySize);
@@ -355,10 +358,7 @@ double MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
   }
 
   double totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
-  if (Params.ThompsonSampling) {
-    qnode.Update(observation, immediateReward, 1);  //记录一次转移
-  }
-  else {
+  if (!Params.ThompsonSampling) {
     qnode.Value.Add(totalReward);
   }
 
@@ -513,9 +513,7 @@ void MCTS::ParticleFilter(BELIEF_STATE &beliefs)  // unweighted particle filter
   while (beliefs.GetNumSamples() < Params.NumStartStates &&
          attempts < max_attempts) {
     STATE *state = Root->Beliefs().CreateSample(Simulator);
-
     Simulator.Step(*state, History.Back().Action, stepObs, stepReward);
-
     if (Params.ThompsonSampling) {
       Root->Child(History.Back().Action).Update(stepObs, stepReward);
     }

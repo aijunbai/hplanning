@@ -136,7 +136,9 @@ REDUNDANT_OBJECT_STATE REDUNDANT_OBJECT::Decode(int index) const {
 
 int REDUNDANT_OBJECT::GetObservation(
     const REDUNDANT_OBJECT_STATE &rstate) const {
-  return mStateAbstraction ? mGrid.Index(rstate.AgentPos) : Encode(rstate);
+  return mStateAbstraction ?
+        mGrid.Index(rstate.AgentPos) :  // only agent's position
+        Encode(rstate);  // agent's and object's positions
 }
 
 void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE &belief,

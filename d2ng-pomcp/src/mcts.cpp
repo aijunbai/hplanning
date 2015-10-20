@@ -96,18 +96,8 @@ inline double MCTS::FastUCB(int N, int n) const
   }
 }
 
-bool MCTS::Update(int action, int observation, STATE &state) {
-  VNODE::Free(Root, Simulator);
-  History.Add(action, observation, Params.MemorySize);  //更新历史
-  Root = ExpandNode(&state, History);
-  AddSample(Root, state);
-
-  if (Params.Verbose >= 1) Simulator.DisplayBeliefs(Root->Beliefs(), cout);
-
-  return true;
-}
-
-bool MCTS::Update(int action, int observation) {
+bool MCTS::Update(int action, int observation, STATE & /*state*/)
+{
   History.Add(action, observation, Params.MemorySize);  //更新历史
   BELIEF_STATE beliefs;
 

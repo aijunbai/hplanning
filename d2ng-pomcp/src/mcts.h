@@ -30,9 +30,7 @@ class MCTS {
   virtual ~MCTS();
 
   int SelectAction();
-  bool Update(int action, int observation);  // update history
-  bool Update(int action, int observation,
-              STATE &state);  // update history and ground state
+  virtual bool Update(int action, int observation, STATE &state);  // update history and ground state (if possible)
 
   void Search();
   void SearchImp();

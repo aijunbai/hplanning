@@ -33,11 +33,9 @@ void EXPERIMENT::Run() {
   VNODE::PARTICLES_STAT.Initialise();
   VNODE::Reward_HASH_STAT.Initialise();
 
-#if 0
-  HierarchicalMCTS mcts(Simulator, SearchParams);
-#else
-  MCTS mcts(Simulator, SearchParams);
-#endif
+  MCTS *mcts = Real.mHierarchicalPlanning?
+        new HierarchicalMCTS(Simulator, SearchParams):
+        new MCTS(Simulator, SearchParams);
 
   double undiscountedReturn = 0.0;
   double discountedReturn = 0.0;
@@ -55,7 +53,7 @@ void EXPERIMENT::Run() {
     double reward;
 
     boost::timer timer_per_action;
-    int action = mcts.SelectAction();  // XXX 用 Monte Carlo 方法选择一个动作
+    int action = mcts->SelectAction();  // XXX 用 Monte Carlo 方法选择一个动作
 
     Results.TimePerAction.Add(timer_per_action.elapsed());
     terminal = Real.Step(
@@ -80,18 +78,10 @@ void EXPERIMENT::Run() {
       break;
     }
 
-    if (Real.mHierarchicalPlanning) {  // test state abstraction method
-      if (!mcts.Update(action, observation, *state)) {
-        assert(0);
-      }
-    } else {
-      outOfParticles = !mcts.Update(
-          action,
-          observation);  //更新历史信息，得到新的 Root 节点，设置好初始信念状态
-
-      if (outOfParticles) {
-        break;  // Out of particles, finishing episode with SelectRandom
-      }
+    outOfParticles = !mcts->Update(action, observation, *state);  //更新历史信息，得到新的 Root 节点，设置好初始信念状态
+    if (outOfParticles) {
+      assert(Real.mHierarchicalPlanning);
+      break;  // Out of particles, finishing episode with SelectRandom
     }
 
     if (timer.elapsed() > ExpParams.TimeOut) {
@@ -104,7 +94,7 @@ void EXPERIMENT::Run() {
   if (outOfParticles)  //特殊情况处理
   {
     cout << "Out of particles, finishing episode with SelectRandom" << endl;
-    HISTORY history = mcts.GetHistory();
+    HISTORY history = mcts->GetHistory();
     while (++t < ExpParams.NumSteps) {
       int observation;
       double reward;
@@ -112,7 +102,7 @@ void EXPERIMENT::Run() {
       // This passes real state into simulator!
       // SelectRandom must only use fully observable state
       // to avoid "cheating"
-      int action = Simulator.SelectRandom(*state, history, mcts.GetStatus());
+      int action = Simulator.SelectRandom(*state, history, mcts->GetStatus());
       terminal = Real.Step(*state, action, observation, reward);
 
       Results.Reward.Add(reward);
@@ -141,8 +131,8 @@ void EXPERIMENT::Run() {
   Results.Time.Add(timer.elapsed());
   Results.UndiscountedReturn.Add(undiscountedReturn);
   Results.DiscountedReturn.Add(discountedReturn);
-  Results.ExploredNodes.Add(mcts.StatTreeSize.GetMean());
-  Results.ExploredDepth.Add(mcts.StatPeakTreeDepth.GetMean());
+  Results.ExploredNodes.Add(mcts->StatTreeSize.GetMean());
+  Results.ExploredDepth.Add(mcts->StatPeakTreeDepth.GetMean());
 
   cout << "\n#End of experiment:" << endl;
   cout << "#Discounted return = " << discountedReturn
@@ -153,6 +143,8 @@ void EXPERIMENT::Run() {
   BELIEF_STATE::SAMPLES_STAT.Print("#Belief size", cout);
   VNODE::PARTICLES_STAT.Print("#Particle size", cout);
   VNODE::Reward_HASH_STAT.Print("#Reward hash hit", cout);
+
+  delete mcts;
 }
 
 void EXPERIMENT::MultiRun() {

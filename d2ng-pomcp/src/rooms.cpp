@@ -16,7 +16,7 @@ ROOMS::ROOMS(const char *map_name, bool state_abstraction)
   NumActions = 4;  //动作数
   NumObservations =
       mStateAbstraction ? mRooms : mGrid->GetXSize() * mGrid->GetYSize();
-  Discount = 0.9;
+  Discount = 0.95;
   RewardRange = 1.0;
   mName << "rooms_" << map_name << "_" << state_abstraction;
   mHierarchicalPlanning = true;
@@ -63,26 +63,26 @@ void ROOMS::Parse(const char *file_name) {
 }
 
 STATE *ROOMS::Copy(const STATE &state) const {
-  const ROOMS_STATE &rooms_state = safe_cast<const ROOMS_STATE &>(state);
+  const ROOMS_STATE &rstate = safe_cast<const ROOMS_STATE &>(state);
   ROOMS_STATE *newstate = mMemoryPool.Allocate();
-  *newstate = rooms_state;
+  *newstate = rstate;
   return newstate;
 }
 
 void ROOMS::Validate(const STATE &state) const {
-  const ROOMS_STATE &rooms_state = safe_cast<const ROOMS_STATE &>(state);
-  assert(mGrid->Inside(rooms_state.AgentPos));
+  const ROOMS_STATE &rstate = safe_cast<const ROOMS_STATE &>(state);
+  assert(mGrid->Inside(rstate.AgentPos));
 }
 
 STATE *ROOMS::CreateStartState() const {
-  ROOMS_STATE *rooms_state = mMemoryPool.Allocate();
-  rooms_state->AgentPos = mStartPos;
-  return rooms_state;
+  ROOMS_STATE *rstate = mMemoryPool.Allocate();
+  rstate->AgentPos = mStartPos;
+  return rstate;
 }
 
 void ROOMS::FreeState(STATE *state) const {
-  ROOMS_STATE *rooms_state = safe_cast<ROOMS_STATE *>(state);
-  mMemoryPool.Free(rooms_state);
+  ROOMS_STATE *rstate = safe_cast<ROOMS_STATE *>(state);
+  mMemoryPool.Free(rstate);
 }
 
 bool ROOMS::Step(STATE &state, int action, int &observation, double &reward)
@@ -90,20 +90,20 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward)
 {
   assert(action < NumActions);
 
-  ROOMS_STATE &rooms_state = safe_cast<ROOMS_STATE &>(state);
+  ROOMS_STATE &rstate = safe_cast<ROOMS_STATE &>(state);
   reward = -1.0;
 
   if (SimpleRNG::ins().Bernoulli(4.0 / 9.0)) {  // fail
     action = SimpleRNG::ins().Random(NumActions);
   }
 
-  COORD pos = rooms_state.AgentPos + coord::Compass[action];
+  COORD pos = rstate.AgentPos + coord::Compass[action];
   if (mGrid->operator()(pos) != 'x') {  // not wall
-    rooms_state.AgentPos = pos;
+    rstate.AgentPos = pos;
   }
-  observation = GetObservation(rooms_state);
+  observation = GetObservation(rstate);
 
-  if (rooms_state.AgentPos == mGoalPos) {
+  if (rstate.AgentPos == mGoalPos) {
     return true;
   }
 
@@ -113,8 +113,8 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward)
 bool ROOMS::LocalMove(STATE &state, const HISTORY &history, int,
                       const STATUS &) const  //局部扰动
 {
-  ROOMS_STATE rooms_state = safe_cast<ROOMS_STATE &>(state);
-  if (GetObservation(rooms_state) == history.Back().Observation) {
+  ROOMS_STATE rstate = safe_cast<ROOMS_STATE &>(state);
+  if (GetObservation(rstate) == history.Back().Observation) {
     return true;
   }
   return false;
@@ -122,9 +122,9 @@ bool ROOMS::LocalMove(STATE &state, const HISTORY &history, int,
 
 void ROOMS::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
                           vector<int> &legal, const STATUS &) const {
-  const ROOMS_STATE &rooms_state = safe_cast<const ROOMS_STATE &>(state);
+  const ROOMS_STATE &rstate = safe_cast<const ROOMS_STATE &>(state);
 
-  assert(mGrid->Inside(rooms_state.AgentPos));
+  assert(mGrid->Inside(rstate.AgentPos));
 
   legal.push_back(COORD::E_NORTH);
   legal.push_back(COORD::E_EAST);
@@ -136,40 +136,42 @@ void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &,  //手工策�
                               vector<int> &actions,
                               const STATUS &status) const  //获得优先动作
 {
-  if (mStateAbstraction) {
-    const ROOMS_STATE &rooms_state = safe_cast<const ROOMS_STATE &>(state);
+  GenerateLegal(state, actions, status);
+   
+  // if (mStateAbstraction) {
+  //   const ROOMS_STATE &rstate = safe_cast<const ROOMS_STATE &>(state);
 
-    if (mGrid->operator()(rooms_state.AgentPos) ==
-        mGrid->operator()(mGoalPos)) {
-      int x = mGoalPos.X - rooms_state.AgentPos.X;
-      int y = mGoalPos.Y - rooms_state.AgentPos.Y;
+  //   if (mGrid->operator()(rstate.AgentPos) ==
+  //       mGrid->operator()(mGoalPos)) {
+  //     int x = mGoalPos.X - rstate.AgentPos.X;
+  //     int y = mGoalPos.Y - rstate.AgentPos.Y;
 
-      double dist = 1.0e6;
-      int besta = -1;
-      for (int i = 0; i < NumActions; ++i) {
-        double d = (coord::Compass[i].X - x) * (coord::Compass[i].X - x) +
-                   (coord::Compass[i].Y - y) * (coord::Compass[i].Y - y);
-        if (d < dist) {
-          dist = d;
-          besta = i;
-        }
-      }
-      if (besta != -1) {
-        actions.push_back(besta);
-      } else {
-        GenerateLegal(state, actions, status);
-      }
-    } else {
-      GenerateLegal(state, actions, status);
-    }
-  } else {
-    GenerateLegal(state, actions, status);
-  }
+  //     double dist = 1.0e6;
+  //     int besta = -1;
+  //     for (int i = 0; i < NumActions; ++i) {
+  //       double d = (coord::Compass[i].X - x) * (coord::Compass[i].X - x) +
+  //                  (coord::Compass[i].Y - y) * (coord::Compass[i].Y - y);
+  //       if (d < dist) {
+  //         dist = d;
+  //         besta = i;
+  //       }
+  //     }
+  //     if (besta != -1) {
+  //       actions.push_back(besta);
+  //     } else {
+  //       GenerateLegal(state, actions, status);
+  //     }
+  //   } else {
+  //     GenerateLegal(state, actions, status);
+  //   }
+  // } else {
+  //   GenerateLegal(state, actions, status);
+  // }
 }
 
-int ROOMS::GetObservation(const ROOMS_STATE &rooms_state) const {
-  return mStateAbstraction ? mGrid->operator()(rooms_state.AgentPos) - '0'
-                           : mGrid->Index(rooms_state.AgentPos);
+int ROOMS::GetObservation(const ROOMS_STATE &rstate) const {
+  return mStateAbstraction ? mGrid->operator()(rstate.AgentPos) - '0'
+                           : mGrid->Index(rstate.AgentPos);
 }
 
 void ROOMS::DisplayBeliefs(const BELIEF_STATE &belief,
@@ -197,14 +199,14 @@ void ROOMS::DisplayBeliefs(const BELIEF_STATE &belief,
 }
 
 void ROOMS::DisplayState(const STATE &state, std::ostream &ostr) const {
-  const ROOMS_STATE &rooms_state = safe_cast<const ROOMS_STATE &>(state);
+  const ROOMS_STATE &rstate = safe_cast<const ROOMS_STATE &>(state);
 
   ostr << "Y" << endl;
   for (int y = mGrid->GetYSize() - 1; y >= 0; --y) {
     for (int x = 0; x < mGrid->GetXSize(); ++x) {
       char cell = mGrid->operator()(x, y);
 
-      if (rooms_state.AgentPos == COORD(x, y)) {
+      if (rstate.AgentPos == COORD(x, y)) {
         ostr << "@";
       } else if (cell != 'x') {
         ostr << ".";

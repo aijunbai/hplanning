@@ -10,7 +10,6 @@ HierarchicalMCTS::~HierarchicalMCTS() {}
 
 bool HierarchicalMCTS::Update(int action, int observation, STATE &state)
 {
-  PRINT_VALUE("HierarchicalMCTS::Update");
   VNODE::Free(Root, Simulator);
   History.Add(action, observation, Params.MemorySize);  //更新历史
   Root = ExpandNode(&state, History);

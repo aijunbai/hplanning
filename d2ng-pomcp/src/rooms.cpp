@@ -85,8 +85,7 @@ void ROOMS::FreeState(STATE *state) const {
   mMemoryPool.Free(rstate);
 }
 
-bool ROOMS::Step(STATE &state, int action, int &observation, double &reward)
-    const  //进行一步模拟：state, action |-> state, reward, observation
+bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) const
 {
   assert(action < NumActions);
 
@@ -137,45 +136,14 @@ void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &,  //手工策�
                               const STATUS &status) const  //获得优先动作
 {
   GenerateLegal(state, actions, status);
-   
-  // if (mStateAbstraction) {
-  //   const ROOMS_STATE &rstate = safe_cast<const ROOMS_STATE &>(state);
-
-  //   if (mGrid->operator()(rstate.AgentPos) ==
-  //       mGrid->operator()(mGoalPos)) {
-  //     int x = mGoalPos.X - rstate.AgentPos.X;
-  //     int y = mGoalPos.Y - rstate.AgentPos.Y;
-
-  //     double dist = 1.0e6;
-  //     int besta = -1;
-  //     for (int i = 0; i < NumActions; ++i) {
-  //       double d = (coord::Compass[i].X - x) * (coord::Compass[i].X - x) +
-  //                  (coord::Compass[i].Y - y) * (coord::Compass[i].Y - y);
-  //       if (d < dist) {
-  //         dist = d;
-  //         besta = i;
-  //       }
-  //     }
-  //     if (besta != -1) {
-  //       actions.push_back(besta);
-  //     } else {
-  //       GenerateLegal(state, actions, status);
-  //     }
-  //   } else {
-  //     GenerateLegal(state, actions, status);
-  //   }
-  // } else {
-  //   GenerateLegal(state, actions, status);
-  // }
 }
 
 int ROOMS::GetObservation(const ROOMS_STATE &rstate) const {
-  return mStateAbstraction ? mGrid->operator()(rstate.AgentPos) - '0'
-                           : mGrid->Index(rstate.AgentPos);
+  return mStateAbstraction ? mGrid->operator()(rstate.AgentPos) - '0'  // room number
+                           : mGrid->Index(rstate.AgentPos);  // full position
 }
 
-void ROOMS::DisplayBeliefs(const BELIEF_STATE &belief,
-                           std::ostream &ostr) const {
+void ROOMS::DisplayBeliefs(const BELIEF_STATE &belief, std::ostream &ostr) const {
   unordered_map<COORD, int> m;
   for (int i = 0; i < belief.GetNumSamples(); ++i) {
     const ROOMS_STATE &state =
@@ -227,10 +195,10 @@ void ROOMS::DisplayObservation(const STATE &, int observation,
                                std::ostream &ostr) const {
   if (mStateAbstraction)
     ostr << "Observation: "
-         << "Room" << observation << endl;
+         << "Room " << char(observation + '0') << endl;
   else
     ostr << "Observation: "
-         << "Coord" << mGrid->Coord(observation) << endl;
+         << "Coord " << mGrid->Coord(observation) << endl;
 }
 
 void ROOMS::DisplayAction(int action, std::ostream &ostr) const {

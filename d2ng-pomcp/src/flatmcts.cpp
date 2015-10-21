@@ -1,4 +1,4 @@
-#include "mcts.h"
+#include "flatmcts.h"
 #include "testsimulator.h"
 #include "statistic.h"
 #include "boost/timer.hpp"
@@ -10,23 +10,8 @@
 using namespace std;
 using namespace UTILS;
 
-MCTS::PARAMS::PARAMS()
-  : Verbose(0),
-    MaxDepth(100),
-    NumSimulations(1000),
-    NumStartStates(1000),
-    UseTransforms(true),
-    UseParticleFilter(false),
-    NumTransforms(0),
-    MaxAttempts(0),
-    ExplorationConstant(1.0),
-    ReuseTree(false),
-    ThompsonSampling(false),
-    TimeOutPerAction(-1),
-    MemorySize(-1) {}
-
-MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
-  : Simulator(simulator), Params(params), TreeDepth(0) {
+FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params)
+  : MetaMCTS(simulator, params), TreeDepth(0) {
   VNODE::NumChildren = Simulator.GetNumActions();
   QNODE::NumChildren = Simulator.GetNumObservations();
 
@@ -41,9 +26,6 @@ MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
     // Root 节点构造完毕
   }
 
-  StatBeliefSize.Initialise();
-  StatTreeSize.Initialise();
-  StatPeakTreeDepth.Initialise();
   StatRedundantNodes.Initialise();
 
   assert(VNODE::GetNumAllocated() == 1);
@@ -51,13 +33,9 @@ MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
   if (Params.Verbose >= 1) Simulator.DisplayBeliefs(Root->Beliefs(), cout);
 }
 
-MCTS::~MCTS() {
+FlatMCTS::~FlatMCTS() {
   if (Params.Verbose >= 1) {
-    StatBeliefSize.Print("#Belief begin size", cout);
-    StatTreeSize.Print("#Tree size", cout);
-    StatPeakTreeDepth.Print("#Peak tree depth", cout);
     StatRedundantNodes.Print("#Redundant nodes rate", cout);
-    StatNumSimulation.Print("#Num simulations", cout);
   }
 
   VNODE::Free(Root, Simulator);
@@ -66,37 +44,7 @@ MCTS::~MCTS() {
   assert(VNODE::GetNumAllocated() == 0);
 }
 
-double MCTS::UCB[UCB_N][UCB_n];
-bool MCTS::InitialisedFastUCB = false;
-
-void MCTS::InitFastUCB(double exploration)
-{
-  cout << "Initialising fast UCB table... ";
-
-  for (int N = 0; N < UCB_N; ++N)
-    for (int n = 0; n < UCB_n; ++n)
-      if (n == 0)
-        UCB[N][n] = Infinity;
-      else
-        UCB[N][n] = exploration * sqrt(log(N + 1) / n);
-
-  cout << "done" << endl;
-  InitialisedFastUCB = true;
-}
-
-inline double MCTS::FastUCB(int N, int n) const
-{
-  if (InitialisedFastUCB && N < UCB_N && n < UCB_n)
-    return UCB[N][n];
-
-  if (n == 0)
-    return Infinity;
-  else {
-    return Params.ExplorationConstant * sqrt(log(N + 1) / n);
-  }
-}
-
-bool MCTS::Update(int action, int observation, STATE & /*state*/)
+bool FlatMCTS::Update(int action, int observation, STATE & /*state*/)
 {
   History.Add(action, observation, Params.MemorySize);  //更新历史
   BELIEF_STATE beliefs;
@@ -159,12 +107,12 @@ bool MCTS::Update(int action, int observation, STATE & /*state*/)
   return true;
 }
 
-int MCTS::SelectAction() {
+int FlatMCTS::SelectAction() {
   Search();
   return ActionSelection(Root, true);
 }
 
-void MCTS::SearchImp() {
+void FlatMCTS::SearchImp() {
   int historyDepth = History.Size();
 
   STATE *state = Root->Beliefs().CreateSample(Simulator);  // 得到一个可能的状态样本 -- 只在根节点采样 Root Sampling
@@ -175,17 +123,16 @@ void MCTS::SearchImp() {
   SimulateV(*state, Root);  //通过 Monte Carlo 方法得到 V 值
   if (Params.Verbose >= 3) DisplayValue(4, cout);
 
-  StatPeakTreeDepth.Add(PeakTreeDepth);
   Simulator.FreeState(state);
   History.Truncate(historyDepth);
 }
 
-int MCTS::ActionSelection(VNODE* vnode, bool greedy) const
+int FlatMCTS::ActionSelection(VNODE* vnode, bool greedy) const
 {
   return Params.ThompsonSampling? ThompsonSampling(vnode, !greedy): GreedyUCB(vnode, !greedy);
 }
 
-int MCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
+int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
 {
   static std::vector<int> besta;
   besta.clear();
@@ -221,34 +168,7 @@ int MCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
   return besta[SimpleRNG::ins().Random(besta.size())];
 }
 
-void MCTS::Search() {
-  assert(Root);
-  StatBeliefSize.Add(Root->Beliefs().GetNumSamples());
-
-  if (Params.TimeOutPerAction > 0.0) {  // Anytime mode
-    boost::timer timer;
-    int i = 0;
-
-    while (1) {
-      i += 1;
-      SearchImp();
-
-      if (timer.elapsed() > Params.TimeOutPerAction) {
-        StatNumSimulation.Add(i);
-        break;
-      }
-    }
-  } else {
-    for (int i = 0; i < Params.NumSimulations; i++)  //总共仿真（迭代）次数
-    {
-      SearchImp();
-    }
-  }
-
-  StatTreeSize.Add(VNODE::GetNumAllocated());
-}
-
-double MCTS::SimulateV(STATE &state, VNODE *vnode) {
+double FlatMCTS::SimulateV(STATE &state, VNODE *vnode) {
   int action = ActionSelection(vnode, false);
 
   PeakTreeDepth = max(PeakTreeDepth, TreeDepth);
@@ -273,7 +193,7 @@ double MCTS::SimulateV(STATE &state, VNODE *vnode) {
   return totalReward;  // Return(s, pi(s))
 }
 
-double MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
+double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
   int observation;
   double immediateReward;
   double delayedReward = 0.0;
@@ -347,19 +267,19 @@ double MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
   return totalReward;
 }
 
-VNODE *MCTS::ExpandNode(const STATE *state, HISTORY &history) {
+VNODE *FlatMCTS::ExpandNode(const STATE *state, HISTORY &history) {
   VNODE *vnode = VNODE::Create(history, Params.MemorySize);
   vnode->Value.Set(0, 0);
   Simulator.Prior(state, history, vnode);  //设置先验信息
   return vnode;
 }
 
-void MCTS::AddSample(VNODE *node, const STATE &state) {
+void FlatMCTS::AddSample(VNODE *node, const STATE &state) {
   STATE *sample = Simulator.Copy(state);
   node->Beliefs().AddSample(sample);
 }
 
-int MCTS::ThompsonSampling(VNODE *vnode, bool sampling) const {
+int FlatMCTS::ThompsonSampling(VNODE *vnode, bool sampling) const {
   vector<int> unexplored_actions;
 
   for (int action = 0; action < Simulator.GetNumActions(); action++) {
@@ -402,7 +322,7 @@ int MCTS::ThompsonSampling(VNODE *vnode, bool sampling) const {
   return besta;
 }
 
-double MCTS::HValue(VNODE *vnode, bool sampling) const {
+double FlatMCTS::HValue(VNODE *vnode, bool sampling) const {
   if (vnode) {  //树上的节点
     return vnode->/*GetCumulativeReward().*/ ThompsonSampling(sampling);  // XXX
   } else if (TreeDepth + 1 >= Params.MaxDepth) {  // search horizon reached
@@ -412,7 +332,7 @@ double MCTS::HValue(VNODE *vnode, bool sampling) const {
   return NormalGammaInfo().ThompsonSampling(sampling);  //按照默认分布返回
 }
 
-double MCTS::QValue(QNODE &qnode, bool sampling) const  //改成多层调用？
+double FlatMCTS::QValue(QNODE &qnode, bool sampling) const  //改成多层调用？
 {
   double qvalue = 0;
 
@@ -442,7 +362,7 @@ double MCTS::QValue(QNODE &qnode, bool sampling) const  //改成多层调用？
   return qvalue;
 }
 
-double MCTS::Rollout(STATE &state)  //从 state 出发随机选择动作
+double FlatMCTS::Rollout(STATE &state)  //从 state 出发随机选择动作
 {
   if (Params.Verbose >= 3) cout << "Starting rollout" << endl;
 
@@ -476,7 +396,7 @@ double MCTS::Rollout(STATE &state)  //从 state 出发随机选择动作
   return totalReward;
 }
 
-void MCTS::ParticleFilter(BELIEF_STATE &beliefs)  // unweighted particle filter
+void FlatMCTS::ParticleFilter(BELIEF_STATE &beliefs)  // unweighted particle filter
 {
   int attempts = 0, added = 0;
   int max_attempts = (Params.NumStartStates - beliefs.GetNumSamples()) * 10;
@@ -514,7 +434,7 @@ void MCTS::ParticleFilter(BELIEF_STATE &beliefs)  // unweighted particle filter
   }
 }
 
-void MCTS::AddTransforms(BELIEF_STATE &beliefs) {
+void FlatMCTS::AddTransforms(BELIEF_STATE &beliefs) {
   int attempts = 0, added = 0;
 
   if (Params.Verbose >= 1) {
@@ -539,7 +459,7 @@ void MCTS::AddTransforms(BELIEF_STATE &beliefs) {
   }
 }
 
-STATE *MCTS::CreateTransform() const {
+STATE *FlatMCTS::CreateTransform() const {
   int stepObs;
   double stepReward;
 
@@ -555,7 +475,7 @@ STATE *MCTS::CreateTransform() const {
   return 0;
 }
 
-void MCTS::DisplayValue(int depth, ostream &ostr) const {
+void FlatMCTS::DisplayValue(int depth, ostream &ostr) const {
   HISTORY history;
   ostr << "MCTS Values:" << endl;
 
@@ -571,23 +491,23 @@ void MCTS::DisplayValue(int depth, ostream &ostr) const {
   Root->DisplayValue(history, depth, ostr, &qvalues);
 }
 
-void MCTS::DisplayPolicy(int depth, ostream &ostr) const {
+void FlatMCTS::DisplayPolicy(int depth, ostream &ostr) const {
   HISTORY history;
   ostr << "MCTS Policy:" << endl;
   Root->DisplayPolicy(history, depth, ostr);
 }
 
-void MCTS::UnitTest() {
+void FlatMCTS::UnitTest() {
   UnitTestGreedy();
   UnitTestUCB();
   UnitTestRollout();
   for (int depth = 1; depth <= 3; ++depth) UnitTestSearch(depth);
 }
 
-void MCTS::UnitTestGreedy() {
+void FlatMCTS::UnitTestGreedy() {
   TEST_SIMULATOR testSimulator(5, 5, 0);
   PARAMS params;
-  MCTS mcts(testSimulator, params);
+  FlatMCTS mcts(testSimulator, params);
   int numAct = testSimulator.GetNumActions();
 
   HISTORY History;
@@ -601,10 +521,10 @@ void MCTS::UnitTestGreedy() {
   assert(besta == 0);
 }
 
-void MCTS::UnitTestUCB() {
+void FlatMCTS::UnitTestUCB() {
   TEST_SIMULATOR testSimulator(5, 5, 0);
   PARAMS params;
-  MCTS mcts(testSimulator, params);
+  FlatMCTS mcts(testSimulator, params);
   int numAct = testSimulator.GetNumActions();
   int numObs = testSimulator.GetNumObservations();
   HISTORY History;
@@ -650,12 +570,12 @@ void MCTS::UnitTestUCB() {
   assert(mcts.GreedyUCB(vnode4, true) == 3);
 }
 
-void MCTS::UnitTestRollout() {
+void FlatMCTS::UnitTestRollout() {
   TEST_SIMULATOR testSimulator(2, 2, 0);
   PARAMS params;
   params.NumSimulations = 1000;
   params.MaxDepth = 10;
-  MCTS mcts(testSimulator, params);
+  FlatMCTS mcts(testSimulator, params);
   double totalReward = 0.0;
   for (int n = 0; n < mcts.Params.NumSimulations; ++n)
   {
@@ -668,12 +588,12 @@ void MCTS::UnitTestRollout() {
   assert(fabs(meanValue - rootValue) < 0.1);
 }
 
-void MCTS::UnitTestSearch(int depth) {
+void FlatMCTS::UnitTestSearch(int depth) {
   TEST_SIMULATOR testSimulator(3, 2, depth);
   PARAMS params;
   params.MaxDepth = depth + 1;
   params.NumSimulations = pow(10, depth + 1);
-  MCTS mcts(testSimulator, params);
+  FlatMCTS mcts(testSimulator, params);
   mcts.Search();
   double rootValue = mcts.Root->Value.GetValue();
   double optimalValue = testSimulator.OptimalValue();

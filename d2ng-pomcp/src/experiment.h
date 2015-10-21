@@ -1,11 +1,10 @@
 #ifndef EXPERIMENT_H
 #define EXPERIMENT_H
 
-#include "hierarchicalmcts.h"
+#include "metamcts.h"
 #include "simulator.h"
 #include "statistic.h"
 #include <fstream>
-
 
 
 struct RESULTS {
@@ -49,18 +48,17 @@ class EXPERIMENT {
 
   EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
              const std::string &outputFile, EXPERIMENT::PARAMS &expParams,
-             MCTS::PARAMS &searchParams);
+             MetaMCTS::PARAMS &searchParams);
 
   void Run();
   void MultiRun();
   void DiscountedReturn();
-  //    void AverageReward();
 
  private:
   const SIMULATOR &Real;
   const SIMULATOR &Simulator;
   EXPERIMENT::PARAMS &ExpParams;
-  MCTS::PARAMS &SearchParams;
+  MetaMCTS::PARAMS &SearchParams;
   RESULTS Results;
 
   std::ofstream OutputFile;

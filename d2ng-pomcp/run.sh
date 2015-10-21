@@ -2,6 +2,7 @@
 
 PROBLEM="redundant_object_1"
 PROBLEM="rooms_1"
+PROBLEM="rocksample"
 SIZE=7
 NUM=8
 LEVELT=1

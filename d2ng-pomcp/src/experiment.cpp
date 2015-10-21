@@ -1,4 +1,6 @@
 #include "experiment.h"
+#include "hierarchicalmcts.h"
+#include "flatmcts.h"
 #include "boost/timer.hpp"
 
 using namespace std;
@@ -16,7 +18,7 @@ EXPERIMENT::PARAMS::PARAMS()
 
 EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
                        const string &outputFile, EXPERIMENT::PARAMS &expParams,
-                       MCTS::PARAMS &searchParams)
+                       MetaMCTS::PARAMS &searchParams)
     : Real(real),
       Simulator(simulator),
       ExpParams(expParams),
@@ -24,7 +26,7 @@ EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
       OutputFile(outputFile.c_str(), fstream::out | fstream::app)
 {
   SearchParams.ExplorationConstant = simulator.GetRewardRange();
-  MCTS::InitFastUCB(SearchParams.ExplorationConstant); //初始化 UCB 表格缓存
+  MetaMCTS::InitFastUCB(SearchParams.ExplorationConstant); //初始化 UCB 表格缓存
 }
 
 void EXPERIMENT::Run() {
@@ -33,9 +35,9 @@ void EXPERIMENT::Run() {
   VNODE::PARTICLES_STAT.Initialise();
   VNODE::Reward_HASH_STAT.Initialise();
 
-  MCTS *mcts = Real.mHierarchicalPlanning?
-        new HierarchicalMCTS(Simulator, SearchParams):
-        new MCTS(Simulator, SearchParams);
+  MetaMCTS *mcts = Real.mHierarchicalPlanning?
+        safe_cast<MetaMCTS*>(new HierarchicalMCTS(Simulator, SearchParams)):
+        safe_cast<MetaMCTS*>(new FlatMCTS(Simulator, SearchParams));
 
   double undiscountedReturn = 0.0;
   double discountedReturn = 0.0;
@@ -94,7 +96,6 @@ void EXPERIMENT::Run() {
   if (outOfParticles)  //特殊情况处理
   {
     cout << "Out of particles, finishing episode with SelectRandom" << endl;
-    HISTORY history = mcts->GetHistory();
     while (++t < ExpParams.NumSteps) {
       int observation;
       double reward;
@@ -102,7 +103,7 @@ void EXPERIMENT::Run() {
       // This passes real state into simulator!
       // SelectRandom must only use fully observable state
       // to avoid "cheating"
-      int action = Simulator.SelectRandom(*state, history);
+      int action = SimpleRNG::ins().Random(Simulator.GetNumActions());
       terminal = Real.Step(*state, action, observation, reward);
 
       Results.Reward.Add(reward);
@@ -121,8 +122,6 @@ void EXPERIMENT::Run() {
         cout << "Terminated" << endl;
         break;
       }
-
-      history.Add(action, observation, SearchParams.MemorySize);
     }
   }
 
@@ -131,8 +130,8 @@ void EXPERIMENT::Run() {
   Results.Time.Add(timer.elapsed());
   Results.UndiscountedReturn.Add(undiscountedReturn);
   Results.DiscountedReturn.Add(discountedReturn);
-  Results.ExploredNodes.Add(mcts->StatTreeSize.GetMean());
-  Results.ExploredDepth.Add(mcts->StatPeakTreeDepth.GetMean());
+//  Results.ExploredNodes.Add(mcts->StatTreeSize.GetMean());
+//  Results.ExploredDepth.Add(mcts->StatPeakTreeDepth.GetMean());
 
   cout << "\n#End of experiment:" << endl;
   cout << "#Discounted return = " << discountedReturn

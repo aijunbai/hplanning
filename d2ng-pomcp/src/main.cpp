@@ -1,5 +1,5 @@
 #include "battleship.h"
-#include "mcts.h"
+#include "flatmcts.h"
 #include "network.h"
 #include "pocman.h"
 #include "rocksample.h"
@@ -30,7 +30,7 @@ void UnitTests() {
   cout << "Testing COORD" << endl;
   COORD::UnitTest();
   cout << "Testing MCTS" << endl;
-  MCTS::UnitTest();
+  FlatMCTS::UnitTest();
 }
 
 void disableBufferedIO(void) {
@@ -43,7 +43,7 @@ void disableBufferedIO(void) {
 }
 
 int main(int argc, char *argv[]) {
-  MCTS::PARAMS searchParams;
+  MetaMCTS::PARAMS searchParams;
   EXPERIMENT::PARAMS expParams;
   SIMULATOR::KNOWLEDGE knowledge;
   string problem, outputfile;

@@ -22,7 +22,7 @@ HEADERS += src/battleship.h \
            src/experiment.h \
            src/grid.h \
            src/history.h \
-           src/mcts.h \
+           src/flatmcts.h \
            src/memorypool.h \
            src/network.h \
            src/node.h \
@@ -37,14 +37,15 @@ HEADERS += src/battleship.h \
            src/rooms.h \
     src/hierarchicalmcts.h \
     src/redundantobject.h \
-    src/dot_graph.h
+    src/dot_graph.h \
+    src/metamcts.h
 
 SOURCES += src/battleship.cpp \
            src/beliefstate.cpp \
            src/coord.cpp \
            src/experiment.cpp \
            src/main.cpp \
-           src/mcts.cpp \
+           src/flatmcts.cpp \
            src/network.cpp \
            src/node.cpp \
            src/pocman.cpp \
@@ -56,4 +57,5 @@ SOURCES += src/battleship.cpp \
            src/distribution.cpp \
            src/rooms.cpp \
     src/hierarchicalmcts.cpp \
-    src/redundantobject.cpp
+    src/redundantobject.cpp \
+    src/metamcts.cpp

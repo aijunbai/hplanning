@@ -83,10 +83,8 @@ class BATTLESHIP : public SIMULATOR {
   virtual bool Step(STATE &state, int action, int &observation,
                     double &reward) const;
 
-  void GenerateLegal(const STATE &state, /*const HISTORY& history,*/
-                     std::vector<int> &legal, const STATUS &status) const;
-  virtual bool LocalMove(STATE &state, const HISTORY &history, int stepObs,
-                         const STATUS &status) const;
+  void GenerateLegal(const STATE &state, std::vector<int> &legal) const;
+  virtual bool LocalMove(STATE &state, const HISTORY &history, int stepObs) const;
 
   virtual void DisplayBeliefs(const BELIEF_STATE &beliefState,
                               std::ostream &ostr) const;

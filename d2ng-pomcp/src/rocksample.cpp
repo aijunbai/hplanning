@@ -191,8 +191,7 @@ bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
   return false;  // not terminated
 }
 
-bool ROCKSAMPLE::LocalMove(STATE &state, const HISTORY &history, int stepObs,
-                           const STATUS &) const  //局部扰动
+bool ROCKSAMPLE::LocalMove(STATE &state, const HISTORY &history, int stepObs) const  //局部扰动
 {
   if (NumRocks) {
     ROCKSAMPLE_STATE &rockstate = safe_cast<ROCKSAMPLE_STATE &>(state);
@@ -218,8 +217,7 @@ bool ROCKSAMPLE::LocalMove(STATE &state, const HISTORY &history, int stepObs,
   return true;
 }
 
-void ROCKSAMPLE::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
-                               vector<int> &legal, const STATUS &) const {
+void ROCKSAMPLE::GenerateLegal(const STATE &state, vector<int> &legal) const {
   const ROCKSAMPLE_STATE &rockstate =
       safe_cast<const ROCKSAMPLE_STATE &>(state);
 
@@ -244,8 +242,7 @@ void ROCKSAMPLE::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
 
 void ROCKSAMPLE::GeneratePreferred(const STATE &state,
                                    const HISTORY &history,  //手工策略
-                                   vector<int> &actions,
-                                   const STATUS &) const  //获得优先动作
+                                   vector<int> &actions) const  //获得优先动作
 {
   //	static const bool UseBlindPolicy = false;
   //
@@ -451,8 +448,7 @@ bool FieldVisionRockSample::Step(STATE &state, int action, int &observation,
 }
 
 void FieldVisionRockSample::GenerateLegal(
-    const STATE &state, /*const HISTORY& history,*/
-    std::vector<int> &legal, const STATUS &) const {
+    const STATE &state, std::vector<int> &legal) const {
   const ROCKSAMPLE_STATE &rockstate =
       safe_cast<const ROCKSAMPLE_STATE &>(state);
 
@@ -473,13 +469,12 @@ void FieldVisionRockSample::GenerateLegal(
 
 void FieldVisionRockSample::GeneratePreferred(const STATE &state,
                                               const HISTORY & /*history*/,
-                                              std::vector<int> &actions,
-                                              const STATUS &status) const {
-  GenerateLegal(state, actions, status);
+                                              std::vector<int> &actions) const {
+  GenerateLegal(state, actions);
 }
 
 bool FieldVisionRockSample::LocalMove(STATE &state, const HISTORY & /*history*/,
-                                      int /*stepObs*/, const STATUS &) const {
+                                      int /*stepObs*/) const {
   if (NumRocks) {
     ROCKSAMPLE_STATE &rockstate = safe_cast<ROCKSAMPLE_STATE &>(state);
     int rock = SimpleRNG::ins().Random(NumRocks);

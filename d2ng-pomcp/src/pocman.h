@@ -44,12 +44,9 @@ class POCMAN : public SIMULATOR {
   virtual bool Step(STATE &state, int action, int &observation,
                     double &reward) const;
 
-  virtual bool LocalMove(STATE &state, const HISTORY &history, int stepObs,
-                         const STATUS &status) const;
-  void GenerateLegal(const STATE &state, /*const HISTORY& history,*/
-                     std::vector<int> &legal, const STATUS &status) const;
-  void GeneratePreferred(const STATE &state, const HISTORY &history,
-                         std::vector<int> &legal, const STATUS &status) const;
+  virtual bool LocalMove(STATE &state, const HISTORY &history, int stepObs) const;
+  void GenerateLegal(const STATE &state, std::vector<int> &legal) const;
+  void GeneratePreferred(const STATE &state, const HISTORY &history, std::vector<int> &legal) const;
 
   virtual void DisplayBeliefs(const BELIEF_STATE &beliefState,
                               std::ostream &ostr) const;

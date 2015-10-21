@@ -255,8 +255,7 @@ int POCMAN::MakeObservations(const POCMAN_STATE &pocstate) const {
   return observation;
 }
 
-bool POCMAN::LocalMove(STATE &state, const HISTORY &history, int,
-                       const STATUS &) const {
+bool POCMAN::LocalMove(STATE &state, const HISTORY &history, int) const {
   POCMAN_STATE &pocstate = safe_cast<POCMAN_STATE &>(state);
 
   int numGhosts =
@@ -416,8 +415,7 @@ bool POCMAN::SmellFood(const POCMAN_STATE &pocstate) const {
   return false;
 }
 
-void POCMAN::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
-                           vector<int> &legal, const STATUS &) const {
+void POCMAN::GenerateLegal(const STATE &state, vector<int> &legal) const {
   const POCMAN_STATE &pocstate = safe_cast<const POCMAN_STATE &>(state);
 
   // Don't move into walls
@@ -427,8 +425,7 @@ void POCMAN::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
   }
 }
 
-void POCMAN::GeneratePreferred(const STATE &state, const HISTORY &history,
-                               vector<int> &actions, const STATUS &) const {
+void POCMAN::GeneratePreferred(const STATE &state, const HISTORY &history, vector<int> &actions) const {
   const POCMAN_STATE &pocstate = safe_cast<const POCMAN_STATE &>(state);
   if (history.Size()) {
     int action = history.Back().Action;

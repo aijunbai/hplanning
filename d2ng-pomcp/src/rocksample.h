@@ -62,14 +62,10 @@ class ROCKSAMPLE : public SIMULATOR {
   virtual bool Step(STATE &state, int action, int &observation,
                     double &reward) const;
 
-  virtual void GenerateLegal(const STATE &state, /*const HISTORY& history,*/
-                             std::vector<int> &legal,
-                             const STATUS &status) const;
+  virtual void GenerateLegal(const STATE &state, std::vector<int> &legal) const;
   virtual void GeneratePreferred(const STATE &state, const HISTORY &history,
-                                 std::vector<int> &legal,
-                                 const STATUS &status) const;
-  virtual bool LocalMove(STATE &state, const HISTORY &history,
-                         int stepObservation, const STATUS &status) const;
+                                 std::vector<int> &legal) const;
+  virtual bool LocalMove(STATE &state, const HISTORY &history, int stepObservation) const;
 
   virtual void DisplayBeliefs(const BELIEF_STATE &beliefState,
                               std::ostream &ostr) const;
@@ -116,14 +112,10 @@ class FieldVisionRockSample : public ROCKSAMPLE {
   virtual bool Step(STATE &state, int action, int &observation,
                     double &reward) const;
 
-  virtual void GenerateLegal(const STATE &state, /*const HISTORY& history,*/
-                             std::vector<int> &legal,
-                             const STATUS &status) const;
+  virtual void GenerateLegal(const STATE &state, std::vector<int> &legal) const;
   virtual void GeneratePreferred(const STATE &state, const HISTORY &history,
-                                 std::vector<int> &legal,
-                                 const STATUS &status) const;
-  virtual bool LocalMove(STATE &state, const HISTORY &history,
-                         int stepObservation, const STATUS &status) const;
+                                 std::vector<int> &legal) const;
+  virtual bool LocalMove(STATE &state, const HISTORY &history, int stepObservation) const;
 
   virtual void DisplayObservation(const STATE &state, int observation,
                                   std::ostream &ostr) const;

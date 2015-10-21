@@ -112,8 +112,7 @@ bool BATTLESHIP::Step(STATE &state, int action, int &observation,
   }
 }
 
-bool BATTLESHIP::LocalMove(STATE &state, const HISTORY &history,
-                           int /*stepObs*/, const STATUS &) const {
+bool BATTLESHIP::LocalMove(STATE &state, const HISTORY &history, int /*stepObs*/) const {
   BATTLESHIP_STATE &bsstate = safe_cast<BATTLESHIP_STATE &>(state);
   bool refreshDiagonals = history.Size() &&
                           bsstate.Cells(history.Back().Action).Occupied !=
@@ -257,10 +256,9 @@ bool BATTLESHIP::SwitchThreeShips(BATTLESHIP_STATE &bsstate) const {
   return true;
 }
 
-void BATTLESHIP::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
-                               vector<int> &legal, const STATUS &status) const {
+void BATTLESHIP::GenerateLegal(const STATE &state, vector<int> &legal) const {
   const BATTLESHIP_STATE &bsstate = safe_cast<const BATTLESHIP_STATE &>(state);
-  bool diagonals = Knowledge.Level(status.Phase) == KNOWLEDGE::SMART;
+  bool diagonals = true; // XXX
   if (diagonals) {
     for (int a = 0; a < NumActions; ++a)
       if (!bsstate.Cells(a).Visited && !bsstate.Cells(a).Diagonal)

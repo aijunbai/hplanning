@@ -109,8 +109,7 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
   return false;  // not terminated
 }
 
-bool ROOMS::LocalMove(STATE &state, const HISTORY &history, int,
-                      const STATUS &) const  //局部扰动
+bool ROOMS::LocalMove(STATE &state, const HISTORY &history, int) const  //局部扰动
 {
   ROOMS_STATE rstate = safe_cast<ROOMS_STATE &>(state);
   if (GetObservation(rstate) == history.Back().Observation) {
@@ -119,8 +118,7 @@ bool ROOMS::LocalMove(STATE &state, const HISTORY &history, int,
   return false;
 }
 
-void ROOMS::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
-                          vector<int> &legal, const STATUS &) const {
+void ROOMS::GenerateLegal(const STATE &state, vector<int> &legal) const {
   const ROOMS_STATE &rstate = safe_cast<const ROOMS_STATE &>(state);
 
   assert(mGrid->Inside(rstate.AgentPos));
@@ -132,10 +130,9 @@ void ROOMS::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
 }
 
 void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &,  //手工策略
-                              vector<int> &actions,
-                              const STATUS &status) const  //获得优先动作
+                              vector<int> &actions) const  //获得优先动作
 {
-  GenerateLegal(state, actions, status);
+  GenerateLegal(state, actions);
 }
 
 int ROOMS::GetObservation(const ROOMS_STATE &rstate) const {

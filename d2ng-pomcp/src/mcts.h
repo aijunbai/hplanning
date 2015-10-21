@@ -38,7 +38,6 @@ class MCTS {
 
   const BELIEF_STATE &BeliefState() const { return Root->Beliefs(); }
   const HISTORY &GetHistory() const { return History; }
-  const SIMULATOR::STATUS &GetStatus() const { return Status; }
   void DisplayValue(int depth, std::ostream &ostr) const;
   void DisplayPolicy(int depth, std::ostream &ostr) const;
 
@@ -64,12 +63,12 @@ public:
   PARAMS Params;
   VNODE *Root;
   HISTORY History;
-  SIMULATOR::STATUS Status;  //标记树搜索的阶段和样本状态
   int TreeDepth, PeakTreeDepth;
 
+  int ActionSelection(VNODE* vnode, bool ucb) const;
   int GreedyUCB(VNODE* vnode, bool ucb) const;
   int ThompsonSampling(VNODE *vnode, bool sampling) const;
-  int SelectRandom() const;
+
   double SimulateV(STATE &state, VNODE *vnode);
   double SimulateQ(STATE &state, QNODE &qnode, int action);
   VNODE *ExpandNode(const STATE *state, HISTORY &history);

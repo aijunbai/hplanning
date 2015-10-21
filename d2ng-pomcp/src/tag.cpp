@@ -170,8 +170,7 @@ void TAG::MoveOpponent(TAG_STATE &tagstate, int opp) const {
   }
 }
 
-bool TAG::LocalMove(STATE &state, const HISTORY &history, int /*stepObs*/,
-                    const STATUS &) const {
+bool TAG::LocalMove(STATE &state, const HISTORY &history, int /*stepObs*/) const {
   TAG_STATE &tagstate = safe_cast<TAG_STATE &>(state);
 
   int opp = SimpleRNG::ins().Random(NumOpponents);
@@ -185,8 +184,7 @@ bool TAG::LocalMove(STATE &state, const HISTORY &history, int /*stepObs*/,
   return simObs == realObs;
 }
 
-void TAG::GeneratePreferred(const STATE &state, const HISTORY &history,
-                            vector<int> &actions, const STATUS &) const {
+void TAG::GeneratePreferred(const STATE &state, const HISTORY &history, vector<int> &actions) const {
   const TAG_STATE &tagstate = safe_cast<const TAG_STATE &>(state);
 
   // If history is empty then we don't know where we are yet

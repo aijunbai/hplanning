@@ -161,13 +161,7 @@ bool MCTS::Update(int action, int observation, STATE & /*state*/)
 
 int MCTS::SelectAction() {
   Search();
-
-  if (Params.ThompsonSampling) {
-    return ThompsonSampling(Root, false);
-  }
-  else {
-    return GreedyUCB(Root, false);
-  }
+  return ActionSelection(Root, true);
 }
 
 void MCTS::SearchImp() {
@@ -175,7 +169,6 @@ void MCTS::SearchImp() {
 
   STATE *state = Root->Beliefs().CreateSample(Simulator);  // 得到一个可能的状态样本 -- 只在根节点采样 Root Sampling
   Simulator.Validate(*state);
-  Status.Phase = SIMULATOR::STATUS::TREE;
   TreeDepth = 0;
   PeakTreeDepth = 0;
 
@@ -185,6 +178,11 @@ void MCTS::SearchImp() {
   StatPeakTreeDepth.Add(PeakTreeDepth);
   Simulator.FreeState(state);
   History.Truncate(historyDepth);
+}
+
+int MCTS::ActionSelection(VNODE* vnode, bool greedy) const
+{
+  return Params.ThompsonSampling? ThompsonSampling(vnode, !greedy): GreedyUCB(vnode, !greedy);
 }
 
 int MCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
@@ -251,13 +249,7 @@ void MCTS::Search() {
 }
 
 double MCTS::SimulateV(STATE &state, VNODE *vnode) {
-  int action;
-  if (Params.ThompsonSampling) {
-    action = ThompsonSampling(vnode, true);
-  }
-  else {
-    action = GreedyUCB(vnode, true);
-  }
+  int action = ActionSelection(vnode, false);
 
   PeakTreeDepth = max(PeakTreeDepth, TreeDepth);
   if (TreeDepth >= Params.MaxDepth) {  // search horizon reached
@@ -358,7 +350,7 @@ double MCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
 VNODE *MCTS::ExpandNode(const STATE *state, HISTORY &history) {
   VNODE *vnode = VNODE::Create(history, Params.MemorySize);
   vnode->Value.Set(0, 0);
-  Simulator.Prior(state, history, vnode, Status);  //设置先验信息
+  Simulator.Prior(state, history, vnode);  //设置先验信息
   return vnode;
 }
 
@@ -452,7 +444,6 @@ double MCTS::QValue(QNODE &qnode, bool sampling) const  //改成多层调用？
 
 double MCTS::Rollout(STATE &state)  //从 state 出发随机选择动作
 {
-  Status.Phase = SIMULATOR::STATUS::ROLLOUT;
   if (Params.Verbose >= 3) cout << "Starting rollout" << endl;
 
   double totalReward = 0.0;
@@ -463,7 +454,7 @@ double MCTS::Rollout(STATE &state)  //从 state 出发随机选择动作
     int observation;
     double reward;
 
-    int action = Simulator.SelectRandom(state, History, Status);  //根据 knowledge level 随机选择动作
+    int action = Simulator.SelectRandom(state, History);  //根据 knowledge level 随机选择动作
     terminal = Simulator.Step(state, action, observation,
                               reward);  //根据 state 和 action 进行一次模拟
     History.Add(action, observation, Params.MemorySize);
@@ -558,7 +549,7 @@ STATE *MCTS::CreateTransform() const {
     Root->Child(History.Back().Action).Update(stepObs, stepReward);
   }
 
-  if (Simulator.LocalMove(*state, History, stepObs, Status)) return state;
+  if (Simulator.LocalMove(*state, History, stepObs)) return state;
 
   Simulator.FreeState(state);
   return 0;

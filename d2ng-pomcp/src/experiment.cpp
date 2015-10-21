@@ -102,7 +102,7 @@ void EXPERIMENT::Run() {
       // This passes real state into simulator!
       // SelectRandom must only use fully observable state
       // to avoid "cheating"
-      int action = Simulator.SelectRandom(*state, history, mcts->GetStatus());
+      int action = Simulator.SelectRandom(*state, history);
       terminal = Real.Step(*state, action, observation, reward);
 
       Results.Reward.Add(reward);

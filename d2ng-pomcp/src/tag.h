@@ -40,9 +40,8 @@ class TAG : public SIMULATOR {
                     double &reward) const;
 
   void GeneratePreferred(const STATE &state, const HISTORY &history,
-                         std::vector<int> &legal, const STATUS &status) const;
-  virtual bool LocalMove(STATE &state, const HISTORY &history, int stepObs,
-                         const STATUS &status) const;
+                         std::vector<int> &legal) const;
+  virtual bool LocalMove(STATE &state, const HISTORY &history, int stepObs) const;
 
   virtual void DisplayBeliefs(const BELIEF_STATE &beliefState,
                               std::ostream &ostr) const;

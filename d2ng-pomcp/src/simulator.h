@@ -30,25 +30,6 @@ class SIMULATOR {
     int RolloutLevel;  //标记使用何种方式 rollout
     int SmartTreeCount;
     double SmartTreeValue;
-
-    int Level(int phase) const {
-      assert(phase < STATUS::NUM_PHASES);
-      if (phase == STATUS::TREE)
-        return TreeLevel;
-      else
-        return RolloutLevel;
-    }
-  };
-
-  struct STATUS {
-    STATUS();
-
-    enum { TREE, ROLLOUT, NUM_PHASES };
-
-    enum { CONSISTENT, INCONSISTENT, RESAMPLED, OUT_OF_PARTICLES };
-
-    int Phase;
-    int Particles;
   };
 
   SIMULATOR();
@@ -73,30 +54,22 @@ class SIMULATOR {
   virtual void Validate(const STATE &state) const;
 
   // Modify state stochastically to some related state
-  virtual bool LocalMove(STATE &state, const HISTORY &history, int stepObs,
-                         const STATUS &status) const;
+  virtual bool LocalMove(STATE &state, const HISTORY &history, int stepObs) const;
 
   // Use domain knowledge to assign prior value and confidence to actions
   // Should only use fully observable state variables
-  void Prior(const STATE *state, const HISTORY &history, VNODE *vnode,
-             const STATUS &status) const;
+  void Prior(const STATE *state, const HISTORY &history, VNODE *vnode) const;
 
   // Use domain knowledge to select actions stochastically during rollouts
   // Should only use fully observable state variables
-  int SelectRandom(const STATE &state, const HISTORY &history,
-                   const STATUS &status) const;
+  int SelectRandom(const STATE &state, const HISTORY &history) const;
 
   // Generate set of legal actions
-  virtual void GenerateLegal(const STATE &state, /* const HISTORY& history,
-                                                    //XXX 为什么跟 history
-                                                    相关？*/
-                             std::vector<int> &actions,
-                             const STATUS &status) const;
+  virtual void GenerateLegal(const STATE &state, std::vector<int> &actions) const;
 
   // Generate set of preferred actions
   virtual void GeneratePreferred(const STATE &state, const HISTORY &history,
-                                 std::vector<int> &actions,
-                                 const STATUS &status) const;
+                                 std::vector<int> &actions) const;
 
   // Textual display
   virtual void DisplayBeliefs(const BELIEF_STATE &beliefState,

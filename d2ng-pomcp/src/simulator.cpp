@@ -10,8 +10,6 @@ SIMULATOR::KNOWLEDGE::KNOWLEDGE()
       SmartTreeCount(10),
       SmartTreeValue(1.0) {}
 
-SIMULATOR::STATUS::STATUS() : Phase(TREE), Particles(CONSISTENT) {}
-
 SIMULATOR::SIMULATOR()
     : NumActions(0),
       NumObservations(0),
@@ -32,32 +30,30 @@ SIMULATOR::~SIMULATOR() {}
 
 void SIMULATOR::Validate(const STATE &) const {}
 
-bool SIMULATOR::LocalMove(STATE &, const HISTORY &, int, const STATUS &) const {
+bool SIMULATOR::LocalMove(STATE &, const HISTORY &, int) const {
   return true;
 }
 
-void SIMULATOR::GenerateLegal(const STATE &, /*const HISTORY& ,*/
-                              std::vector<int> &actions, const STATUS &) const {
+void SIMULATOR::GenerateLegal(const STATE &, std::vector<int> &actions) const {
   for (int a = 0; a < NumActions; ++a) actions.push_back(a);
 }
 
 void SIMULATOR::GeneratePreferred(const STATE &, const HISTORY &,
-                                  std::vector<int> &, const STATUS &) const {}
+                                  std::vector<int> &) const {}
 
-int SIMULATOR::SelectRandom(const STATE &state, const HISTORY &history,
-                            const STATUS &status) const {
+int SIMULATOR::SelectRandom(const STATE &state, const HISTORY &history) const {
   static vector<int> actions;
 
   if (Knowledge.RolloutLevel >= KNOWLEDGE::SMART) {
     actions.clear();
-    GeneratePreferred(state, history, actions, status);
+    GeneratePreferred(state, history, actions);
     if (!actions.empty())
       return actions[SimpleRNG::ins().Random(actions.size())];
   }
 
   if (Knowledge.RolloutLevel >= KNOWLEDGE::LEGAL) {
     actions.clear();
-    GenerateLegal(state, /*history,*/ actions, status);
+    GenerateLegal(state, actions);
     if (!actions.empty())
       return actions[SimpleRNG::ins().Random(actions.size())];
   }
@@ -65,8 +61,7 @@ int SIMULATOR::SelectRandom(const STATE &state, const HISTORY &history,
   return SimpleRNG::ins().Random(NumActions);
 }
 
-void SIMULATOR::Prior(const STATE *state, const HISTORY &history, VNODE *vnode,
-                      const STATUS &status) const {
+void SIMULATOR::Prior(const STATE *state, const HISTORY &history, VNODE *vnode) const {
   static std::vector<int> actions;
 
   if (Knowledge.TreeLevel == KNOWLEDGE::PURE || state == 0) {
@@ -78,7 +73,7 @@ void SIMULATOR::Prior(const STATE *state, const HISTORY &history, VNODE *vnode,
 
   if (Knowledge.TreeLevel >= KNOWLEDGE::LEGAL) {
     actions.clear();
-    GenerateLegal(*state, /*history,*/ actions, status);
+    GenerateLegal(*state, actions);
 
     for (vector<int>::const_iterator i_action = actions.begin();
          i_action != actions.end(); ++i_action) {
@@ -90,7 +85,7 @@ void SIMULATOR::Prior(const STATE *state, const HISTORY &history, VNODE *vnode,
 
   if (Knowledge.TreeLevel >= KNOWLEDGE::SMART) {
     actions.clear();
-    GeneratePreferred(*state, history, actions, status);  //产生优先动作
+    GeneratePreferred(*state, history, actions);  //产生优先动作
 
     for (vector<int>::const_iterator i_action = actions.begin();
          i_action != actions.end(); ++i_action) {

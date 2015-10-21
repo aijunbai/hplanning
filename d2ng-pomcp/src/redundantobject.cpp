@@ -88,8 +88,7 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &
   return false;  // not terminated
 }
 
-bool REDUNDANT_OBJECT::LocalMove(STATE &state, const HISTORY &history, int,
-                                 const STATUS &) const  //局部扰动
+bool REDUNDANT_OBJECT::LocalMove(STATE &state, const HISTORY &history, int) const  //局部扰动
 {
   REDUNDANT_OBJECT_STATE rstate = safe_cast<REDUNDANT_OBJECT_STATE &>(state);
   if (GetObservation(rstate) == history.Back().Observation) {
@@ -98,8 +97,7 @@ bool REDUNDANT_OBJECT::LocalMove(STATE &state, const HISTORY &history, int,
   return false;
 }
 
-void REDUNDANT_OBJECT::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
-                                     vector<int> &legal, const STATUS &) const {
+void REDUNDANT_OBJECT::GenerateLegal(const STATE &state, vector<int> &legal) const {
   const REDUNDANT_OBJECT_STATE &rstate =
       safe_cast<const REDUNDANT_OBJECT_STATE &>(state);
 
@@ -113,9 +111,9 @@ void REDUNDANT_OBJECT::GenerateLegal(const STATE &state, /*const HISTORY& ,*/
 
 void REDUNDANT_OBJECT::GeneratePreferred(
     const STATE &state, const HISTORY &,               //手工策略
-    vector<int> &actions, const STATUS &status) const  //获得优先动作
+    vector<int> &actions) const  //获得优先动作
 {
-  GenerateLegal(state, actions, status);
+  GenerateLegal(state, actions);
 }
 
 int REDUNDANT_OBJECT::Encode(const REDUNDANT_OBJECT_STATE &rstate) const {

@@ -42,15 +42,15 @@ namespace UCT {
 // Tree
 //
 
-template<typename T> struct node_t {
-    mutable std::vector<unsigned> counts_;
-    mutable std::vector<float> values_;
-    node_t(int num_actions)
-      : counts_(1+num_actions, 0),
-        values_(1+num_actions, 0) {
-    } 
-    ~node_t() { }
-};
+// template<typename T> struct node_t {
+//     mutable std::vector<unsigned> counts_;
+//     mutable std::vector<float> values_;
+//     node_t(int num_actions)
+//       : counts_(1+num_actions, 0),
+//         values_(1+num_actions, 0) {
+//     } 
+//     ~node_t() { }
+// };
 
 ////////////////////////////////////////////////
 //

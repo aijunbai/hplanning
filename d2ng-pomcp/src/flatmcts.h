@@ -37,7 +37,6 @@ public:
   HISTORY History;
   int TreeDepth, PeakTreeDepth;
 
-  int ActionSelection(VNODE* vnode, bool greedy) const;
   int GreedyUCB(VNODE* vnode, bool ucb) const;
   int ThompsonSampling(VNODE *vnode, bool sampling) const;
 

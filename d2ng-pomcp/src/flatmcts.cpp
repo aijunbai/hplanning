@@ -108,8 +108,7 @@ bool FlatMCTS::Update(int action, int observation, STATE & /*state*/)
 }
 
 int FlatMCTS::SelectAction() {
-  Search();
-  return ActionSelection(Root, true);
+  return Params.ThompsonSampling? ThompsonSampling(Root, false): GreedyUCB(Root, false);
 }
 
 void FlatMCTS::SearchImp() {
@@ -125,11 +124,6 @@ void FlatMCTS::SearchImp() {
 
   Simulator.FreeState(state);
   History.Truncate(historyDepth);
-}
-
-int FlatMCTS::ActionSelection(VNODE* vnode, bool greedy) const
-{
-  return Params.ThompsonSampling? ThompsonSampling(vnode, !greedy): GreedyUCB(vnode, !greedy);
 }
 
 int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
@@ -169,7 +163,7 @@ int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
 }
 
 double FlatMCTS::SimulateV(STATE &state, VNODE *vnode) {
-  int action = ActionSelection(vnode, false);
+  int action = Params.ThompsonSampling? ThompsonSampling(vnode, true): GreedyUCB(vnode, true);
 
   PeakTreeDepth = max(PeakTreeDepth, TreeDepth);
   if (TreeDepth >= Params.MaxDepth) {  // search horizon reached

@@ -34,10 +34,6 @@ MetaMCTS::MetaMCTS(const SIMULATOR &simulator, const PARAMS &params)
 
 MetaMCTS::~MetaMCTS()
 {
-  if (Params.Verbose >= 1) {
-    StatNumSimulation.Print("#Num simulations", cout);
-  }
-
 }
 
 
@@ -82,7 +78,6 @@ void MetaMCTS::Search() {
       SearchImp();
 
       if (timer.elapsed() > Params.TimeOutPerAction) {
-        StatNumSimulation.Add(i);
         break;
       }
     }

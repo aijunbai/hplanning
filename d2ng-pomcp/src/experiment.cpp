@@ -55,7 +55,8 @@ void EXPERIMENT::Run() {
     double reward;
 
     boost::timer timer_per_action;
-    int action = mcts->SelectAction();  // XXX 用 Monte Carlo 方法选择一个动作
+    mcts->Search();
+    int action = mcts->SelectAction();  // 用 Monte Carlo 方法选择一个动作
 
     Results.TimePerAction.Add(timer_per_action.elapsed());
     terminal = Real.Step(

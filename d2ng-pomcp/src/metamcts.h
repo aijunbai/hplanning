@@ -46,9 +46,6 @@ public:
 protected:
  const SIMULATOR &Simulator;
  PARAMS Params;
-
-public:
- STATISTIC StatNumSimulation;  //统计 Any time 模式下每次 simulation 次数
 };
 
 #endif // METAMCTS_H

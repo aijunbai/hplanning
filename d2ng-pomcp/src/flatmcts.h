@@ -19,7 +19,6 @@ class FlatMCTS: public MetaMCTS {
   double Rollout(STATE &state);
 
   const BELIEF_STATE &BeliefState() const { return Root->Beliefs(); }
-  const HISTORY &GetHistory() const { return History; }
   void DisplayValue(int depth, std::ostream &ostr) const;
   void DisplayPolicy(int depth, std::ostream &ostr) const;
 
@@ -34,7 +33,6 @@ public:
 
  protected:
   VNODE *Root;
-  HISTORY History;
   int TreeDepth, PeakTreeDepth;
 
   int GreedyUCB(VNODE* vnode, bool ucb) const;

@@ -75,6 +75,11 @@ class SimpleRNG {
 
   bool Bernoulli(double p) { return RandomDouble(0.0, 1.0) < p; }
 
+  template<typename T>
+  T Sample(const std::vector<T> &v) {
+    return v.at(Random(v.size()));
+  }
+
  private:
   int PoissonLarge(double lambda);
   int PoissonSmall(double lambda);

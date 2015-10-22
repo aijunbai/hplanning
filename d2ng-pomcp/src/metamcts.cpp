@@ -29,7 +29,8 @@ MetaMCTS::PARAMS::PARAMS()
 MetaMCTS::MetaMCTS(const SIMULATOR &simulator, const PARAMS &params)
   :Simulator(simulator), Params(params)
 {
-
+  VNODE::NumChildren = Simulator.GetNumActions();
+  QNODE::NumChildren = Simulator.GetNumObservations();
 }
 
 MetaMCTS::~MetaMCTS()

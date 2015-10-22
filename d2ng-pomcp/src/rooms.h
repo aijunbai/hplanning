@@ -54,7 +54,6 @@ class ROOMS : public SIMULATOR {
   void Parse(const char *file_name);
   int GetObservation(const ROOMS_STATE &state) const;
 
-  bool mStateAbstraction;
   GRID<int> *mGrid;
   int mRooms;
   COORD mStartPos;

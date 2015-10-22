@@ -15,13 +15,16 @@ SIMULATOR::SIMULATOR()
       NumObservations(0),
       Discount(1.0),
       RewardRange(1.0),
-      mHierarchicalPlanning(false) {}
+      mHierarchicalPlanning(false),
+      mStateAbstraction(false) {}
 
 SIMULATOR::SIMULATOR(int numActions, int numObservations, double discount)
     : NumActions(numActions),
       NumObservations(numObservations),
       Discount(discount),
-      RewardRange(1.0)
+      RewardRange(1.0),
+      mHierarchicalPlanning(false),
+      mStateAbstraction(false)
 {
   assert(discount > 0 && discount <= 1);
 }
@@ -48,14 +51,14 @@ int SIMULATOR::SelectRandom(const STATE &state, const HISTORY &history) const {
     actions.clear();
     GeneratePreferred(state, history, actions);
     if (!actions.empty())
-      return actions[SimpleRNG::ins().Random(actions.size())];
+      return SimpleRNG::ins().Sample(actions);
   }
 
   if (Knowledge.RolloutLevel >= KNOWLEDGE::LEGAL) {
     actions.clear();
     GenerateLegal(state, actions);
     if (!actions.empty())
-      return actions[SimpleRNG::ins().Random(actions.size())];
+      return SimpleRNG::ins().Sample(actions);
   }
 
   return SimpleRNG::ins().Random(NumActions);

@@ -35,6 +35,7 @@ public:
   virtual bool Update(int action, int observation, STATE &state) = 0;  // update history and ground state (if possible)
 
   void Search();
+  const HISTORY &GetHistory() const { return History; }
   static void InitFastUCB(double exploration);
 
   // Fast lookup table for UCB
@@ -46,6 +47,7 @@ public:
 protected:
  const SIMULATOR &Simulator;
  PARAMS Params;
+ HISTORY History;
 };
 
 #endif // METAMCTS_H

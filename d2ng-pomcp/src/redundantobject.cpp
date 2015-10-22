@@ -10,17 +10,17 @@ using namespace std;
 using namespace UTILS;
 
 REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
-    : mStateAbstraction(state_abstraction),
-      mGrid(size, size),
+    : mGrid(size, size),
       mStartPos(0, 0),
       mGoalPos(size - 1, size - 1) {
   NumActions = 4;  //动作数
   int grids = mGrid.GetSize();
-  NumObservations = mStateAbstraction ? grids : grids * grids;
+  NumObservations = state_abstraction ? grids : grids * grids;
   Discount = 0.95;
   RewardRange = 9.0;
   mName << "redundant_object_" << size << "_" << state_abstraction;
   mHierarchicalPlanning = true;
+  mStateAbstraction = state_abstraction;
 }
 
 REDUNDANT_OBJECT::~REDUNDANT_OBJECT() {}

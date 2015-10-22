@@ -12,9 +12,6 @@ using namespace UTILS;
 
 FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params)
   : MetaMCTS(simulator, params), TreeDepth(0) {
-  VNODE::NumChildren = Simulator.GetNumActions();
-  QNODE::NumChildren = Simulator.GetNumObservations();
-
   STATE *state = Simulator.CreateStartState();  //可能的开始状态
 
   Root = ExpandNode(state, History);  //生成根节点并初始化
@@ -145,6 +142,7 @@ int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
 
     q = qnode.Value.GetValue();
     n = qnode.Value.GetCount();
+
     if (ucb) {
       q += FastUCB(N, n);
     }
@@ -159,7 +157,7 @@ int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
   }
 
   assert(!besta.empty());
-  return besta[SimpleRNG::ins().Random(besta.size())];
+  return SimpleRNG::ins().Sample(besta);
 }
 
 double FlatMCTS::SimulateV(STATE &state, VNODE *vnode) {
@@ -289,8 +287,7 @@ int FlatMCTS::ThompsonSampling(VNODE *vnode, bool sampling) const {
   }
 
   if (!unexplored_actions.empty()) {
-    return unexplored_actions[SimpleRNG::ins().Random(
-        unexplored_actions.size())];
+    return SimpleRNG::ins().Sample(unexplored_actions);
   }
 
   int besta = -1;

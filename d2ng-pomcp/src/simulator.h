@@ -101,6 +101,7 @@ class SIMULATOR {
 
  public:
   bool mHierarchicalPlanning;
+  bool mStateAbstraction;
 };
 
 #endif  // SIMULATOR_H

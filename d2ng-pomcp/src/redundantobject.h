@@ -55,7 +55,6 @@ class REDUNDANT_OBJECT : public SIMULATOR {
   int Encode(const REDUNDANT_OBJECT_STATE &rstate) const;
   REDUNDANT_OBJECT_STATE Decode(int index) const;
 
-  bool mStateAbstraction;
   GRID<int> mGrid;
   COORD mStartPos;
   COORD mGoalPos;

@@ -43,7 +43,7 @@ void disableBufferedIO(void) {
 }
 
 int main(int argc, char *argv[]) {
-  MetaMCTS::PARAMS searchParams;
+  MCTS::PARAMS searchParams;
   EXPERIMENT::PARAMS expParams;
   SIMULATOR::KNOWLEDGE knowledge;
   string problem, outputfile;

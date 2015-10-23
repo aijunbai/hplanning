@@ -11,7 +11,7 @@ using namespace std;
 using namespace UTILS;
 
 FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params)
-  : MetaMCTS(simulator, params) {
+  : MCTS(simulator, params) {
   STATE *state = Simulator.CreateStartState();  //可能的开始状态
 
   Root = ExpandNode(state, History);  //生成根节点并初始化

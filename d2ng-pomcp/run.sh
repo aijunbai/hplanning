@@ -1,8 +1,8 @@
 #!/bin/bash
 
 PROBLEM="redundant_object_1"
-PROBLEM="rooms_0"
 PROBLEM="rocksample"
+PROBLEM="rooms_0"
 SIZE=7
 NUM=8
 LEVELT=1

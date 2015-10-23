@@ -1,4 +1,4 @@
-#include "metamcts.h"
+#include "mcts.h"
 #include "testsimulator.h"
 #include "statistic.h"
 #include "boost/timer.hpp"
@@ -10,7 +10,7 @@
 using namespace std;
 using namespace UTILS;
 
-MetaMCTS::PARAMS::PARAMS()
+MCTS::PARAMS::PARAMS()
   : Verbose(0),
     MaxDepth(100),
     NumSimulations(1000),
@@ -26,22 +26,22 @@ MetaMCTS::PARAMS::PARAMS()
     MemorySize(-1) {}
 
 
-MetaMCTS::MetaMCTS(const SIMULATOR &simulator, const PARAMS &params)
+MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
   :Simulator(simulator), Params(params), TreeDepth(0), TreeSize(0)
 {
   VNODE::NumChildren = Simulator.GetNumActions();
   QNODE::NumChildren = Simulator.GetNumObservations();
 }
 
-MetaMCTS::~MetaMCTS()
+MCTS::~MCTS()
 {
 }
 
 
-double MetaMCTS::UCB[UCB_N][UCB_n];
-bool MetaMCTS::InitialisedFastUCB = false;
+double MCTS::UCB[UCB_N][UCB_n];
+bool MCTS::InitialisedFastUCB = false;
 
-void MetaMCTS::InitFastUCB(double exploration)
+void MCTS::InitFastUCB(double exploration)
 {
   cout << "Initialising fast UCB table... ";
 
@@ -56,7 +56,7 @@ void MetaMCTS::InitFastUCB(double exploration)
   InitialisedFastUCB = true;
 }
 
-double MetaMCTS::FastUCB(int N, int n) const
+double MCTS::FastUCB(int N, int n) const
 {
   if (InitialisedFastUCB && N < UCB_N && n < UCB_n)
     return UCB[N][n];
@@ -69,7 +69,7 @@ double MetaMCTS::FastUCB(int N, int n) const
 }
 
 
-void MetaMCTS::Search()
+void MCTS::Search()
 {
   TreeDepth = 0;
   TreeSize = 0;

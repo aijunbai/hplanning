@@ -1,7 +1,7 @@
 #ifndef HIERARCHICALMCTS_H
 #define HIERARCHICALMCTS_H
 
-#include "metamcts.h"
+#include "mcts.h"
 #include "history.h"
 #include <unordered_map>
 #include <vector>
@@ -11,18 +11,27 @@
 typedef int MacroAction;
 
 struct data_t {
-  STATISTIC value_;
-  std::unordered_map<MacroAction, STATISTIC> qvalues_;
+  struct {
+    STATISTIC value_;
+    std::unordered_map<MacroAction, STATISTIC> qvalues_;
+  } UCB;
 
   data_t() {}
   data_t(const STATISTIC &value, const std::unordered_map<MacroAction, STATISTIC> &qvalues)
-      : value_(value), qvalues_(qvalues) {}
-  data_t(const data_t &data) : value_(data.value_), qvalues_(data.qvalues_) {}
+  {
+    UCB.value_ = value;
+    UCB.qvalues_ = qvalues;
+  }
+  data_t(const data_t &data)
+  {
+    UCB.value_ = data.UCB.value_;
+    UCB.qvalues_ = data.UCB.qvalues_;
+  }
 
   const data_t &operator=(const data_t &o) {
     if (this != &o) {
-      value_ = o.value_;
-      qvalues_ = o.qvalues_;
+      UCB.value_ = o.UCB.value_;
+      UCB.qvalues_ = o.UCB.qvalues_;
     }
     return *this;
   }
@@ -46,7 +55,7 @@ inline std::size_t hash_value(const std::vector<MacroAction> &stack,
  *
  * MCTS algorithm for MDP with state abstraction
  */
-class HierarchicalMCTS : public MetaMCTS {
+class HierarchicalMCTS : public MCTS {
 public:
   HierarchicalMCTS(const SIMULATOR &simulator, const PARAMS &params);
   virtual ~HierarchicalMCTS();

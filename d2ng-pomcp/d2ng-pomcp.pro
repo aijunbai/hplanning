@@ -12,8 +12,8 @@ CONFIG -= qt
 CONFIG += c++11
 QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
 
-CONFIG += debug
-CONFIG -= release
+CONFIG -= debug
+CONFIG += release
 
 # Input
 HEADERS += src/battleship.h \
@@ -38,7 +38,7 @@ HEADERS += src/battleship.h \
            src/hierarchicalmcts.h \
            src/redundantobject.h \
            src/dot_graph.h \
-           src/metamcts.h
+    src/mcts.h
 
 SOURCES += src/battleship.cpp \
            src/beliefstate.cpp \
@@ -58,4 +58,4 @@ SOURCES += src/battleship.cpp \
            src/rooms.cpp \
            src/hierarchicalmcts.cpp \
            src/redundantobject.cpp \
-           src/metamcts.cpp
+    src/mcts.cpp

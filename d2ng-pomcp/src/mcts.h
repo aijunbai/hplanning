@@ -2,11 +2,10 @@
 #define METAMCTS_H
 
 #include "simulator.h"
-#include "node.h"
 #include "statistic.h"
 #include "dot_graph.h"
 
-class MetaMCTS
+class MCTS
 {
 public:
   struct PARAMS {
@@ -27,8 +26,8 @@ public:
     int MemorySize;
   };
 
-  MetaMCTS(const SIMULATOR &simulator, const PARAMS &params);
-  virtual ~MetaMCTS();
+  MCTS(const SIMULATOR &simulator, const PARAMS &params);
+  virtual ~MCTS();
 
   virtual int SelectAction() = 0;
   virtual void SearchImp() = 0;

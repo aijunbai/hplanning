@@ -5,9 +5,9 @@
 #include "node.h"
 #include "statistic.h"
 #include "dot_graph.h"
-#include "metamcts.h"
+#include "mcts.h"
 
-class FlatMCTS: public MetaMCTS {
+class FlatMCTS: public MCTS {
  public:
   FlatMCTS(const SIMULATOR &simulator, const PARAMS &params);
   virtual ~FlatMCTS();

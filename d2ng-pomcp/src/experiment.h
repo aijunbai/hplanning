@@ -1,7 +1,7 @@
 #ifndef EXPERIMENT_H
 #define EXPERIMENT_H
 
-#include "metamcts.h"
+#include "mcts.h"
 #include "simulator.h"
 #include "statistic.h"
 #include <fstream>
@@ -48,7 +48,7 @@ class EXPERIMENT {
 
   EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
              const std::string &outputFile, EXPERIMENT::PARAMS &expParams,
-             MetaMCTS::PARAMS &searchParams);
+             MCTS::PARAMS &searchParams);
 
   void Run();
   void MultiRun();
@@ -58,7 +58,7 @@ class EXPERIMENT {
   const SIMULATOR &Real;
   const SIMULATOR &Simulator;
   EXPERIMENT::PARAMS &ExpParams;
-  MetaMCTS::PARAMS &SearchParams;
+  MCTS::PARAMS &SearchParams;
   RESULTS Results;
 
   std::ofstream OutputFile;

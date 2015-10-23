@@ -5,7 +5,7 @@ using namespace std;
 
 HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
                                    const PARAMS &params)
-    : MetaMCTS(simulator, params) {
+    : MCTS(simulator, params) {
   for (int a = 0; a < Simulator.GetNumActions(); ++a) {
     mSubTasks[a] = vector<MacroAction>();
   }
@@ -77,8 +77,8 @@ int HierarchicalMCTS::SelectPrimitiveAction(std::vector<MacroAction> stack,
       ss << stack[i] << ", ";
     }
     ss << "history)";
-    it->second.value_.Print(ss.str(), cerr);
-    for (auto ii = it->second.qvalues_.begin(); ii != it->second.qvalues_.end(); ++ii) {
+    it->second.UCB.value_.Print(ss.str(), cerr);
+    for (auto ii = it->second.UCB.qvalues_.begin(); ii != it->second.UCB.qvalues_.end(); ++ii) {
       stringstream ss;
       ss << "Q(";
       for (uint i = 0; i < stack.size(); ++i) {
@@ -154,15 +154,15 @@ double HierarchicalMCTS::SearchTree(vector<MacroAction> stack, HISTORY &history,
       assert(it != mTable.end());
       STATE *copy = Simulator.Copy(state);
       double totalReward = Rollout(stack, history, *copy, depth);
-      it->second.value_.Add(totalReward);
+      it->second.UCB.value_.Add(totalReward);
       Simulator.FreeState(copy);
       return totalReward;
     } else {
       int action = GreedyUCB(Action, it->second, history, true);
       stack.push_back(action);
       double totalReward = SearchTree(stack, history, state, depth);
-      it->second.value_.Add(totalReward);
-      it->second.qvalues_[action].Add(totalReward);
+      it->second.UCB.value_.Add(totalReward);
+      it->second.UCB.qvalues_[action].Add(totalReward);
       return totalReward;
     }
   }
@@ -211,7 +211,7 @@ MacroAction HierarchicalMCTS::GreedyUCB(MacroAction Action, data_t &data,
   static std::vector<int> besta;
   besta.clear();
   double bestq = -Infinity;
-  int N = data.value_.GetCount();
+  int N = data.UCB.value_.GetCount();
 
   for (uint i = 0; i < mSubTasks[Action].size(); ++i) {
     int action = mSubTasks[Action][i];
@@ -221,8 +221,8 @@ MacroAction HierarchicalMCTS::GreedyUCB(MacroAction Action, data_t &data,
       continue;
     }
 
-    int n = data.qvalues_[action].GetCount();
-    double q = data.qvalues_[action].GetValue();
+    int n = data.UCB.qvalues_[action].GetCount();
+    double q = data.UCB.qvalues_[action].GetValue();
 
     if (n == 0) {
       return action;

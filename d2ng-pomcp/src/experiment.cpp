@@ -18,7 +18,7 @@ EXPERIMENT::PARAMS::PARAMS()
 
 EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
                        const string &outputFile, EXPERIMENT::PARAMS &expParams,
-                       MetaMCTS::PARAMS &searchParams)
+                       MCTS::PARAMS &searchParams)
     : Real(real),
       Simulator(simulator),
       ExpParams(expParams),
@@ -26,14 +26,14 @@ EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
       OutputFile(outputFile.c_str(), fstream::out | fstream::app)
 {
   SearchParams.ExplorationConstant = simulator.GetRewardRange();
-  MetaMCTS::InitFastUCB(SearchParams.ExplorationConstant); //初始化 UCB 表格缓存
+  MCTS::InitFastUCB(SearchParams.ExplorationConstant); //初始化 UCB 表格缓存
 }
 
 void EXPERIMENT::Run() {
   boost::timer timer;
-  MetaMCTS *mcts = Real.mHierarchicalPlanning?
-        safe_cast<MetaMCTS*>(new HierarchicalMCTS(Simulator, SearchParams)):
-        safe_cast<MetaMCTS*>(new FlatMCTS(Simulator, SearchParams));
+  MCTS *mcts = Real.mHierarchicalPlanning?
+        safe_cast<MCTS*>(new HierarchicalMCTS(Simulator, SearchParams)):
+        safe_cast<MCTS*>(new FlatMCTS(Simulator, SearchParams));
 
   double undiscountedReturn = 0.0;
   double discountedReturn = 0.0;

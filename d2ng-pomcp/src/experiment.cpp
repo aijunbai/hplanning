@@ -67,6 +67,9 @@ void EXPERIMENT::Run() {
     discountedReturn += reward * discount;
     discount *= Real.GetDiscount();
 
+    Results.ExploredNodes.Add(mcts->TreeSize);
+    Results.ExploredDepth.Add(mcts->TreeDepth);
+
     if (SearchParams.Verbose >= 1) {
       cout << "\nStep " << t << " of " << ExpParams.NumSteps << endl;
       cout << "Action: #" << action << " ";
@@ -83,7 +86,7 @@ void EXPERIMENT::Run() {
 
     outOfParticles = !mcts->Update(action, observation, *state);  //更新历史信息，得到新的 Root 节点，设置好初始信念状态
     if (outOfParticles) {
-      assert(Real.mHierarchicalPlanning);
+      assert(!Real.mHierarchicalPlanning);
       break;  // Out of particles, finishing episode with SelectRandom
     }
 
@@ -131,8 +134,6 @@ void EXPERIMENT::Run() {
   Results.Time.Add(timer.elapsed());
   Results.UndiscountedReturn.Add(undiscountedReturn);
   Results.DiscountedReturn.Add(discountedReturn);
-//  Results.ExploredNodes.Add(mcts->StatTreeSize.GetMean());
-//  Results.ExploredDepth.Add(mcts->StatPeakTreeDepth.GetMean());
 
   cout << "\n#End of experiment:" << endl;
   cout << "#Discounted return = " << discountedReturn

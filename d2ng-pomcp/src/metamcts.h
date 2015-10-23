@@ -48,6 +48,10 @@ protected:
  const SIMULATOR &Simulator;
  PARAMS Params;
  HISTORY History;
+
+public:
+ int TreeDepth;
+ int TreeSize;
 };
 
 #endif // METAMCTS_H

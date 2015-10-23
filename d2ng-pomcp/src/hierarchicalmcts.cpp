@@ -66,9 +66,11 @@ int HierarchicalMCTS::SelectPrimitiveAction(std::vector<MacroAction> stack,
   assert(it != mTable.end());
 
   if (Params.Verbose >= 1) {
-//    cerr << "history=[";
-//    history.Display(cerr);
-//    cerr << "]" << endl;
+    if (Params.Verbose >= 2) {
+      cerr << "history=[";
+      history.Display(cerr);
+      cerr << "]" << endl;
+    }
     stringstream ss;
     ss << "V(";
     for (uint i = 0; i < stack.size(); ++i) {
@@ -107,13 +109,17 @@ void HierarchicalMCTS::SearchImp() {
 double HierarchicalMCTS::SearchTree(vector<MacroAction> stack, HISTORY &history,
                                     STATE &state, int depth) {
   MacroAction Action = stack.back();
+  TreeDepth = max(TreeDepth, depth);
+  TreeSize += 1;
 
-  cerr << "SearchTree" << endl;
-  PRINT_VALUE(Action);
-  PRINT_VALUE(depth);
-  cerr << "history=[";
-  history.Display(cerr);
-  cerr << "]" << endl;
+  if (Params.Verbose >= 3) {
+    cerr << "SearchTree" << endl;
+    PRINT_VALUE(Action);
+    PRINT_VALUE(depth);
+    cerr << "history=[";
+    history.Display(cerr);
+    cerr << "]" << endl;
+  }
 
   if (depth >= Params.MaxDepth) { // search horizon reached
     return 0.0;

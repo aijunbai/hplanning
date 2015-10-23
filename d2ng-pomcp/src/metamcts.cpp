@@ -27,7 +27,7 @@ MetaMCTS::PARAMS::PARAMS()
 
 
 MetaMCTS::MetaMCTS(const SIMULATOR &simulator, const PARAMS &params)
-  :Simulator(simulator), Params(params)
+  :Simulator(simulator), Params(params), TreeDepth(0), TreeSize(0)
 {
   VNODE::NumChildren = Simulator.GetNumActions();
   QNODE::NumChildren = Simulator.GetNumObservations();
@@ -69,7 +69,11 @@ double MetaMCTS::FastUCB(int N, int n) const
 }
 
 
-void MetaMCTS::Search() {
+void MetaMCTS::Search()
+{
+  TreeDepth = 0;
+  TreeSize = 0;
+
   if (Params.TimeOutPerAction > 0.0) {  // Anytime mode
     boost::timer timer;
     int i = 0;

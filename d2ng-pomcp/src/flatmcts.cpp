@@ -11,7 +11,7 @@ using namespace std;
 using namespace UTILS;
 
 FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params)
-  : MetaMCTS(simulator, params), TreeDepth(0) {
+  : MetaMCTS(simulator, params) {
   STATE *state = Simulator.CreateStartState();  //可能的开始状态
 
   Root = ExpandNode(state, History);  //生成根节点并初始化
@@ -19,11 +19,8 @@ FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params)
 
   for (int i = 1; i < Params.NumStartStates; i++) {
     Root->Beliefs().AddSample(
-          Simulator.CreateStartState());  //生成初始信念空间（样本集合） —— 至此
-    // Root 节点构造完毕
+          Simulator.CreateStartState());  //生成初始信念空间（样本集合）
   }
-
-  StatRedundantNodes.Initialise();
 
   assert(VNODE::GetNumAllocated() == 1);
 
@@ -31,10 +28,6 @@ FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params)
 }
 
 FlatMCTS::~FlatMCTS() {
-  if (Params.Verbose >= 1) {
-    StatRedundantNodes.Print("#Redundant nodes rate", cout);
-  }
-
   VNODE::Free(Root, Simulator);
   VNODE::FreeAll();
 
@@ -105,7 +98,7 @@ bool FlatMCTS::Update(int action, int observation, STATE & /*state*/)
 }
 
 int FlatMCTS::SelectAction() {
-  return Params.ThompsonSampling? ThompsonSampling(Root, false): GreedyUCB(Root, false);
+  return Params.ThompsonSampling? ThompsonSampling(Root, false, 0): GreedyUCB(Root, false);
 }
 
 void FlatMCTS::SearchImp() {
@@ -113,10 +106,8 @@ void FlatMCTS::SearchImp() {
 
   STATE *state = Root->Beliefs().CreateSample(Simulator);  // 得到一个可能的状态样本 -- 只在根节点采样 Root Sampling
   Simulator.Validate(*state);
-  TreeDepth = 0;
-  PeakTreeDepth = 0;
 
-  SimulateV(*state, Root);  //通过 Monte Carlo 方法得到 V 值
+  SimulateV(*state, Root, 0);  //通过 Monte Carlo 方法得到 V 值
   if (Params.Verbose >= 3) DisplayValue(4, cout);
 
   Simulator.FreeState(state);
@@ -160,20 +151,22 @@ int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
   return SimpleRNG::ins().Sample(besta);
 }
 
-double FlatMCTS::SimulateV(STATE &state, VNODE *vnode) {
-  int action = Params.ThompsonSampling? ThompsonSampling(vnode, true): GreedyUCB(vnode, true);
+double FlatMCTS::SimulateV(STATE &state, VNODE *vnode, int depth) {
+  int action = Params.ThompsonSampling? ThompsonSampling(vnode, true, depth): GreedyUCB(vnode, true);
 
-  PeakTreeDepth = max(PeakTreeDepth, TreeDepth);
-  if (TreeDepth >= Params.MaxDepth) {  // search horizon reached
+  TreeDepth = max(TreeDepth, depth);
+  TreeSize += 1;
+
+  if (depth >= Params.MaxDepth) {  // search horizon reached
     return 0.0;
   }
 
-  if (TreeDepth >= 1) {
+  if (depth >= 1) {
     AddSample(vnode, state);  // state 加入到 vnode 对应的 belief 里去
   }
 
   QNODE &qnode = vnode->Child(action);
-  double totalReward = SimulateQ(state, qnode, action);  //通过 Monte Carlo 方法得到 Q 值
+  double totalReward = SimulateQ(state, qnode, action, depth);  //通过 Monte Carlo 方法得到 Q 值
 
   if (Params.ThompsonSampling) {
     vnode->GetCumulativeReward(state).Add(totalReward);
@@ -185,7 +178,7 @@ double FlatMCTS::SimulateV(STATE &state, VNODE *vnode) {
   return totalReward;  // Return(s, pi(s))
 }
 
-double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
+double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action, int depth) {
   int observation;
   double immediateReward;
   double delayedReward = 0.0;
@@ -210,24 +203,19 @@ double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
     size_t belief_hash = History.BeliefHash();
     if (Params.MemorySize >= 0 && History.Size() >= Params.MemorySize
         && VNODE::BeliefPool.count(belief_hash)) {
-      StatRedundantNodes.Add(1.0);
       vnode = VNODE::BeliefPool[belief_hash];
       assert(vnode->GetBeliefHash() == belief_hash);
-    }
-    else {
-      StatRedundantNodes.Add(0.0);
     }
   }
 
   if (!terminal) {
-    TreeDepth++;
     if (vnode) {  //已经在树上
-      delayedReward = SimulateV(state, vnode);
+      delayedReward = SimulateV(state, vnode, depth + 1);
     } else {                       //叶子节点
       vnode = ExpandNode(&state, History);  //构造一个新节点
 
       STATE *copy = Simulator.Copy(state);
-      delayedReward = Rollout(*copy);
+      delayedReward = Rollout(*copy, depth + 1);
       Simulator.FreeState(copy);
 
       if (Params.ThompsonSampling) {
@@ -237,7 +225,6 @@ double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action) {
         vnode->Value.Add(delayedReward);
       }
     }
-    TreeDepth--;
   } else {
     if (!vnode) {
       vnode = ExpandNode(&state, History);  //终端节点
@@ -271,7 +258,7 @@ void FlatMCTS::AddSample(VNODE *node, const STATE &state) {
   node->Beliefs().AddSample(sample);
 }
 
-int FlatMCTS::ThompsonSampling(VNODE *vnode, bool sampling) const {
+int FlatMCTS::ThompsonSampling(VNODE *vnode, bool sampling, int depth) const {
   vector<int> unexplored_actions;
 
   for (int action = 0; action < Simulator.GetNumActions(); action++) {
@@ -300,7 +287,7 @@ int FlatMCTS::ThompsonSampling(VNODE *vnode, bool sampling) const {
       continue;
     }
 
-    double q = QValue(qnode, sampling);
+    double q = QValue(qnode, sampling, depth);
 
     if (q > bestq)  // XXX
     {
@@ -313,17 +300,17 @@ int FlatMCTS::ThompsonSampling(VNODE *vnode, bool sampling) const {
   return besta;
 }
 
-double FlatMCTS::HValue(VNODE *vnode, bool sampling) const {
+double FlatMCTS::HValue(VNODE *vnode, bool sampling, int depth) const {
   if (vnode) {  //树上的节点
     return vnode->/*GetCumulativeReward().*/ ThompsonSampling(sampling);  // XXX
-  } else if (TreeDepth + 1 >= Params.MaxDepth) {  // search horizon reached
+  } else if (depth + 1 >= Params.MaxDepth) {  // search horizon reached
     return 0.0;
   }
 
   return NormalGammaInfo().ThompsonSampling(sampling);  //按照默认分布返回
 }
 
-double FlatMCTS::QValue(QNODE &qnode, bool sampling) const  //改成多层调用？
+double FlatMCTS::QValue(QNODE &qnode, bool sampling, int depth) const  //改成多层调用？
 {
   double qvalue = 0;
 
@@ -333,7 +320,7 @@ double FlatMCTS::QValue(QNODE &qnode, bool sampling) const  //改成多层调用
     for (std::vector<std::pair<int, double>>::const_iterator it =
          observations.begin();
          it != observations.end(); ++it) {
-      qvalue += it->second * HValue(qnode.Child(it->first), sampling);
+      qvalue += it->second * HValue(qnode.Child(it->first), sampling, depth);
     }
   }
 
@@ -353,7 +340,7 @@ double FlatMCTS::QValue(QNODE &qnode, bool sampling) const  //改成多层调用
   return qvalue;
 }
 
-double FlatMCTS::Rollout(STATE &state)  //从 state 出发随机选择动作
+double FlatMCTS::Rollout(STATE &state, int depth)  //从 state 出发随机选择动作
 {
   if (Params.Verbose >= 3) cout << "Starting rollout" << endl;
 
@@ -361,7 +348,7 @@ double FlatMCTS::Rollout(STATE &state)  //从 state 出发随机选择动作
   double discount = 1.0;
   bool terminal = false;
   int numSteps;
-  for (numSteps = 0; numSteps + TreeDepth < Params.MaxDepth && !terminal; ++numSteps) {
+  for (numSteps = 0; numSteps + depth < Params.MaxDepth && !terminal; ++numSteps) {
     int observation;
     double reward;
 
@@ -475,7 +462,7 @@ void FlatMCTS::DisplayValue(int depth, ostream &ostr) const {
     QNODE &qnode = Root->Child(action);
 
     if (qnode.Applicable()) {
-      qvalues[action] = QValue(qnode, false);
+      qvalues[action] = QValue(qnode, false, depth);
     }
   }
 
@@ -571,8 +558,7 @@ void FlatMCTS::UnitTestRollout() {
   for (int n = 0; n < mcts.Params.NumSimulations; ++n)
   {
     STATE* state = testSimulator.CreateStartState();
-    mcts.TreeDepth = 0;
-    totalReward += mcts.Rollout(*state);
+    totalReward += mcts.Rollout(*state, 0);
   }
   double rootValue = totalReward / mcts.Params.NumSimulations;
   double meanValue = testSimulator.MeanValue();

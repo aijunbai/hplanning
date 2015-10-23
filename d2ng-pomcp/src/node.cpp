@@ -13,10 +13,10 @@ void QNODE::Initialise() {
   Children.resize(NumChildren);
 
   mApplicable = false;
-  mCount = 0;
-
-  Observation.Clear();
-  ImmediateReward.Clear();
+  TS.UpdateCount = 0;
+  TS.Observation.Clear();
+  TS.ImmediateReward.Clear();
+  UCB.Value.Initialise();
 
   for (int observation = 0; observation < QNODE::NumChildren; observation++) {
     Children[observation] = 0;  //初始化为空指针
@@ -26,19 +26,9 @@ void QNODE::Initialise() {
 void QNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
                          const double *qvalue) const {
   history.Display(ostr);
+
   if (qvalue) {
-    ostr << "q=" << *qvalue;
-  }
-
-  ImmediateReward.Print(": r=", ostr);
-  Observation.Print(", o=", ostr);
-  ostr << std::endl;
-
-  for (int observation = 0; observation < NumChildren; observation++) {
-    if (Children[observation]) {
-      std::stringstream ss;
-      ss << "\t\t\t#" << observation;
-    }
+    ostr << "qvalue=" << *qvalue << ", " << endl;
   }
 
   if (history.Size() >= maxDepth) return;
@@ -51,28 +41,9 @@ void QNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
   }
 }
 
-void QNODE::DisplayPolicy(HISTORY &history, int maxDepth, ostream &ostr) const {
-  history.Display(ostr);
-
-  ImmediateReward.Print("r=", ostr);
-  Observation.Print(", o=", ostr);
-  ostr << std::endl;
-
-  if (history.Size() >= maxDepth) return;
-
-  for (int observation = 0; observation < NumChildren; observation++) {
-    if (Children[observation]) {
-      history.Back().Observation = observation;
-      Children[observation]->DisplayPolicy(history, maxDepth, ostr);
-    }
-  }
-}
-
 MEMORY_POOL<VNODE> VNODE::VNodePool;
 unordered_map<size_t, VNODE*> VNODE::BeliefPool;
 int VNODE::NumChildren = 0;
-STATISTIC VNODE::PARTICLES_STAT;
-STATISTIC VNODE::Reward_HASH_STAT;
 
 void VNODE::Initialise(size_t belief_hash) {
   assert(NumChildren);
@@ -83,7 +54,8 @@ void VNODE::Initialise(size_t belief_hash) {
   for (int action = 0; action < VNODE::NumChildren; action++)
     Children[action].Initialise();
 
-  CumulativeRewards.clear();
+  TS.CumulativeRewards.clear();
+  UCB.Value.Initialise();
 }
 
 VNODE *VNODE::Create(HISTORY &history, int memory_size) {
@@ -103,8 +75,6 @@ VNODE *VNODE::Create(HISTORY &history, int memory_size) {
 
 void VNODE::Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore) {
   if (root->IsAllocated() && root != ignore) {
-    PARTICLES_STAT.Add(root->CumulativeRewards.size());
-
     root->BeliefState.Free(simulator);
     VNODE::BeliefPool.erase(root->BeliefHash);
     VNODE::VNodePool.Free(root);
@@ -134,7 +104,7 @@ void VNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
     const QNODE &qnode = Children[action];
 
     if (qnode.Applicable()) {
-      ostr << "n=" << qnode.GetCount() << " ";
+      ostr << "count=" << qnode.GetCount() << ", ";
       if (qvalues) {
         qnode.DisplayValue(history, maxDepth, ostr, &(qvalues->at(action)));
       } else {
@@ -145,42 +115,17 @@ void VNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
   }
 }
 
-void VNODE::DisplayPolicy(HISTORY &history, int maxDepth,
-                          ostream & /*ostr*/) const {
-  if (history.Size() >= maxDepth) return;
-
-  //    double bestq = -Infinity;
-  //    int besta = -1;
-  //    for (int action = 0; action < NumChildren; action++)
-  //    {
-  //        if (Children[action].Dirichlet.GetValue() > bestq) //XXX
-  //        {
-  //            besta = action;
-  //            bestq = Children[action].Dirichlet.GetValue();
-  //        }
-  //    }
-
-  //    if (besta != -1)
-  //    {
-  //        history.Add(besta);
-  //        Children[besta].DisplayPolicy(history, maxDepth, ostr);
-  //        history.Pop();
-  //    }
-}
-
 NormalGammaInfo &VNODE::GetCumulativeReward(const STATE &s) {
 #ifdef NDEBUG
-  return CumulativeRewards[s.hash()];
+  return TS.CumulativeRewards[s.hash()];
 #else
   std::size_t key = s.hash();
-  NormalGammaInfo_POMCP::iterator it = CumulativeRewards.find(key);
+  auto it = TS.CumulativeRewards.find(key);
 
-  if (it != CumulativeRewards.end()) {
-    Reward_HASH_STAT.Add(1.0);
+  if (it != TS.CumulativeRewards.end()) {
     return it->second;
   } else {
-    Reward_HASH_STAT.Add(0.0);
-    return CumulativeRewards[key];
+    return TS.CumulativeRewards[key];
   }
 #endif
 }

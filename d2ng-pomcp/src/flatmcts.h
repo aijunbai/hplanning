@@ -20,7 +20,6 @@ class FlatMCTS: public MetaMCTS {
 
   const BELIEF_STATE &BeliefState() const { return Root->Beliefs(); }
   void DisplayValue(int depth, std::ostream &ostr) const;
-  void DisplayPolicy(int depth, std::ostream &ostr) const;
 
   static void UnitTest();
   static void UnitTestGreedy();

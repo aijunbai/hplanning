@@ -71,9 +71,9 @@ class HISTORY {
 
   void Display(std::ostream &ostr) const {
     for (uint t = 0; t < History.size(); ++t) {
-      ostr << "a=" << History[t].Action << " ";
+      ostr << "a=" << History[t].Action << ", ";
       if (History[t].Observation >= 0)
-        ostr << "o=" << History[t].Observation << " ";
+        ostr << "o=" << History[t].Observation << ", ";
     }
   }
 

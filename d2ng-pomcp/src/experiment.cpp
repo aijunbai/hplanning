@@ -31,10 +31,6 @@ EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
 
 void EXPERIMENT::Run() {
   boost::timer timer;
-  BELIEF_STATE::SAMPLES_STAT.Initialise();
-  VNODE::PARTICLES_STAT.Initialise();
-  VNODE::Reward_HASH_STAT.Initialise();
-
   MetaMCTS *mcts = Real.mHierarchicalPlanning?
         safe_cast<MetaMCTS*>(new HierarchicalMCTS(Simulator, SearchParams)):
         safe_cast<MetaMCTS*>(new FlatMCTS(Simulator, SearchParams));
@@ -47,7 +43,6 @@ void EXPERIMENT::Run() {
   int t = 0;
 
   STATE *state = Real.CreateStartState();  //真实的世界状态
-
   if (SearchParams.Verbose >= 1) Real.DisplayState(*state, cout);
 
   for (t = 0; t < ExpParams.NumSteps; t++) {
@@ -140,10 +135,6 @@ void EXPERIMENT::Run() {
        << ", average = " << Results.DiscountedReturn.GetMean() << endl;
   cout << "#Undiscounted return = " << undiscountedReturn
        << ", average = " << Results.UndiscountedReturn.GetMean() << endl;
-
-  BELIEF_STATE::SAMPLES_STAT.Print("#Belief size", cout);
-  VNODE::PARTICLES_STAT.Print("#Particle size", cout);
-  VNODE::Reward_HASH_STAT.Print("#Reward hash hit", cout);
 
   delete mcts;
 }

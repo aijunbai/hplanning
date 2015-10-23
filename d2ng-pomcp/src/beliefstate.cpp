@@ -5,13 +5,9 @@
 
 using namespace UTILS;
 
-STATISTIC BELIEF_STATE::SAMPLES_STAT;
-
 BELIEF_STATE::BELIEF_STATE() { Samples.clear(); }
 
 void BELIEF_STATE::Free(const SIMULATOR &simulator) {
-  SAMPLES_STAT.Add(Samples.size());
-
   for (std::vector<STATE *>::iterator i_state = Samples.begin();
        i_state != Samples.end(); ++i_state) {
     simulator.FreeState(*i_state);

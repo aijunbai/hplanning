@@ -187,7 +187,7 @@ bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
         (0.5 * rockstate.Rocks[rock].LikelihoodValuable) / denom;
   }
 
-  assert(reward != -100);
+  // assert(reward != -100);
   return false;  // not terminated
 }
 

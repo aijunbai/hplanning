@@ -24,35 +24,35 @@ class VNODE;
 
 class QNODE {
  public:
-  QNODE() : mApplicable(false), mCount(0) {}
+  QNODE() {
+    mApplicable = false;
+    TS.UpdateCount = 0;
+  }
 
   void Initialise();
 
   void Update(int observation, double reward, int count = 0) {
-    Observation.Add(observation);
-    ImmediateReward.Add(reward);
-    mCount += count;
+    TS.Observation.Add(observation);
+    TS.ImmediateReward.Add(reward);
+    TS.UpdateCount += count;
   }
 
   bool Applicable() const { return mApplicable; }
 
-  int GetCount() const { return mCount; }
+  int GetCount() const {
+    assert(TS.UpdateCount == 0 || UCB.Value.GetCount() == 0);
+    return TS.UpdateCount + UCB.Value.GetCount();
+  }
 
   void SetPrior(int count, double value, int applicable) {
     mApplicable = applicable;
-    Value.Set(count, value);
+    UCB.Value.Set(count, value);
 
     if (mApplicable) {
-      ImmediateReward.Set(count, value);
+      TS.ImmediateReward.Set(count, value);
     } else {
-      ImmediateReward.Clear();
+      TS.ImmediateReward.Clear();
     }
-  }
-
-  const DirichletInfo_POMCP<int> &GetObservation() const { return Observation; }
-
-  const DirichletInfo_POMCP<double> &GetImmediateReward() const {
-    return ImmediateReward;
   }
 
   VNODE *&Child(int c) {
@@ -66,7 +66,6 @@ class QNODE {
 
   void DisplayValue(HISTORY &history, int maxDepth, std::ostream &ostr,
                     const double *qvalue = 0) const;
-  void DisplayPolicy(HISTORY &history, int maxDepth, std::ostream &ostr) const;
 
   static int NumChildren;
 
@@ -76,15 +75,18 @@ class QNODE {
   }
 
   std::vector<VNODE *> Children;
-
   bool mApplicable;
-  int mCount;
-
-  DirichletInfo_POMCP<int> Observation;
-  DirichletInfo_POMCP<double> ImmediateReward;
 
 public:
-  STATISTIC Value;  // for uct
+  struct {
+    int UpdateCount;
+    DirichletInfo_POMCP<int> Observation;
+    DirichletInfo_POMCP<double> ImmediateReward;
+  } TS;
+
+  struct {
+    STATISTIC Value;  // for uct
+  } UCB;
 };
 
 class VNODE : public MEMORY_OBJECT {
@@ -110,7 +112,6 @@ class VNODE : public MEMORY_OBJECT {
 
   void DisplayValue(HISTORY &history, int maxDepth, std::ostream &ostr,
                     const std::vector<double> *qvalues = 0) const;
-  void DisplayPolicy(HISTORY &history, int maxDepth, std::ostream &ostr) const;
 
   NormalGammaInfo &GetCumulativeReward(const STATE &s);
 
@@ -118,9 +119,7 @@ class VNODE : public MEMORY_OBJECT {
     double count = 0.0;
     double sum = 0.0;
 
-    for (std::unordered_map<size_t, NormalGammaInfo>::iterator it =
-             CumulativeRewards.begin();
-         it != CumulativeRewards.end(); ++it) {
+    for (auto it = TS.CumulativeRewards.begin(); it != TS.CumulativeRewards.end(); ++it) {
       if (it->second.GetCount() > 0.0) {
         sum += it->second.GetCount() * it->second.ThompsonSampling(sampling);
         count += it->second.GetCount();
@@ -134,8 +133,6 @@ class VNODE : public MEMORY_OBJECT {
   static MEMORY_POOL<VNODE> VNodePool;
   static std::unordered_map<size_t, VNODE*> BeliefPool;
   static int NumChildren;
-  static STATISTIC PARTICLES_STAT;
-  static STATISTIC Reward_HASH_STAT;
 
   static int GetNumAllocated() {
     return VNodePool.GetNumAllocated();
@@ -146,13 +143,18 @@ class VNODE : public MEMORY_OBJECT {
     assert(c >= 0 && c < int(Children.size()) && c < NumChildren);
   }
 
-  NormalGammaInfo_POMCP CumulativeRewards;
   std::vector<QNODE> Children;
   BELIEF_STATE BeliefState;
   size_t BeliefHash;
 
 public:
-  STATISTIC Value;  // for uct
+  struct {
+    NormalGammaInfo_POMCP CumulativeRewards;
+  } TS;
+
+  struct {
+    STATISTIC Value;  // for uct
+  } UCB;
 
   size_t GetBeliefHash() const {
     return BeliefHash;

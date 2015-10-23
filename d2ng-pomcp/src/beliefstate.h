@@ -35,8 +35,6 @@ class BELIEF_STATE {
     return GetSample(SimpleRNG::ins().Random(Samples.size()));
   }
 
-  static STATISTIC SAMPLES_STAT;
-
  private:
   std::vector<STATE *> Samples;
 };

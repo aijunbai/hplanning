@@ -98,7 +98,13 @@ bool FlatMCTS::Update(int action, int observation, STATE & /*state*/)
 }
 
 int FlatMCTS::SelectAction() {
-  return Params.ThompsonSampling? ThompsonSampling(Root, false, 0): GreedyUCB(Root, false);
+  int action = Params.ThompsonSampling? ThompsonSampling(Root, false, 0): GreedyUCB(Root, false);
+
+  if (Params.Verbose >= 1) {
+    DisplayValue(1, cerr);
+  }
+
+  return action;
 }
 
 void FlatMCTS::SearchImp() {
@@ -119,7 +125,7 @@ int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
   static std::vector<int> besta;
   besta.clear();
   double bestq = -Infinity;
-  int N = vnode->Value.GetCount();
+  int N = vnode->UCB.Value.GetCount();
 
   for (int action = 0; action < Simulator.GetNumActions(); action++) {
     double q;
@@ -131,8 +137,8 @@ int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
       continue;
     }
 
-    q = qnode.Value.GetValue();
-    n = qnode.Value.GetCount();
+    q = qnode.UCB.Value.GetValue();
+    n = qnode.UCB.Value.GetCount();
 
     if (ucb) {
       q += FastUCB(N, n);
@@ -172,7 +178,7 @@ double FlatMCTS::SimulateV(STATE &state, VNODE *vnode, int depth) {
     vnode->GetCumulativeReward(state).Add(totalReward);
   }
   else {
-    vnode->Value.Add(totalReward);
+    vnode->UCB.Value.Add(totalReward);
   }
 
   return totalReward;  // Return(s, pi(s))
@@ -222,7 +228,7 @@ double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action, int depth) {
         vnode->GetCumulativeReward(state).Add(delayedReward);
       }
       else {
-        vnode->Value.Add(delayedReward);
+        vnode->UCB.Value.Add(delayedReward);
       }
     }
   } else {
@@ -234,13 +240,13 @@ double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action, int depth) {
       vnode->GetCumulativeReward(state).Add(0.0);
     }
     else {
-      vnode->Value.Add(0.0);
+      vnode->UCB.Value.Add(0.0);
     }
   }
 
   double totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
   if (!Params.ThompsonSampling) {
-    qnode.Value.Add(totalReward);
+    qnode.UCB.Value.Add(totalReward);
   }
 
   return totalReward;
@@ -248,7 +254,7 @@ double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action, int depth) {
 
 VNODE *FlatMCTS::ExpandNode(const STATE *state, HISTORY &history) {
   VNODE *vnode = VNODE::Create(history, Params.MemorySize);
-  vnode->Value.Set(0, 0);
+  vnode->UCB.Value.Set(0, 0);
   Simulator.Prior(state, history, vnode);  //设置先验信息
   return vnode;
 }
@@ -268,7 +274,7 @@ int FlatMCTS::ThompsonSampling(VNODE *vnode, bool sampling, int depth) const {
       continue;
     }
 
-    if (qnode.GetCount() <= 0) {
+    if (qnode.TS.UpdateCount <= 0) {
       unexplored_actions.push_back(action);
     }
   }
@@ -316,7 +322,7 @@ double FlatMCTS::QValue(QNODE &qnode, bool sampling, int depth) const  //改成�
 
   {
     const std::vector<std::pair<int, double>> &observations =
-        qnode.GetObservation().ThompsonSampling(sampling);  //得到可能的观察分布
+        qnode.TS.Observation.ThompsonSampling(sampling);  //得到可能的观察分布
     for (std::vector<std::pair<int, double>>::const_iterator it =
          observations.begin();
          it != observations.end(); ++it) {
@@ -328,8 +334,7 @@ double FlatMCTS::QValue(QNODE &qnode, bool sampling, int depth) const  //改成�
 
   {
     const std::vector<std::pair<double, double>> &rewards =
-        qnode.GetImmediateReward().ThompsonSampling(
-          sampling);  //得到可能的立即收益分布
+        qnode.TS.ImmediateReward.ThompsonSampling(sampling);  //得到可能的立即收益分布
     for (std::vector<std::pair<double, double>>::const_iterator it =
          rewards.begin();
          it != rewards.end(); ++it) {
@@ -462,17 +467,13 @@ void FlatMCTS::DisplayValue(int depth, ostream &ostr) const {
     QNODE &qnode = Root->Child(action);
 
     if (qnode.Applicable()) {
-      qvalues[action] = QValue(qnode, false, depth);
+      qvalues[action] = Params.ThompsonSampling?
+            QValue(qnode, false, depth):
+            qnode.UCB.Value.GetMean();
     }
   }
 
   Root->DisplayValue(history, depth, ostr, &qvalues);
-}
-
-void FlatMCTS::DisplayPolicy(int depth, ostream &ostr) const {
-  HISTORY history;
-  ostr << "MCTS Policy:" << endl;
-  Root->DisplayPolicy(history, depth, ostr);
 }
 
 void FlatMCTS::UnitTest() {
@@ -490,10 +491,10 @@ void FlatMCTS::UnitTestGreedy() {
 
   HISTORY History;
   VNODE* vnode = mcts.ExpandNode(testSimulator.CreateStartState(), History);
-  vnode->Value.Set(1, 0);
-  vnode->Child(0).Value.Set(1, 1/*, 2, 1*/);
+  vnode->UCB.Value.Set(1, 0);
+  vnode->Child(0).UCB.Value.Set(1, 1/*, 2, 1*/);
   for (int action = 1; action < numAct; action++)
-    vnode->Child(action).Value.Set(0, 0/*, 1, 1*/);
+    vnode->Child(action).UCB.Value.Set(0, 0/*, 1, 1*/);
 
   int besta = mcts.GreedyUCB(vnode, false);
   assert(besta == 0);
@@ -509,42 +510,42 @@ void FlatMCTS::UnitTestUCB() {
 
   // With equal value, action with lowest count is selected
   VNODE* vnode1 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
-  vnode1->Value.Set(1, 0);
+  vnode1->UCB.Value.Set(1, 0);
   for (int action = 0; action < numAct; action++)
     if (action == 3)
-      vnode1->Child(action).Value.Set(99, 0/*, 1, 100*/);
+      vnode1->Child(action).UCB.Value.Set(99, 0/*, 1, 100*/);
     else
-      vnode1->Child(action).Value.Set(100 + action, 0/*, 1, 101 +action*/);
+      vnode1->Child(action).UCB.Value.Set(100 + action, 0/*, 1, 101 +action*/);
   assert(mcts.GreedyUCB(vnode1, true) == 3);
 
   // With high counts, action with highest value is selected
   VNODE* vnode2 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
-  vnode2->Value.Set(1, 0);
+  vnode2->UCB.Value.Set(1, 0);
   for (int action = 0; action < numAct; action++)
     if (action == 3)
-      vnode2->Child(action).Value.Set(99 + numObs, 1/*, 100 + numObs,1*/);
+      vnode2->Child(action).UCB.Value.Set(99 + numObs, 1/*, 100 + numObs,1*/);
     else
-      vnode2->Child(action).Value.Set(100 + numAct - action, 0/*, 1,101 + numAct - action*/);
+      vnode2->Child(action).UCB.Value.Set(100 + numAct - action, 0/*, 1,101 + numAct - action*/);
   assert(mcts.GreedyUCB(vnode2, true) == 3);
 
   // Action with low value and low count beats actions with high counts
   VNODE* vnode3 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
-  vnode3->Value.Set(1, 0);
+  vnode3->UCB.Value.Set(1, 0);
   for (int action = 0; action < numAct; action++)
     if (action == 3)
-      vnode3->Child(action).Value.Set(1, 1/*, 2, 1*/);
+      vnode3->Child(action).UCB.Value.Set(1, 1/*, 2, 1*/);
     else
-      vnode3->Child(action).Value.Set(100 + action, 1/*, 101 + action,1*/);
+      vnode3->Child(action).UCB.Value.Set(100 + action, 1/*, 101 + action,1*/);
   assert(mcts.GreedyUCB(vnode3, true) == 3);
 
   // Actions with zero count is always selected
   VNODE* vnode4 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
-  vnode4->Value.Set(1, 0);
+  vnode4->UCB.Value.Set(1, 0);
   for (int action = 0; action < numAct; action++)
     if (action == 3)
-      vnode4->Child(action).Value.Set(0, 0/*, 1, 1*/);
+      vnode4->Child(action).UCB.Value.Set(0, 0/*, 1, 1*/);
     else
-      vnode4->Child(action).Value.Set(1, 1/*, 2, 1*/);
+      vnode4->Child(action).UCB.Value.Set(1, 1/*, 2, 1*/);
   assert(mcts.GreedyUCB(vnode4, true) == 3);
 }
 
@@ -572,7 +573,7 @@ void FlatMCTS::UnitTestSearch(int depth) {
   params.NumSimulations = pow(10, depth + 1);
   FlatMCTS mcts(testSimulator, params);
   mcts.Search();
-  double rootValue = mcts.Root->Value.GetValue();
+  double rootValue = mcts.Root->UCB.Value.GetValue();
   double optimalValue = testSimulator.OptimalValue();
   assert(fabs(optimalValue - rootValue) < 0.1);
 }

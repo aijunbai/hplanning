@@ -4,49 +4,19 @@
 #include "mcts.h"
 #include "history.h"
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <iostream>
 #include <algorithm>
 
-typedef int MacroAction;
+typedef int macro_action_t;
 
-struct data_t {
-  struct {
-    STATISTIC value_;
-    std::unordered_map<MacroAction, STATISTIC> qvalues_;
-  } UCB;
-
-  data_t() {}
-  data_t(const STATISTIC &value, const std::unordered_map<MacroAction, STATISTIC> &qvalues)
-  {
-    UCB.value_ = value;
-    UCB.qvalues_ = qvalues;
-  }
-  data_t(const data_t &data)
-  {
-    UCB.value_ = data.UCB.value_;
-    UCB.qvalues_ = data.UCB.qvalues_;
-  }
-
-  const data_t &operator=(const data_t &o) {
-    if (this != &o) {
-      UCB.value_ = o.UCB.value_;
-      UCB.qvalues_ = o.UCB.qvalues_;
-    }
-    return *this;
-  }
-};
-
-inline std::size_t hash_value(const std::vector<MacroAction> &stack,
-                              HISTORY &h) {
+inline std::size_t hash_value(macro_action_t Action, const HISTORY &history) {
   using boost::hash_combine;
   std::size_t seed = 0;
 
-  for (auto it = stack.begin(); it != stack.end(); ++it) {
-    hash_combine(seed, std::hash<MacroAction>()(*it));
-  }
-
-  hash_combine(seed, h.BeliefHash());
+  hash_combine(seed, boost::hash_value(Action));
+  hash_combine(seed, history.BeliefHash());
   return seed;
 }
 
@@ -57,6 +27,42 @@ inline std::size_t hash_value(const std::vector<MacroAction> &stack,
  */
 class HierarchicalMCTS : public MCTS {
 public:
+  struct data_t {
+    struct {
+      STATISTIC value_;
+      std::unordered_map<macro_action_t, STATISTIC> qvalues_;
+    } UCB;
+
+    data_t() {}
+    data_t(const STATISTIC &value, const std::unordered_map<macro_action_t, STATISTIC> &qvalues)
+    {
+      UCB.value_ = value;
+      UCB.qvalues_ = qvalues;
+    }
+    data_t(const data_t &data)
+    {
+      UCB.value_ = data.UCB.value_;
+      UCB.qvalues_ = data.UCB.qvalues_;
+    }
+
+    const data_t &operator=(const data_t &o) {
+      if (this != &o) {
+        UCB.value_ = o.UCB.value_;
+        UCB.qvalues_ = o.UCB.qvalues_;
+      }
+      return *this;
+    }
+  };
+
+  struct result_t {
+    result_t(double r, int s, bool t): reward(r), steps(s), terminal(t) {}
+
+    double reward;
+    int steps;
+    bool terminal;  // global terminal state
+  };
+
+public:
   HierarchicalMCTS(const SIMULATOR &simulator, const PARAMS &params);
   virtual ~HierarchicalMCTS();
 
@@ -64,16 +70,18 @@ public:
   virtual void SearchImp();
   virtual bool Update(int action, int observation, STATE &state);
 
-  double SearchTree(std::vector<MacroAction> stack, HISTORY &history,
-                    STATE &state, int depth);
-  bool Terminate(MacroAction A, HISTORY &h);
-  MacroAction GreedyUCB(MacroAction Action, data_t &data, HISTORY &history, bool ucb);
-  double Rollout(std::vector<MacroAction> stack, HISTORY &history, STATE &state,
-                 int depth);
-  int SelectPrimitiveAction(std::vector<MacroAction> stack, HISTORY &history);
+  result_t SearchTree(macro_action_t Action, HISTORY &history, STATE &state, int depth);
+  result_t Rollout(macro_action_t Action, HISTORY &history, STATE &state, int depth);
+  macro_action_t GreedyUCB(macro_action_t Action, HISTORY &history, data_t &data, bool ucb);
+  int SelectPrimitiveAction(macro_action_t Action, HISTORY &history);
+  bool Terminate(macro_action_t Action, HISTORY &history);
+  bool Primitive(macro_action_t Action);
+  macro_action_t MacroAction(int o);
 
 private:
-  std::unordered_map<MacroAction, std::vector<MacroAction>> mSubTasks;
+  std::unordered_map<macro_action_t, std::vector<macro_action_t>> mSubTasks;
+  std::unordered_map<macro_action_t, std::unordered_set<int>> mGoals;  // target observation for subtasks
+  macro_action_t mRootTask;  // current root task
   std::unordered_map<size_t, data_t> mTable;
   BELIEF_STATE mRootBelief;
 };

@@ -38,7 +38,8 @@ HEADERS += src/battleship.h \
            src/hierarchicalmcts.h \
            src/redundantobject.h \
            src/dot_graph.h \
-    src/mcts.h
+    src/mcts.h \
+    src/prettyprint.h
 
 SOURCES += src/battleship.cpp \
            src/beliefstate.cpp \

@@ -7,6 +7,8 @@
 #include <assert.h>
 #include "coord.h"
 #include "memorypool.h"
+#include "prettyprint.h"
+
 #include <algorithm>
 #include <iostream>
 #include <map>

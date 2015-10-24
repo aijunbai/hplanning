@@ -14,6 +14,7 @@ class VNODE;
 
 class STATE : public MEMORY_OBJECT {
  public:
+  STATE() {}
   virtual ~STATE() {}
 
   virtual size_t hash() const = 0;

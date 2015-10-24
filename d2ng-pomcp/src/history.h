@@ -16,7 +16,7 @@ class HISTORY {
 
     int Action;
     int Observation;
-    size_t MemoryHash;
+    size_t MemoryHash;  // hash value of the history up to current position
   };
 
   bool operator==(const HISTORY &history) const {
@@ -35,7 +35,7 @@ class HISTORY {
 
     if (Size()) {
       hash_combine(seed, History.back().MemoryHash); //fixed memory hash
-      hash_combine(seed, Size()); //depth dependent
+      hash_combine(seed, boost::hash_value(Size())); //depth dependent
     }
 
     return seed;
@@ -86,15 +86,15 @@ private:
 
     if (memory_size < 0) {  // use whole history
       seed = Size() >= 2? History[Size() - 2].MemoryHash: 0;
-      hash_combine(seed, History[Size() - 1].Observation);
-      hash_combine(seed, History[Size() - 1].Action);
+      hash_combine(seed, boost::hash_value(History[Size() - 1].Observation));
+      hash_combine(seed, boost::hash_value(History[Size() - 1].Action));
     }
     else {
       int size = History.size();
       for (int i = size - 1; i >= 0 && i > size - 1 - memory_size; --i) {
-        hash_combine(seed, History[i].Observation);
+        hash_combine(seed, boost::hash_value(History[i].Observation));
         if (i + 1 < size) {
-          hash_combine(seed, History[i+1].Action);
+          hash_combine(seed, boost::hash_value(History[i+1].Action));
         }
       }
     }

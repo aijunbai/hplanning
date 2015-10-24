@@ -16,7 +16,8 @@ SIMULATOR::SIMULATOR()
       Discount(1.0),
       RewardRange(1.0),
       mHierarchicalPlanning(false),
-      mStateAbstraction(false) {}
+      mStateAbstraction(false),
+      mActionAbstraction(false) {}
 
 SIMULATOR::SIMULATOR(int numActions, int numObservations, double discount)
     : NumActions(numActions),
@@ -24,7 +25,8 @@ SIMULATOR::SIMULATOR(int numActions, int numObservations, double discount)
       Discount(discount),
       RewardRange(1.0),
       mHierarchicalPlanning(false),
-      mStateAbstraction(false)
+      mStateAbstraction(false),
+      mActionAbstraction(false)
 {
   assert(discount > 0 && discount <= 1);
 }

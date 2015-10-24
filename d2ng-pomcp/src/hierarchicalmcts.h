@@ -77,10 +77,12 @@ public:
   bool Terminate(macro_action_t Action, HISTORY &history);
   bool Primitive(macro_action_t Action);
   macro_action_t MacroAction(int o);
+  void UpdateHistory(HISTORY &history, int action, int observation);
 
 private:
   std::unordered_map<macro_action_t, std::vector<macro_action_t>> mSubTasks;
   std::unordered_map<macro_action_t, std::unordered_set<int>> mGoals;  // target observation for subtasks
+  std::unordered_map<int, std::unordered_map<int, bool>> mConnected;
   macro_action_t mRootTask;  // current root task
   std::unordered_map<size_t, data_t> mTable;
   BELIEF_STATE mRootBelief;

@@ -28,7 +28,7 @@ class REDUNDANT_OBJECT_STATE : public STATE {
 
 class REDUNDANT_OBJECT : public SIMULATOR {
  public:
-  REDUNDANT_OBJECT(int size, bool state_abstraction = false);
+  REDUNDANT_OBJECT(int size, bool state_abstraction);
   ~REDUNDANT_OBJECT();
 
   virtual STATE *Copy(const STATE &state) const;

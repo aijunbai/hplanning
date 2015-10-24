@@ -101,8 +101,9 @@ class SIMULATOR {
   std::stringstream mName;
 
  public:
-  bool mHierarchicalPlanning;
+  bool mHierarchicalPlanning;  // do hierarchical planning for MDPs by modelling them as POMDPs
   bool mStateAbstraction;
+  bool mActionAbstraction;
 };
 
 #endif  // SIMULATOR_H

@@ -9,7 +9,7 @@
 using namespace std;
 using namespace UTILS;
 
-ROOMS::ROOMS(const char *map_name, bool state_abstraction)
+ROOMS::ROOMS(const char *map_name, bool state_abstraction, bool action_abstraction)
     :mGrid(0), mRooms(0) {
   Parse(map_name);
 
@@ -18,9 +18,11 @@ ROOMS::ROOMS(const char *map_name, bool state_abstraction)
       state_abstraction ? mRooms : mGrid->GetXSize() * mGrid->GetYSize();
   Discount = 0.95;
   RewardRange = 10.0;
-  mName << "rooms_" << map_name << "_" << state_abstraction;
+  mName << "rooms_" << map_name << "_" << state_abstraction << "_" << action_abstraction;
+
   mHierarchicalPlanning = true;
   mStateAbstraction = state_abstraction;
+  mActionAbstraction = action_abstraction;
 }
 
 ROOMS::~ROOMS() { delete mGrid; }

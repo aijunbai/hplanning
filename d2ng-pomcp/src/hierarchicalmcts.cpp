@@ -8,13 +8,13 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
     : MCTS(simulator, params), mRootTask(-1)
 {
   mSubTasks[mRootTask] = vector<macro_action_t>();  // root action
-  mGoals[mRootTask].insert(0);  // ground target state assumed to be in macro state 0
 
   for (int a = 0; a < Simulator.GetNumActions(); ++a) {
     mSubTasks[a] = vector<macro_action_t>();  // primitive actions
   }
 
-  if (Simulator.mStateAbstraction) {
+  if (Simulator.mActionAbstraction) {
+    mGoals[mRootTask].insert(0);  // ground target state assumed to be in macro state 0 for rooms domain
     for (int o = 0; o < Simulator.GetNumObservations(); ++o) {
       mSubTasks[MacroAction(o)] = vector<macro_action_t>();
       mGoals[MacroAction(o)].insert(o);
@@ -37,12 +37,30 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
   for (int i = 1; i < Params.NumStartStates; i++) {
     mRootBelief.AddSample(Simulator.CreateStartState());
   }
+
+  for (int i = 0; i < 1000; ++i) {
+    HISTORY history;
+    STATE *state = mRootBelief.CreateSample(Simulator);
+    bool terminal;
+
+    do {
+      int observation;
+      double reward;
+      int action = SimpleRNG::ins().Random(Simulator.GetNumActions());
+      terminal = Simulator.Step(*state, action, observation, reward);
+      UpdateHistory(history, action, observation);
+    } while (!terminal);
+
+    Simulator.FreeState(state);
+  }
+
+  PRINT_VALUE(mConnected);
 }
 
 HierarchicalMCTS::~HierarchicalMCTS() { mRootBelief.Free(Simulator); }
 
 bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
-  History.Add(action, observation, Params.MemorySize); //更新历史
+  UpdateHistory(History, action, observation);
 
   // Delete old tree and create new root
   mTable.clear();
@@ -64,27 +82,53 @@ int HierarchicalMCTS::SelectPrimitiveAction(macro_action_t Action, HISTORY &hist
 
   size_t hash = hash_value(Action, history);
   auto it = mTable.find(hash);
-  assert(it != mTable.end());
 
-  if (Params.Verbose >= 1) {
-    if (Params.Verbose >= 3) {
-      cerr << "history=[";
-      history.Display(cerr);
-      cerr << "]" << endl;
-    }
-    stringstream ss;
-    ss << "V(" << Action << ", ";
-    ss << "history)";
-    it->second.UCB.value_.Print(ss.str(), cerr);
-    for (auto ii = it->second.UCB.qvalues_.begin(); ii != it->second.UCB.qvalues_.end(); ++ii) {
+  macro_action_t action;
+  if (it != mTable.end()) {
+    if (Params.Verbose >= 1) {
+      if (Params.Verbose >= 3) {
+        cerr << "history=[";
+        history.Display(cerr);
+        cerr << "]" << endl;
+      }
       stringstream ss;
-      ss << "Q(" << Action << ", ";
-      ss << "history, " << ii->first << ")";
-      ii->second.Print(ss.str(), cerr);
+      ss << "V(" << Action << ", ";
+      ss << "history)";
+      it->second.UCB.value_.Print(ss.str(), cerr);
+      for (auto ii = it->second.UCB.qvalues_.begin(); ii != it->second.UCB.qvalues_.end(); ++ii) {
+        stringstream ss;
+        ss << "Q(" << Action << ", ";
+        ss << "history, " << ii->first << ")";
+        ii->second.Print(ss.str(), cerr);
+      }
     }
+
+    action = GreedyUCB(Action, history, it->second, false);
+    return SelectPrimitiveAction(action, history);
+  }
+  else {
+    if (Params.Verbose >= 1) {
+      if (Params.Verbose >= 3) {
+        cerr << "history=[";
+        history.Display(cerr);
+        cerr << "]" << endl;
+      }
+      cerr << "Random Selecting V(" << Action << ", ";
+      cerr << "history)";
+      }
+
+    do {
+      action = SimpleRNG::ins().Sample(mSubTasks[Action]);
+      if (history.Size()) {
+        if (!Primitive(action)) {
+          if (!mConnected[history.Back().Observation][action]) {
+            continue;
+          }
+        }
+      }
+    } while (Terminate(action, history));
   }
 
-  macro_action_t action = GreedyUCB(Action, history, it->second, false);
   return SelectPrimitiveAction(action, history);
 }
 
@@ -165,6 +209,15 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, H
   }
 }
 
+void HierarchicalMCTS::UpdateHistory(HISTORY &history, int action, int observation)
+{
+  if (history.Size()) {
+    mConnected[history.Back().Observation][MacroAction(observation)] = true;
+    mConnected[observation][MacroAction(history.Back().Observation)] = true;
+  }
+  history.Add(action, observation, Params.MemorySize);
+}
+
 HierarchicalMCTS::result_t HierarchicalMCTS::Rollout(macro_action_t Action, HISTORY &history, STATE &state, int depth)
 {
   if (Params.Verbose >= 3) {
@@ -184,7 +237,7 @@ HierarchicalMCTS::result_t HierarchicalMCTS::Rollout(macro_action_t Action, HIST
     int observation;
     double immediateReward;
     bool terminal = Simulator.Step(state, Action, observation, immediateReward);
-    history.Add(Action, observation, Params.MemorySize);
+    UpdateHistory(History, Action, observation);
     return result_t(immediateReward, 1, terminal);
   }
   else {
@@ -195,6 +248,18 @@ HierarchicalMCTS::result_t HierarchicalMCTS::Rollout(macro_action_t Action, HIST
     int action;
     do {
       action = SimpleRNG::ins().Sample(mSubTasks[Action]);
+      if (history.Size()) {
+        if (!Primitive(action)) {
+          if (!mConnected[history.Back().Observation][action]) {
+            continue;
+          }
+//          for (auto it = mGoals[action].begin(); it != mGoals[action].end(); ++it) {
+//            if (history.Visited(*it)) {
+//              continue;  // XXX
+//            }
+//          }
+        }
+      }
     } while (Terminate(action, history));
 
     auto reward_term = Rollout(action, history, state, depth);  // history and state will be updated
@@ -222,14 +287,29 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action, HISTORY &histo
       continue;
     }
 
+    if (history.Size()) {
+      if (!Primitive(action)) {
+        if (!mConnected[history.Back().Observation][action]) {
+          continue;
+        }
+//        for (auto it = mGoals[action].begin(); it != mGoals[action].end(); ++it) {
+//          if (history.Visited(*it)) {
+//            history.Display(cerr);
+//            cerr << "visited " << *it << " in " << history.Back().Visited << endl;
+//            continue;  // XXX
+//          }
+//        }
+      }
+    }
+
     int n = data.UCB.qvalues_[action].GetCount();
     double q = data.UCB.qvalues_[action].GetValue();
 
-    if (n == 0) {
-      return action;
-    }
-
     if (ucb) {
+      if (n == 0) {
+        return action;
+      }
+
       q += FastUCB(N, n);
     }
 

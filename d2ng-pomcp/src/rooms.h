@@ -26,7 +26,7 @@ class ROOMS_STATE : public STATE {
 
 class ROOMS : public SIMULATOR {
  public:
-  ROOMS(const char *map_name, bool state_abstraction = false);
+  ROOMS(const char *map_name, bool state_abstraction, bool action_abstraction);
   virtual ~ROOMS();
 
   virtual STATE *Copy(const STATE &state) const;

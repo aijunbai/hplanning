@@ -5,6 +5,7 @@
 #include <ostream>
 #include <assert.h>
 #include <cstdlib>
+#include <unordered_set>
 #include <boost/functional/hash.hpp>
 #include "utils.h"
 
@@ -17,6 +18,7 @@ class HISTORY {
     int Action;
     int Observation;
     size_t MemoryHash;  // hash value of the history up to current position
+//    std::unordered_set<int> Visited;
   };
 
   bool operator==(const HISTORY &history) const {
@@ -25,9 +27,23 @@ class HISTORY {
   }
 
   void Add(int action, int obs, int memory_size) {
+//    std::unordered_set<int> visited;
+//    if (Size()) {
+//      visited = History.back().Visited;
+//    }
+//    visited.insert(obs);
+
     History.push_back(ENTRY(action, obs));
     History.back().MemoryHash = memory_hash(memory_size);
+//    History.back().Visited = visited;
   }
+
+//  bool Visited(int obs) const {
+//    if (Size()) {
+//      return History.back().Visited.count(obs);
+//    }
+//    return false;
+//  }
 
   size_t BeliefHash() const {
     using boost::hash_combine;

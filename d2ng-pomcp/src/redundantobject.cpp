@@ -19,8 +19,10 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
   Discount = 0.95;
   RewardRange = 9.0;
   mName << "redundant_object_" << size << "_" << state_abstraction;
+
   mHierarchicalPlanning = true;
   mStateAbstraction = state_abstraction;
+  mActionAbstraction = false;
 }
 
 REDUNDANT_OBJECT::~REDUNDANT_OBJECT() {}

@@ -12,13 +12,15 @@
 class HISTORY {
  public:
   struct ENTRY {
-    ENTRY(int action = -1, int obs = -1)
-      : Action(action), Observation(obs), MemoryHash(0) {}
+    ENTRY(): Action(-1), Observation(-1), Reward(0.0), MemoryHash(0), BeliefHash(0) {}
+    ENTRY(int action, int obs, double reward)
+      : Action(action), Observation(obs), Reward(reward), MemoryHash(0), BeliefHash(0) {}
 
     int Action;
     int Observation;
+    double Reward;
     size_t MemoryHash;  // hash value of the history up to current position
-//    std::unordered_set<int> Visited;
+    size_t BeliefHash;  // hash value of the history up to current position (size dependant)
   };
 
   bool operator==(const HISTORY &history) const {
@@ -26,35 +28,18 @@ class HISTORY {
     return BeliefHash() == history.BeliefHash();
   }
 
-  void Add(int action, int obs, int memory_size) {
-//    std::unordered_set<int> visited;
-//    if (Size()) {
-//      visited = History.back().Visited;
-//    }
-//    visited.insert(obs);
-
-    History.push_back(ENTRY(action, obs));
+  void Add(int action, int obs, double reward, int memory_size) {
+    History.push_back(ENTRY(action, obs, reward));
     History.back().MemoryHash = memory_hash(memory_size);
-//    History.back().Visited = visited;
+    History.back().BeliefHash = belief_hash();
   }
 
-//  bool Visited(int obs) const {
-//    if (Size()) {
-//      return History.back().Visited.count(obs);
-//    }
-//    return false;
-//  }
-
   size_t BeliefHash() const {
-    using boost::hash_combine;
-    std::size_t seed = 0;
-
-    if (Size()) {
-      hash_combine(seed, History.back().MemoryHash); //fixed memory hash
-      hash_combine(seed, boost::hash_value(Size())); //depth dependent
+    if (History.size()) {
+      assert(History.back().BeliefHash == belief_hash());
+      return History.back().BeliefHash;
     }
-
-    return seed;
+    return 0;
   }
 
   void Pop() { History.pop_back(); }
@@ -67,12 +52,12 @@ class HISTORY {
 
   ENTRY &operator[](uint t) {
     assert(t < History.size());
-    return History[t];
+    return History.at(t);
   }
 
   const ENTRY &operator[](uint t) const {
     assert(t < History.size());
-    return History[t];
+    return History.at(t);
   }
 
   ENTRY &Back() {
@@ -94,7 +79,7 @@ class HISTORY {
   }
 
 private:
-  virtual size_t memory_hash(int memory_size) const {
+  size_t memory_hash(int memory_size) const {
     assert(Size() >= 1);
 
     using boost::hash_combine;
@@ -113,6 +98,18 @@ private:
           hash_combine(seed, boost::hash_value(History[i+1].Action));
         }
       }
+    }
+
+    return seed;
+  }
+
+  size_t belief_hash() const {
+    using boost::hash_combine;
+    std::size_t seed = 0;
+
+    if (Size()) {
+      hash_combine(seed, History.back().MemoryHash); //fixed memory hash
+      hash_combine(seed, boost::hash_value(Size())); //depth dependent
     }
 
     return seed;

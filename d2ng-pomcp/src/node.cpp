@@ -100,7 +100,7 @@ void VNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
   if (history.Size() >= maxDepth) return;
 
   for (int action = 0; action < NumChildren; action++) {
-    history.Add(action, -1, -1);
+    history.Add(action, -1, -1, 0.0);
     const QNODE &qnode = Children[action];
 
     if (qnode.Applicable()) {

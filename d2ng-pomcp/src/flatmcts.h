@@ -13,7 +13,7 @@ class FlatMCTS: public MCTS {
   virtual ~FlatMCTS();
 
   virtual int SelectAction();
-  virtual bool Update(int action, int observation, STATE &state);
+  virtual bool Update(int action, int observation, double reward, STATE &state);
 
   virtual void SearchImp();
   double Rollout(STATE &state, int depth);

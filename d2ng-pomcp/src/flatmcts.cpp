@@ -34,9 +34,9 @@ FlatMCTS::~FlatMCTS() {
   assert(VNODE::GetNumAllocated() == 0);
 }
 
-bool FlatMCTS::Update(int action, int observation, STATE & /*state*/)
+bool FlatMCTS::Update(int action, int observation, double reward, STATE & /*state*/)
 {
-  History.Add(action, observation, Params.MemorySize);  //更新历史
+  History.Add(action, observation, reward, Params.MemorySize);  //更新历史
   BELIEF_STATE beliefs;
 
   // Find matching vnode from the rest of the tree
@@ -195,7 +195,7 @@ double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action, int depth) {
   }
 
   assert(observation >= 0 && observation < Simulator.GetNumObservations());
-  History.Add(action, observation, Params.MemorySize);
+  History.Add(action, observation, immediateReward, Params.MemorySize);
 
   if (Params.Verbose >= 3) {
     Simulator.DisplayAction(action, cout);
@@ -358,9 +358,8 @@ double FlatMCTS::Rollout(STATE &state, int depth)  //从 state 出发随机选�
     double reward;
 
     int action = Simulator.SelectRandom(state, History);  //根据 knowledge level 随机选择动作
-    terminal = Simulator.Step(state, action, observation,
-                              reward);  //根据 state 和 action 进行一次模拟
-    History.Add(action, observation, Params.MemorySize);
+    terminal = Simulator.Step(state, action, observation, reward);  //根据 state 和 action 进行一次模拟
+    History.Add(action, observation, reward, Params.MemorySize);
 
     if (Params.Verbose >= 4) {
       Simulator.DisplayAction(action, cout);

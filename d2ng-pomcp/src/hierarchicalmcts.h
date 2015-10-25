@@ -11,12 +11,12 @@
 
 typedef int macro_action_t;
 
-inline std::size_t hash_value(macro_action_t Action, const HISTORY &history) {
+inline std::size_t hash_value(macro_action_t Action, std::size_t belief_hash) {
   using boost::hash_combine;
   std::size_t seed = 0;
 
   hash_combine(seed, boost::hash_value(Action));
-  hash_combine(seed, history.BeliefHash());
+  hash_combine(seed, belief_hash);
   return seed;
 }
 
@@ -68,7 +68,7 @@ public:
 
   virtual int SelectAction();
   virtual void SearchImp();
-  virtual bool Update(int action, int observation, STATE &state);
+  virtual bool Update(int action, int observation, double reward, STATE &state);
 
   result_t SearchTree(macro_action_t Action, HISTORY &history, STATE &state, int depth);
   result_t Rollout(macro_action_t Action, HISTORY &history, STATE &state, int depth);
@@ -77,13 +77,14 @@ public:
   bool Terminate(macro_action_t Action, HISTORY &history);
   bool Primitive(macro_action_t Action);
   macro_action_t MacroAction(int o);
-  void UpdateHistory(HISTORY &history, int action, int observation);
+  void UpdateHistory(HISTORY &history, int action, int observation, double reward);
+  bool Applicable(HISTORY &history, macro_action_t action);
 
 private:
   std::unordered_map<macro_action_t, std::vector<macro_action_t>> mSubTasks;
   std::unordered_map<macro_action_t, std::unordered_set<int>> mGoals;  // target observation for subtasks
-  std::unordered_map<int, std::unordered_map<int, bool>> mConnected;
-  macro_action_t mRootTask;  // current root task
+  std::unordered_map<int, std::unordered_map<macro_action_t, bool>> mApplicable;
+  const macro_action_t mRootTask;  // root task
   std::unordered_map<size_t, data_t> mTable;
   BELIEF_STATE mRootBelief;
 };

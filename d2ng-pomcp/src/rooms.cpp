@@ -21,6 +21,7 @@ ROOMS::ROOMS(const char *map_name, bool state_abstraction, bool action_abstracti
   mName << "rooms_" << map_name << "_" << state_abstraction << "_" << action_abstraction;
 
   mHierarchicalPlanning = true;
+  mFullyObservable = true;
   mStateAbstraction = state_abstraction;
   mActionAbstraction = action_abstraction;
 }
@@ -95,7 +96,7 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
   ROOMS_STATE &rstate = safe_cast<ROOMS_STATE &>(state);
   reward = -1.0;
 
-  if (SimpleRNG::ins().Bernoulli(1.0 / 4.0)) {  // fail
+  if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
     action = SimpleRNG::ins().Random(NumActions);
   }
 
@@ -126,10 +127,10 @@ void ROOMS::GenerateLegal(const STATE &state, vector<int> &legal) const {
 
   assert(mGrid->Inside(rstate.AgentPos));
 
-  legal.push_back(COORD::E_NORTH);
-  legal.push_back(COORD::E_EAST);
-  legal.push_back(COORD::E_SOUTH);
-  legal.push_back(COORD::E_WEST);
+  legal.push_back(coord::E_NORTH);
+  legal.push_back(coord::E_EAST);
+  legal.push_back(coord::E_SOUTH);
+  legal.push_back(coord::E_WEST);
 }
 
 void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &,  //手工策略

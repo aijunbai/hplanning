@@ -38,7 +38,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
     mRootBelief.AddSample(Simulator.CreateStartState());
   }
 
-  {
+  if (Simulator.mActionAbstraction) {
     int iterations = 1000, max_depth = 1000;
 
     for (int i = 0; i < iterations; ++i) {
@@ -164,13 +164,10 @@ void HierarchicalMCTS::SearchImp() {
   History.Truncate(historyDepth);
 }
 
-unordered_map<size_t, HierarchicalMCTS::data_t>::iterator HierarchicalMCTS::InsertNode(size_t hash)
+void HierarchicalMCTS::InsertNode(size_t hash)
 {
   TreeSize += 1;
   mTable.insert(make_pair(hash, data_t()));
-  auto it = mTable.find(hash);
-  assert(it != mTable.end());
-  return it;
 }
 
 HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, HISTORY &history,
@@ -253,9 +250,11 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, H
 
 void HierarchicalMCTS::UpdateHistory(HISTORY &history, int action, int observation, double reward)
 {
-  if (history.Size()) {
-    mApplicable[history.Back().Observation][MacroAction(observation)] = true;
-    mApplicable[observation][MacroAction(history.Back().Observation)] = true;
+  if (Simulator.mActionAbstraction) {
+    if (history.Size()) {
+      mApplicable[history.Back().Observation][MacroAction(observation)] = true;
+      mApplicable[observation][MacroAction(history.Back().Observation)] = true;
+    }
   }
   history.Add(action, observation, reward, Params.MemorySize);
 }

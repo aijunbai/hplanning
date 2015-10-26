@@ -1,12 +1,15 @@
 #!/bin/bash
 
-PROBLEM="rocksample"
 PROBLEM="redundant_object_1"
 PROBLEM="redundant_object_0"
+PROBLEM="rocksample"
 PROBLEM="rooms_1_0"
-PROBLEM="rooms_0"
 PROBLEM="rooms_1_1"
-SIZE=10
+PROBLEM="crooms_1_0"
+PROBLEM="crooms_1_1"
+PROBLEM="rooms_0"
+PROBLEM="crooms_0"
+SIZE=7
 NUM=8
 LEVELT=1
 LEVELR=2
@@ -50,8 +53,8 @@ while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:m:T:A:" OPTION; do
 done
 
 run() {
-    echo "#$*" > $OUTPUT
-    echo "#$*" | tee $LOG
+    echo "$*" > $OUTPUT
+    echo "$*" | tee $LOG
     exec $* 2>&1 | tee -a $LOG
 }
 

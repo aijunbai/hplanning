@@ -21,6 +21,7 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
   mName << "redundant_object_" << size << "_" << state_abstraction;
 
   mHierarchicalPlanning = true;
+  mFullyObservable = true;
   mStateAbstraction = state_abstraction;
   mActionAbstraction = false;
 }
@@ -61,7 +62,7 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &
   REDUNDANT_OBJECT_STATE &rstate = safe_cast<REDUNDANT_OBJECT_STATE &>(state);
   reward = -1.0;
 
-  if (SimpleRNG::ins().Bernoulli(0.1)) {  // fail
+  if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
     action = coord::Opposite(action);
   }
 
@@ -105,10 +106,10 @@ void REDUNDANT_OBJECT::GenerateLegal(const STATE &state, vector<int> &legal) con
 
   assert(mGrid.Inside(rstate.AgentPos));
 
-  legal.push_back(COORD::E_NORTH);
-  legal.push_back(COORD::E_EAST);
-  legal.push_back(COORD::E_SOUTH);
-  legal.push_back(COORD::E_WEST);
+  legal.push_back(coord::E_NORTH);
+  legal.push_back(coord::E_EAST);
+  legal.push_back(coord::E_SOUTH);
+  legal.push_back(coord::E_WEST);
 }
 
 void REDUNDANT_OBJECT::GeneratePreferred(

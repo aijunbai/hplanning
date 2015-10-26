@@ -18,7 +18,6 @@ CONFIG += release
 # Input
 HEADERS += src/battleship.h \
            src/beliefstate.h \
-           src/coord.h \
            src/experiment.h \
            src/grid.h \
            src/history.h \
@@ -38,8 +37,10 @@ HEADERS += src/battleship.h \
            src/hierarchicalmcts.h \
            src/redundantobject.h \
            src/dot_graph.h \
-    src/mcts.h \
-    src/prettyprint.h
+           src/mcts.h \
+           src/prettyprint.h \
+           src/coord.h \
+           src/continousrooms.h
 
 SOURCES += src/battleship.cpp \
            src/beliefstate.cpp \
@@ -59,4 +60,5 @@ SOURCES += src/battleship.cpp \
            src/rooms.cpp \
            src/hierarchicalmcts.cpp \
            src/redundantobject.cpp \
-    src/mcts.cpp
+           src/mcts.cpp \
+           src/continousrooms.cpp

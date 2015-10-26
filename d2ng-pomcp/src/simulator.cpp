@@ -16,6 +16,7 @@ SIMULATOR::SIMULATOR()
       Discount(1.0),
       RewardRange(1.0),
       mHierarchicalPlanning(false),
+      mFullyObservable(false),
       mStateAbstraction(false),
       mActionAbstraction(false) {}
 
@@ -25,6 +26,7 @@ SIMULATOR::SIMULATOR(int numActions, int numObservations, double discount)
       Discount(discount),
       RewardRange(1.0),
       mHierarchicalPlanning(false),
+      mFullyObservable(false),
       mStateAbstraction(false),
       mActionAbstraction(false)
 {

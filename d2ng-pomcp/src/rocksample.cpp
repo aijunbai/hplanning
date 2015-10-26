@@ -113,7 +113,7 @@ bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
 
   if (action < E_SAMPLE) {  // move
     switch (action) {
-      case COORD::E_EAST:
+      case coord::E_EAST:
         if (rockstate.AgentPos.X + 1 < Size) {
           rockstate.AgentPos.X++;
           break;
@@ -123,21 +123,21 @@ bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
           return true;  // terminated
         }
 
-      case COORD::E_NORTH:
+      case coord::E_NORTH:
         if (rockstate.AgentPos.Y + 1 < Size)
           rockstate.AgentPos.Y++;
         else
           reward = -100;  //为什么设置 -100，原始论文里面好像没有？
         break;
 
-      case COORD::E_SOUTH:
+      case coord::E_SOUTH:
         if (rockstate.AgentPos.Y - 1 >= 0)
           rockstate.AgentPos.Y--;
         else
           reward = -100;
         break;
 
-      case COORD::E_WEST:
+      case coord::E_WEST:
         if (rockstate.AgentPos.X - 1 >= 0)
           rockstate.AgentPos.X--;
         else
@@ -222,13 +222,13 @@ void ROCKSAMPLE::GenerateLegal(const STATE &state, vector<int> &legal) const {
       safe_cast<const ROCKSAMPLE_STATE &>(state);
 
   if (Grid.Inside(rockstate.AgentPos)) {
-    if (rockstate.AgentPos.Y + 1 < Size) legal.push_back(COORD::E_NORTH);
+    if (rockstate.AgentPos.Y + 1 < Size) legal.push_back(coord::E_NORTH);
 
-    legal.push_back(COORD::E_EAST);
+    legal.push_back(coord::E_EAST);
 
-    if (rockstate.AgentPos.Y - 1 >= 0) legal.push_back(COORD::E_SOUTH);
+    if (rockstate.AgentPos.Y - 1 >= 0) legal.push_back(coord::E_SOUTH);
 
-    if (rockstate.AgentPos.X - 1 >= 0) legal.push_back(COORD::E_WEST);
+    if (rockstate.AgentPos.X - 1 >= 0) legal.push_back(coord::E_WEST);
 
     int rock = Grid(rockstate.AgentPos);
     if (rock >= 0 && !rockstate.Rocks[rock].Collected)
@@ -306,7 +306,7 @@ void ROCKSAMPLE::GeneratePreferred(const STATE &state,
 
   // if all remaining rocks seem bad, then head east
   if (all_bad) {
-    actions.push_back(COORD::E_EAST);
+    actions.push_back(coord::E_EAST);
     return;
   }
 
@@ -318,15 +318,15 @@ void ROCKSAMPLE::GeneratePreferred(const STATE &state,
   //   e) we never move in a direction that doesn't take us closer to
   //      either the edge of the map or an interesting rock
   if (rockstate.AgentPos.Y + 1 < Size && north_interesting)
-    actions.push_back(COORD::E_NORTH);
+    actions.push_back(coord::E_NORTH);
 
-  if (east_interesting) actions.push_back(COORD::E_EAST);
+  if (east_interesting) actions.push_back(coord::E_EAST);
 
   if (rockstate.AgentPos.Y - 1 >= 0 && south_interesting)
-    actions.push_back(COORD::E_SOUTH);
+    actions.push_back(coord::E_SOUTH);
 
   if (rockstate.AgentPos.X - 1 >= 0 && west_interesting)
-    actions.push_back(COORD::E_WEST);
+    actions.push_back(coord::E_WEST);
 
   for (rock = 0; rock < NumRocks; ++rock) {
     if (!rockstate.Rocks[rock].Collected &&
@@ -453,14 +453,10 @@ void FieldVisionRockSample::GenerateLegal(
       safe_cast<const ROCKSAMPLE_STATE &>(state);
 
   if (Grid.Inside(rockstate.AgentPos)) {
-    if (rockstate.AgentPos.Y + 1 < Size) legal.push_back(COORD::E_NORTH);
-
-    legal.push_back(COORD::E_EAST);
-
-    if (rockstate.AgentPos.Y - 1 >= 0) legal.push_back(COORD::E_SOUTH);
-
-    if (rockstate.AgentPos.X - 1 >= 0) legal.push_back(COORD::E_WEST);
-
+    if (rockstate.AgentPos.Y + 1 < Size) legal.push_back(coord::E_NORTH);
+    legal.push_back(coord::E_EAST);
+    if (rockstate.AgentPos.Y - 1 >= 0) legal.push_back(coord::E_SOUTH);
+    if (rockstate.AgentPos.X - 1 >= 0) legal.push_back(coord::E_WEST);
     int rock = Grid(rockstate.AgentPos);
     if (rock >= 0 && !rockstate.Rocks[rock].Collected)
       legal.push_back(E_SAMPLE);

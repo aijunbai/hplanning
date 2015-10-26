@@ -4,6 +4,7 @@
 #include "pocman.h"
 #include "rocksample.h"
 #include "rooms.h"
+#include "continousrooms.h"
 #include "tag.h"
 #include "experiment.h"
 #include "statistic.h"
@@ -169,6 +170,15 @@ int main(int argc, char *argv[]) {
   } else if (problem == "rooms_1_1") {
     real = new ROOMS("data/rooms.map", true, true);
     simulator = new ROOMS("data/rooms.map", true, true);
+  } else if (problem == "crooms_0") {
+    real = new ContinousROOMS("data/rooms.map", false, false);
+    simulator = new ContinousROOMS("data/rooms.map", false, false);
+  } else if (problem == "crooms_1_0") {
+    real = new ContinousROOMS("data/rooms.map", true, false);
+    simulator = new ContinousROOMS("data/rooms.map", true, false);
+  } else if (problem == "crooms_1_1") {
+    real = new ContinousROOMS("data/rooms.map", true, true);
+    simulator = new ContinousROOMS("data/rooms.map", true, true);
   } else if (problem == "redundant_object_0") {
     real = new REDUNDANT_OBJECT(size, false);
     simulator = new REDUNDANT_OBJECT(size, false);

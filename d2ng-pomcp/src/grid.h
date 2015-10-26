@@ -65,13 +65,13 @@ class GRID {
   int DistToEdge(const COORD &coord, int direction) {
     assert(Inside(coord));
     switch (direction) {
-      case COORD::E_NORTH:
+      case coord::E_NORTH:
         return YSize - 1 - coord.Y;
-      case COORD::E_EAST:
+      case coord::E_EAST:
         return XSize - 1 - coord.X;
-      case COORD::E_SOUTH:
+      case coord::E_SOUTH:
         return coord.Y;
-      case COORD::E_WEST:
+      case coord::E_WEST:
         return coord.X;
       default:
         assert(false);

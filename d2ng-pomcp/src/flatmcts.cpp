@@ -21,10 +21,9 @@ FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params)
     Root->Beliefs().AddSample(
           Simulator.CreateStartState());  //生成初始信念空间（样本集合）
   }
+  if (Params.Verbose >= 1) Simulator.DisplayBeliefs(Root->Beliefs(), cout);
 
   assert(VNODE::GetNumAllocated() == 1);
-
-  if (Params.Verbose >= 1) Simulator.DisplayBeliefs(Root->Beliefs(), cout);
 }
 
 FlatMCTS::~FlatMCTS() {
@@ -34,67 +33,81 @@ FlatMCTS::~FlatMCTS() {
   assert(VNODE::GetNumAllocated() == 0);
 }
 
-bool FlatMCTS::Update(int action, int observation, double reward, STATE & /*state*/)
+bool FlatMCTS::Update(int action, int observation, double reward, STATE & state)
 {
   History.Add(action, observation, reward, Params.MemorySize);  //更新历史
-  BELIEF_STATE beliefs;
 
-  // Find matching vnode from the rest of the tree
-  QNODE &qnode = Root->Child(action);
-  VNODE *vnode = qnode.Child(observation);
-
-  if (vnode) {
-    if (Params.Verbose >= 1)
-      cout << "Matched " << vnode->Beliefs().GetNumSamples() << " states"
-           << endl;
-    beliefs.Copy(vnode->Beliefs(), Simulator);  //把 vnode 中的 belief 复制出来
-  } else {
-    if (Params.Verbose >= 1) cout << "No matching node found" << endl;
-  }
-
-  if (Params.Verbose >= 1) Simulator.DisplayBeliefs(beliefs, cout);
-
-  if (Params.UseParticleFilter) {  //增加更多样本！
-    ParticleFilter(beliefs);
-
-    if (Params.Verbose >= 1) Simulator.DisplayBeliefs(beliefs, cout);
-  }
-
-  // Generate transformed states to avoid particle deprivation
-  if (Params.UseTransforms) {
-    AddTransforms(beliefs);  //增加“扰动”
-
-    if (Params.Verbose >= 1) Simulator.DisplayBeliefs(beliefs, cout);
-  }
-
-  // If we still have no particles, fail
-  if (beliefs.Empty() && (!vnode || vnode->Beliefs().Empty()))
-    return false;  //样本不足
-
-  // Find a state to initialise prior (only requires fully observed state)
-  const STATE *state = 0;
-  if (vnode && !vnode->Beliefs().Empty())
-    state = vnode->Beliefs().GetSample();  //得到一个*可能*的状态，主要目的是用来初始化先验信息
-  else
-    state = beliefs.GetSample();
-
-  if (vnode && Params.ReuseTree) {
-    int size1 = VNODE::GetNumAllocated();
-    VNODE::Free(Root, Simulator, vnode);
-    int size2 = VNODE::GetNumAllocated();
-
-    assert(size2 < size1);
-
-    Root = vnode;
-    Root->Beliefs().Free(Simulator);
-  } else { // Delete old tree and create new root
+  if (Simulator.mFullyObservable) {  // running an MDP in fact in cases of hplanning
+    // Delete old tree and create new root
     VNODE::Free(Root, Simulator);
-    Root = ExpandNode(state, History);
+    Root = ExpandNode(&state, History);
+
+    STATE *sample = Simulator.Copy(state);
+    Root->Beliefs().AddSample(sample);
+    if (Params.Verbose >= 1) Simulator.DisplayBeliefs(Root->Beliefs(), cout);
+
+    return true;
   }
+  else {
+    BELIEF_STATE beliefs;
 
-  Root->Beliefs() = beliefs;  //这里的 belief 是在搜索过程中产生的，没有显式进行 bayes 更新
+    // Find matching vnode from the rest of the tree
+    QNODE &qnode = Root->Child(action);
+    VNODE *vnode = qnode.Child(observation);
 
-  return true;
+    if (vnode) {
+      if (Params.Verbose >= 1)
+        cout << "Matched " << vnode->Beliefs().GetNumSamples() << " states"
+             << endl;
+      beliefs.Copy(vnode->Beliefs(), Simulator);  //把 vnode 中的 belief 复制出来
+    } else {
+      if (Params.Verbose >= 1) cout << "No matching node found" << endl;
+    }
+
+    if (Params.Verbose >= 1) Simulator.DisplayBeliefs(beliefs, cout);
+
+    if (Params.UseParticleFilter) {  //增加更多样本！
+      ParticleFilter(beliefs);
+
+      if (Params.Verbose >= 1) Simulator.DisplayBeliefs(beliefs, cout);
+    }
+
+    // Generate transformed states to avoid particle deprivation
+    if (Params.UseTransforms) {
+      AddTransforms(beliefs);  //增加“扰动”
+
+      if (Params.Verbose >= 1) Simulator.DisplayBeliefs(beliefs, cout);
+    }
+
+    // If we still have no particles, fail
+    if (beliefs.Empty() && (!vnode || vnode->Beliefs().Empty()))
+      return false;  //样本不足
+
+    // Find a state to initialise prior (only requires fully observed state)
+    const STATE *sample = 0;
+    if (vnode && !vnode->Beliefs().Empty())
+      sample = vnode->Beliefs().GetSample();  //得到一个*可能*的状态，主要目的是用来初始化先验信息
+    else
+      sample = beliefs.GetSample();
+
+    if (vnode && Params.ReuseTree) {
+      int size1 = VNODE::GetNumAllocated();
+      VNODE::Free(Root, Simulator, vnode);
+      int size2 = VNODE::GetNumAllocated();
+
+      assert(size2 < size1);
+
+      Root = vnode;
+      Root->Beliefs().Free(Simulator);
+    } else { // Delete old tree and create new root
+      VNODE::Free(Root, Simulator);
+      Root = ExpandNode(sample, History);
+    }
+
+    Root->Beliefs() = beliefs;  //这里的 belief 是在搜索过程中产生的，没有显式进行 bayes 更新
+
+    return true;
+  }
 }
 
 int FlatMCTS::SelectAction() {

@@ -8,53 +8,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/program_options.hpp>
 #include "distribution.h"
-
-template <typename Generator>
-inline void DumpDistribution(Generator gen, int samples, const char *file_name,
-                             bool append) {
-  const int scale = 100;
-
-  std::map<int, int> samples_count;
-
-  for (int i = 0; i < samples; ++i) {
-    samples_count[rint(gen() * scale)] += 1;
-  }
-
-  std::ofstream fout;
-  if (append) {
-    fout.open(file_name, std::ios_base::out | std::ios_base::app);
-  } else {
-    fout.open(file_name, std::ios_base::out | std::ios_base::trunc);
-  }
-
-  if (fout.good()) {
-    for (std::map<int, int>::iterator it = samples_count.begin();
-         it != samples_count.end(); ++it) {
-      double p = it->first / double(scale);
-
-      if (p > -50 && p < 50) {
-        fout << p << " " << it->second << std::endl;
-      }
-    }
-
-    fout.close();
-  }
-}
-
-template <typename _Tp>
-inline const _Tp &Max(const _Tp &x, const _Tp &y) {
-  return std::max(x, y);
-}
-
-template <typename _Tp>
-inline const _Tp &Min(const _Tp &x, const _Tp &y) {
-  return std::min(x, y);
-}
-
-template <typename _Tp>
-inline const _Tp &MinMax(const _Tp &min, const _Tp &x, const _Tp &max) {
-  return Min(Max(min, x), max);
-}
+#include "utils.h"
 
 template <class COUNT>
 class VALUE {

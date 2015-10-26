@@ -178,10 +178,10 @@ void POCMAN::FreeState(STATE *state) const {
 
 COORD POCMAN::NextPos(const COORD &from, int dir) const {
   COORD nextPos;
-  if (from.X == 0 && from.Y == PassageY && dir == COORD::E_WEST)
+  if (from.X == 0 && from.Y == PassageY && dir == coord::E_WEST)
     nextPos = COORD(Maze.GetXSize() - 1, from.Y);
   else if (from.X == Maze.GetXSize() - 1 && from.Y == PassageY &&
-           dir == COORD::E_EAST)
+           dir == coord::E_EAST)
     nextPos = COORD(0, from.Y);
   else
     nextPos = from + coord::Compass[dir];

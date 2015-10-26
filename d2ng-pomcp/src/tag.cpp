@@ -149,18 +149,18 @@ void TAG::MoveOpponent(TAG_STATE &tagstate, int opp) const {
   static vector<int> actions;
   actions.clear();
 
-  if (opponent.X >= agent.X) actions.push_back(COORD::E_EAST);
-  if (opponent.Y >= agent.Y) actions.push_back(COORD::E_NORTH);
-  if (opponent.X <= agent.X) actions.push_back(COORD::E_WEST);
-  if (opponent.Y <= agent.Y) actions.push_back(COORD::E_SOUTH);
+  if (opponent.X >= agent.X) actions.push_back(coord::E_EAST);
+  if (opponent.Y >= agent.Y) actions.push_back(coord::E_NORTH);
+  if (opponent.X <= agent.X) actions.push_back(coord::E_WEST);
+  if (opponent.Y <= agent.Y) actions.push_back(coord::E_SOUTH);
   if (opponent.X == agent.X && opponent.Y > agent.Y)
-    actions.push_back(COORD::E_NORTH);
+    actions.push_back(coord::E_NORTH);
   if (opponent.Y == agent.Y && opponent.X > agent.X)
-    actions.push_back(COORD::E_EAST);
+    actions.push_back(coord::E_EAST);
   if (opponent.X == agent.X && opponent.Y < agent.Y)
-    actions.push_back(COORD::E_SOUTH);
+    actions.push_back(coord::E_SOUTH);
   if (opponent.Y == agent.Y && opponent.X < agent.X)
-    actions.push_back(COORD::E_WEST);
+    actions.push_back(coord::E_WEST);
 
   assert(!actions.empty());
   if (SimpleRNG::ins().Bernoulli(0.8)) {

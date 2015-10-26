@@ -194,8 +194,10 @@ void EXPERIMENT::DiscountedReturn() {
          << " +- " << Results.DiscountedReturn.GetStdErr() << endl
          << "#Time = " << Results.Time.GetMean() << endl
          << "#TimePerAction = " << Results.TimePerAction.GetMean() << endl
-         << "#ExploredNodes = " << Results.ExploredNodes.GetMean() << endl
-         << "#ExploredDepth = " << Results.ExploredDepth.GetMean() << endl;
+         << "#ExploredNodes = " << Results.ExploredNodes.GetMean()
+         << " +- " << Results.ExploredNodes.GetStdErr() << endl
+         << "#ExploredDepth = " << Results.ExploredDepth.GetMean()
+         << " +- " << Results.ExploredDepth.GetStdErr() << endl;
 
     OutputFile << SearchParams.NumSimulations << "\t" << Results.Time.GetCount()
                << "\t" << Results.UndiscountedReturn.GetMean() << "\t"
@@ -205,7 +207,9 @@ void EXPERIMENT::DiscountedReturn() {
                << Results.Time.GetMean() << "\t"
                << Results.TimePerAction.GetMean() << "\t"
                << Results.ExploredNodes.GetMean() << "\t"
+               << Results.ExploredNodes.GetStdErr() << "\t"
                << Results.ExploredDepth.GetMean() << "\t"
+               << Results.ExploredDepth.GetStdErr() << "\t"
                << endl;
   }
 }

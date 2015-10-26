@@ -164,6 +164,15 @@ void HierarchicalMCTS::SearchImp() {
   History.Truncate(historyDepth);
 }
 
+unordered_map<size_t, HierarchicalMCTS::data_t>::iterator HierarchicalMCTS::InsertNode(size_t hash)
+{
+  TreeSize += 1;
+  mTable.insert(make_pair(hash, data_t()));
+  auto it = mTable.find(hash);
+  assert(it != mTable.end());
+  return it;
+}
+
 HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, HISTORY &history,
                                     STATE &state, int depth)
 {
@@ -195,10 +204,7 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, H
     auto it = mTable.find(hash);
 
     if (it == mTable.end()) {
-      TreeSize += 1;
-      mTable.insert(make_pair(hash, data_t()));
-      auto it = mTable.find(hash);
-      assert(it != mTable.end());
+      InsertNode(hash);
       return Rollout(Action, history, state, depth);
     }
     else {
@@ -220,6 +226,7 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, H
           assert(k != 0 || belief_hash == belief_hash2);
           assert(k != 0 || hash == hash2);
           auto it = mTable.find(hash2);
+          assert(k != 0 || it != mTable.end());
 
           if (it != mTable.end()) {
             double reward = 0.0;
@@ -230,9 +237,6 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, H
             assert(k != 0 || fabs(totalReward2 - totalReward) < 1.0e-6);
             it->second.UCB.value_.Add(totalReward2);
             it->second.UCB.qvalues_[action].Add(totalReward2);
-          }
-          else {
-            assert(k != 0);
           }
         }
       }

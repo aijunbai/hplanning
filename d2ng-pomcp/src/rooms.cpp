@@ -95,7 +95,7 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
   ROOMS_STATE &rstate = safe_cast<ROOMS_STATE &>(state);
   reward = -1.0;
 
-  if (SimpleRNG::ins().Bernoulli(1.0 / 3.0)) {  // fail
+  if (SimpleRNG::ins().Bernoulli(1.0 / 4.0)) {  // fail
     action = SimpleRNG::ins().Random(NumActions);
   }
 

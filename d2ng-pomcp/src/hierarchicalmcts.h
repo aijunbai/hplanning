@@ -79,6 +79,7 @@ public:
   macro_action_t MacroAction(int o);
   void UpdateHistory(HISTORY &history, int action, int observation, double reward);
   bool Applicable(HISTORY &history, macro_action_t action);
+  std::unordered_map<size_t, data_t>::iterator InsertNode(std::size_t hash);
 
 private:
   std::unordered_map<macro_action_t, std::vector<macro_action_t>> mSubTasks;

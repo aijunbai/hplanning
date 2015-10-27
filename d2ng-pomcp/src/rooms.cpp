@@ -102,7 +102,7 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
   }
 
   COORD pos = rstate.AgentPos + coord::Compass[action];
-  if (mGrid->operator()(pos) != 'x') {  // not wall
+  if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {  // not wall
     rstate.AgentPos = pos;
   }
   observation = GetObservation(rstate);

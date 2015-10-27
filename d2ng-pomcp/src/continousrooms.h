@@ -60,6 +60,7 @@ class ContinousROOMS : public SIMULATOR {
   Vector mStartPos;
   Vector mGoalPos;
   double mThreshold;
+  double mMotionUncertainty;
   double mFieldLength;
   double mFieldWidth;
   double mSizePerGrid;

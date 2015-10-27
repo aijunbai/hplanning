@@ -11,7 +11,8 @@ using namespace UTILS;
 
 ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction,
                                bool action_abstraction)
-    : mGrid(0), mRooms(0), mThreshold(0.1), mSizePerGrid(1.0) {
+    : mGrid(0), mRooms(0), mThreshold(0.5), mMotionUncertainty(0.2),
+      mSizePerGrid(1.0) {
   Parse(map_name);
 
   NumActions = 4; //动作数
@@ -97,11 +98,9 @@ void ContinousROOMS::Validate(const STATE &state) const {
   assert(IsValid(rstate.AgentPos));
 }
 
-bool ContinousROOMS::IsValid(const Vector &pos) const
-{
-  return mGrid->Inside(Position2Grid(pos)) &&
-      pos.X() >= 0.0 && pos.Y() <= mFieldLength &&
-      pos.Y() >= 0.0 && pos.Y() <= mFieldWidth;
+bool ContinousROOMS::IsValid(const Vector &pos) const {
+  return mGrid->Inside(Position2Grid(pos)) && pos.X() >= 0.0 &&
+         pos.Y() <= mFieldLength && pos.Y() >= 0.0 && pos.Y() <= mFieldWidth;
 }
 
 STATE *ContinousROOMS::CreateStartState() const {
@@ -127,18 +126,24 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation,
     action = SimpleRNG::ins().Random(NumActions);
   }
 
-  COORD agent_grid = Position2Grid(rstate.AgentPos);
-  COORD target_grid = agent_grid + coord::Compass[action];
-  if (!IsValid(Grid2Position(target_grid)) ||
-      mGrid->operator ()(target_grid) == 'x') { // not valid
-    target_grid = agent_grid;
+  Vector pos = rstate.AgentPos +
+               Vector(coord::Compass[action].X, coord::Compass[action].Y);
+  if (IsValid(pos) &&
+      mGrid->operator()(Position2Grid(pos)) != 'x') { // not wall
+    rstate.AgentPos = pos;
   }
 
-  do {
-    rstate.AgentPos = Grid2Position(target_grid) +
-                      Vector(SimpleRNG::ins().GetNormal(0.0, 0.1),
-                             SimpleRNG::ins().GetNormal(0.0, 0.1));
-  } while(!IsValid(rstate.AgentPos));
+  Vector center = Grid2Position(Position2Grid(rstate.AgentPos));
+  do { // add noise
+    rstate.AgentPos =
+        rstate.AgentPos +
+        Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
+               SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
+    rstate.AgentPos.SetX(MinMax(center.X() - mSizePerGrid/2, rstate.AgentPos.X(), center.X() + mSizePerGrid/2));
+    rstate.AgentPos.SetY(MinMax(center.Y() - mSizePerGrid/2, rstate.AgentPos.Y(), center.Y() + mSizePerGrid/2));
+  } while (!IsValid(rstate.AgentPos) ||
+           mGrid->operator()(Position2Grid(rstate.AgentPos)) == 'x');
+
   observation = GetObservation(rstate);
 
   if (rstate.AgentPos.Dist(mGoalPos) < mThreshold) {

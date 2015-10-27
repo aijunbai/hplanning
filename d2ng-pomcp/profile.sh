@@ -13,6 +13,6 @@ if [ ! -d "profile_results" ]; then
 fi
 
 echo Profiling \"$@\"
-valgrind --tool=callgrind --dump-instr=yes --trace-jump=yes --callgrind-out-file="profile_results/callgrind.out.%p" `head -n 1 log-*.txt`
+valgrind --tool=callgrind --dump-instr=yes --trace-jump=yes --callgrind-out-file="profile_results/callgrind.out.%p" `head -n 1 log-*.txt` 2>&1 | tee callgrind.txt
 kcachegrind `ls -t1 profile_results/callgrind.out.*|head -n 1`
 

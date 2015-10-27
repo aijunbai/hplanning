@@ -82,6 +82,7 @@ public:
   void UpdateConnection(int last_observation, int observation);
   bool Applicable(int last_observation, macro_action_t action);
   data_t *Query(macro_action_t Action, size_t belief_hash);
+  void Clear();
 
 private:
   std::unordered_map<macro_action_t, std::vector<macro_action_t>> mSubTasks;

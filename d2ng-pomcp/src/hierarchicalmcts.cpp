@@ -66,7 +66,9 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
   }
 }
 
-HierarchicalMCTS::~HierarchicalMCTS() { mRootSampling.Free(Simulator); }
+HierarchicalMCTS::~HierarchicalMCTS() { 
+  Clear();
+}
 
 bool HierarchicalMCTS::Applicable(int last_observation, macro_action_t action)
 {
@@ -89,11 +91,7 @@ HierarchicalMCTS::data_t *HierarchicalMCTS::Query(macro_action_t Action, size_t 
   return 0;
 }
 
-bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
-  UpdateConnection(History.LastObservation(), observation);
-  History.Add(action, observation);
-
-  // Delete old tree and create new root
+void HierarchicalMCTS::Clear() {
   for (auto it = mTable.begin(); it != mTable.end(); ++it) {
     for (auto ii = it->second.begin(); ii != it->second.end(); ++ii) {
       delete ii->second;
@@ -104,8 +102,16 @@ bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
   for (auto it = mBelief.begin(); it != mBelief.end(); ++it) {
     it->second.Free(Simulator);
   }
+  mBelief.clear();
+  mRootSampling.Free(Simulator); 
+}
 
-  mRootSampling.Free(Simulator);
+bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
+  UpdateConnection(History.LastObservation(), observation);
+  History.Add(action, observation);
+
+  // Delete old tree and create new root
+  Clear();
   STATE *sample = Simulator.Copy(state);
   mRootSampling.AddSample(sample);
 

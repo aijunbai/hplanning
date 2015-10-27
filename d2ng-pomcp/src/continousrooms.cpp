@@ -19,7 +19,7 @@ ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction,
       state_abstraction ? mRooms : -1 /*infinity number of observations*/;
   Discount = 0.95;
   RewardRange = 10.0;
-  mName << "rooms_" << map_name << "_" << state_abstraction << "_"
+  mName << "continousrooms_" << map_name << "_" << state_abstraction << "_"
         << action_abstraction;
 
   mHierarchicalPlanning = true;
@@ -51,8 +51,8 @@ void ContinousROOMS::Parse(const char *file_name) {
   fin.ignore(LINE_MAX, ' ');
   fin >> goal_grid.X >> goal_grid.Y;
 
-  mStartPos = GridToPosition(start_grid);
-  mGoalPos = GridToPosition(goal_grid);
+  mStartPos = Grid2Position(start_grid);
+  mGoalPos = Grid2Position(goal_grid);
 
   mGrid = new GRID<int>(xsize, ysize);
   mFieldLength = mSizePerGrid * xsize;
@@ -83,20 +83,25 @@ STATE *ContinousROOMS::Copy(const STATE &state) const {
   return newstate;
 }
 
-COORD ContinousROOMS::PositionToGrid(const Vector &o) const {
+COORD ContinousROOMS::Position2Grid(const Vector &o) const {
   return COORD(floor(o.X() / mSizePerGrid), floor(o.Y() / mSizePerGrid));
 }
 
-Vector ContinousROOMS::GridToPosition(const COORD &o) const {
+Vector ContinousROOMS::Grid2Position(const COORD &o) const {
   return Vector((o.X + 0.5) * mSizePerGrid, (o.Y + 0.5) * mSizePerGrid);
 }
 
 void ContinousROOMS::Validate(const STATE &state) const {
   const ContinousROOMS_STATE &rstate =
       safe_cast<const ContinousROOMS_STATE &>(state);
-  assert(mGrid->Inside(PositionToGrid(rstate.AgentPos)));
-  assert(rstate.AgentPos.X() >= 0.0 && rstate.AgentPos.Y() <= mFieldLength);
-  assert(rstate.AgentPos.Y() >= 0.0 && rstate.AgentPos.Y() <= mFieldWidth);
+  assert(IsValid(rstate.AgentPos));
+}
+
+bool ContinousROOMS::IsValid(const Vector &pos) const
+{
+  return mGrid->Inside(Position2Grid(pos)) &&
+      pos.X() >= 0.0 && pos.Y() <= mFieldLength &&
+      pos.Y() >= 0.0 && pos.Y() <= mFieldWidth;
 }
 
 STATE *ContinousROOMS::CreateStartState() const {
@@ -121,17 +126,18 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation,
     action = SimpleRNG::ins().Random(NumActions);
   }
 
-  COORD agent_grid = PositionToGrid(rstate.AgentPos);
+  COORD agent_grid = Position2Grid(rstate.AgentPos);
   COORD pos_grid = agent_grid + coord::Compass[action];
   if (mGrid->operator()(pos_grid) != 'x') { // not wall
     agent_grid = pos_grid;
   }
+  assert(IsValid(Grid2Position(agent_grid)));
 
   do {
-    rstate.AgentPos = GridToPosition(agent_grid) +
+    rstate.AgentPos = Grid2Position(agent_grid) +
                       Vector(SimpleRNG::ins().GetNormal(0.0, 0.1),
                              SimpleRNG::ins().GetNormal(0.0, 0.1));
-  } while(mGrid->operator()(PositionToGrid(rstate.AgentPos)) == 'x');
+  } while(!IsValid(rstate.AgentPos));
   observation = GetObservation(rstate);
 
   if (rstate.AgentPos.Dist(mGoalPos) < mThreshold) {
@@ -172,7 +178,7 @@ void ContinousROOMS::GeneratePreferred(
 }
 
 int ContinousROOMS::GetObservation(const ContinousROOMS_STATE &rstate) const {
-  COORD agent_grid = PositionToGrid(rstate.AgentPos);
+  COORD agent_grid = Position2Grid(rstate.AgentPos);
   return mStateAbstraction
              ? mGrid->operator()(agent_grid) - '0'    // room number
              : hash_value(rstate.AgentPos) % INT_MAX; // full position
@@ -208,7 +214,7 @@ void ContinousROOMS::DisplayState(const STATE &state,
       safe_cast<const ContinousROOMS_STATE &>(state);
 
   ostr << "Y" << endl;
-  COORD agent_grid = PositionToGrid(rstate.AgentPos);
+  COORD agent_grid = Position2Grid(rstate.AgentPos);
 
   for (int y = mGrid->GetYSize() - 1; y >= 0; --y) {
     for (int x = 0; x < mGrid->GetXSize(); ++x) {

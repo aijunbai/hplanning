@@ -170,13 +170,13 @@ int main(int argc, char *argv[]) {
   } else if (problem == "rooms_1_1") {
     real = new ROOMS("data/rooms.map", true, true);
     simulator = new ROOMS("data/rooms.map", true, true);
-  } else if (problem == "crooms_0") {
+  } else if (problem == "continousrooms_0") {
     real = new ContinousROOMS("data/rooms.map", false, false);
     simulator = new ContinousROOMS("data/rooms.map", false, false);
-  } else if (problem == "crooms_1_0") {
+  } else if (problem == "continousrooms_1_0") {
     real = new ContinousROOMS("data/rooms.map", true, false);
     simulator = new ContinousROOMS("data/rooms.map", true, false);
-  } else if (problem == "crooms_1_1") {
+  } else if (problem == "continousrooms_1_1") {
     real = new ContinousROOMS("data/rooms.map", true, true);
     simulator = new ContinousROOMS("data/rooms.map", true, true);
   } else if (problem == "redundant_object_0") {

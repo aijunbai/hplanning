@@ -51,6 +51,7 @@ class ContinousROOMS : public SIMULATOR {
   virtual void DisplayAction(int action, std::ostream &ostr) const;
 
  protected:
+  bool IsValid(const Vector &pos) const;
   void Parse(const char *file_name);
   int GetObservation(const ContinousROOMS_STATE &state) const;
 
@@ -63,8 +64,8 @@ class ContinousROOMS : public SIMULATOR {
   double mFieldWidth;
   double mSizePerGrid;
 
-  COORD PositionToGrid(const Vector &o) const;
-  Vector GridToPosition(const COORD &o) const;
+  COORD Position2Grid(const Vector &o) const;
+  Vector Grid2Position(const COORD &o) const;
 
  private:
   mutable MEMORY_POOL<ContinousROOMS_STATE> mMemoryPool;

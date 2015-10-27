@@ -94,12 +94,7 @@ int main(int argc, char *argv[]) {
       "thompsonsampling", value<bool>(&searchParams.ThompsonSampling),
       "use Thompson Sampling instead of UCB1")(
       "timeoutperaction", value<double>(&searchParams.TimeOutPerAction),
-      "timeout per action (seconds)")(
-      "memorysize", value<int>(&searchParams.MemorySize),
-      "number of observation-action pairs to represent a belief")(
-      "allstateupdating", value<bool>(&searchParams.AllStateUpdating),
-      "use all state updating in hierarchical planning with action "
-      "abstraction");
+      "timeout per action (seconds)");
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);

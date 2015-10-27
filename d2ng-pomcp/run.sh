@@ -1,14 +1,14 @@
 #!/bin/bash
 
+PROBLEM="rocksample"
 PROBLEM="redundant_object_1"
 PROBLEM="redundant_object_0"
 PROBLEM="continousrooms_1_0"
-PROBLEM="continousrooms_1_1"
-PROBLEM="rooms_0"
 PROBLEM="rooms_1_0"
-PROBLEM="rooms_1_1"
+PROBLEM="continousrooms_1_1"
 PROBLEM="continousrooms_0"
-PROBLEM="rocksample"
+PROBLEM="rooms_0"
+PROBLEM="rooms_1_1"
 SIZE=7
 NUM=8
 LEVELT=1
@@ -23,13 +23,11 @@ SEEDING=0
 TIMEOUT=3600
 THOMPSONSAMPLING=0
 TIMEOUTPERACTION=-1
-MEMORYSIZE=-1
-ALLSTATEUPDATING=0
 
 OUTPUT="output-$$.txt"
 LOG="log-$$.txt"
 
-while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:m:T:A:" OPTION; do
+while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -47,8 +45,6 @@ while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:m:T:A:" OPTION; do
         h) TIMEOUT=`expr $OPTARG \* 3600`;;
         T) THOMPSONSAMPLING=$OPTARG ;;
         a) TIMEOUTPERACTION=$OPTARG ;;
-        m) MEMORYSIZE=$OPTARG ;;
-        A) ALLSTATEUPDATING=$OPTARG ;;
     esac
 done
 
@@ -73,7 +69,5 @@ run ./d2ng-pomcp --outputfile $OUTPUT \
             --seeding $SEEDING \
             --timeout $TIMEOUT \
             --thompsonsampling $THOMPSONSAMPLING \
-            --timeoutperaction $TIMEOUTPERACTION \
-            --memorysize $MEMORYSIZE \
-            --allstateupdating $ALLSTATEUPDATING
+            --timeoutperaction $TIMEOUTPERACTION
 

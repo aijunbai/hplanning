@@ -33,9 +33,9 @@ FlatMCTS::~FlatMCTS() {
   assert(VNODE::GetNumAllocated() == 0);
 }
 
-bool FlatMCTS::Update(int action, int observation, double reward, STATE & state)
+bool FlatMCTS::Update(int action, int observation, STATE & state)
 {
-  History.Add(action, observation, reward, Params.MemorySize);  //更新历史
+  History.Add(action, observation);  //更新历史
 
   if (Simulator.mFullyObservable) {  // running an MDP in fact in cases of hplanning
     // Delete old tree and create new root
@@ -208,7 +208,7 @@ double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action, int depth) {
   }
 
   assert(observation >= 0 && observation < Simulator.GetNumObservations());
-  History.Add(action, observation, immediateReward, Params.MemorySize);
+  History.Add(action, observation);
 
   if (Params.Verbose >= 3) {
     Simulator.DisplayAction(action, cout);
@@ -218,14 +218,6 @@ double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action, int depth) {
   }
 
   VNODE *&vnode = qnode.Child(observation);
-  if (!vnode) {  // try to retrieve from belief pool
-    size_t belief_hash = History.BeliefHash();
-    if (Params.MemorySize >= 0 && History.Size() >= Params.MemorySize
-        && VNODE::BeliefPool.count(belief_hash)) {
-      vnode = VNODE::BeliefPool[belief_hash];
-      assert(vnode->GetBeliefHash() == belief_hash);
-    }
-  }
 
   if (!terminal) {
     if (vnode) {  //已经在树上
@@ -266,7 +258,7 @@ double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action, int depth) {
 }
 
 VNODE *FlatMCTS::ExpandNode(const STATE *state, HISTORY &history) {
-  VNODE *vnode = VNODE::Create(history, Params.MemorySize);
+  VNODE *vnode = VNODE::Create(history);
   vnode->UCB.Value.Set(0, 0);
   Simulator.Prior(state, history, vnode);  //设置先验信息
   return vnode;
@@ -372,7 +364,7 @@ double FlatMCTS::Rollout(STATE &state, int depth)  //从 state 出发随机选�
 
     int action = Simulator.SelectRandom(state, History);  //根据 knowledge level 随机选择动作
     terminal = Simulator.Step(state, action, observation, reward);  //根据 state 和 action 进行一次模拟
-    History.Add(action, observation, reward, Params.MemorySize);
+    History.Add(action, observation);
 
     if (Params.Verbose >= 4) {
       Simulator.DisplayAction(action, cout);

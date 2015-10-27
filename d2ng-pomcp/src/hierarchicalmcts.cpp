@@ -54,7 +54,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
         double reward;
         int action = SimpleRNG::ins().Random(Simulator.GetNumActions());
         terminal = Simulator.Step(*state, action, observation, reward);
-        UpdateHistory(history, action, observation, reward);
+        UpdateHistory(history, action, observation);
       }
 
       Simulator.FreeState(state);
@@ -78,8 +78,8 @@ bool HierarchicalMCTS::Applicable(HISTORY &history, macro_action_t action)
   return true;
 }
 
-bool HierarchicalMCTS::Update(int action, int observation, double reward, STATE &state) {
-  UpdateHistory(History, action, observation, reward);
+bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
+  UpdateHistory(History, action, observation);
 
   // Delete old tree and create new root
   mTable.clear();
@@ -206,8 +206,6 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, H
       return Rollout(Action, history, state, depth);
     }
     else {
-      int first_step = history.Size() - 1;
-
       int action = GreedyUCB(Action, history, it->second, true);
       auto reward_term = SearchTree(action, history, state, depth);  // history and state will be updated
       int steps = reward_term.steps;
@@ -216,32 +214,8 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, H
         completion_term = SearchTree(Action, history, state, depth + steps);
       }
       double totalReward = reward_term.reward + pow(Simulator.GetDiscount(), steps) * completion_term.reward;
-
-      if (Params.AllStateUpdating) {
-        for (int k = 0; k < steps; ++k) {
-          size_t belief_hash2 = first_step < 0? 0: history[first_step + k].BeliefHash;
-          size_t hash2 = hash_value(Action, belief_hash2);
-          assert(k != 0 || belief_hash == belief_hash2);
-          assert(k != 0 || hash == hash2);
-          auto it = mTable.find(hash2);
-          assert(k != 0 || it != mTable.end());
-
-          if (it != mTable.end()) {
-            double reward = 0.0;
-            for (int l = k + 1; l <= steps; ++l) {
-              reward += pow(Simulator.GetDiscount(), l - k - 1) * history[first_step + l].Reward;
-            }
-            double totalReward2 = reward + pow(Simulator.GetDiscount(), steps - k) * completion_term.reward;
-            assert(k != 0 || fabs(totalReward2 - totalReward) < 1.0e-6);
-            it->second.UCB.value_.Add(totalReward2);
-            it->second.UCB.qvalues_[action].Add(totalReward2);
-          }
-        }
-      }
-      else {
-        it->second.UCB.value_.Add(totalReward);
-        it->second.UCB.qvalues_[action].Add(totalReward);
-      }
+      it->second.UCB.value_.Add(totalReward);
+      it->second.UCB.qvalues_[action].Add(totalReward);
 
       steps += completion_term.steps;
       return result_t(totalReward, steps, reward_term.terminal || completion_term.terminal);
@@ -249,7 +223,7 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, H
   }
 }
 
-void HierarchicalMCTS::UpdateHistory(HISTORY &history, int action, int observation, double reward)
+void HierarchicalMCTS::UpdateHistory(HISTORY &history, int action, int observation)
 {
   if (Simulator.mActionAbstraction) {
     if (history.Size()) {
@@ -257,7 +231,7 @@ void HierarchicalMCTS::UpdateHistory(HISTORY &history, int action, int observati
       mApplicable[observation][MacroAction(history.Back().Observation)] = true;
     }
   }
-  history.Add(action, observation, reward, Params.MemorySize);
+  history.Add(action, observation);
 }
 
 HierarchicalMCTS::result_t HierarchicalMCTS::Rollout(macro_action_t Action, HISTORY &history, STATE &state, int depth)
@@ -279,7 +253,7 @@ HierarchicalMCTS::result_t HierarchicalMCTS::Rollout(macro_action_t Action, HIST
     int observation;
     double immediateReward;
     bool terminal = Simulator.Step(state, Action, observation, immediateReward);
-    UpdateHistory(History, Action, observation, immediateReward);
+    UpdateHistory(History, Action, observation);
     return result_t(immediateReward, 1, terminal);
   }
   else {

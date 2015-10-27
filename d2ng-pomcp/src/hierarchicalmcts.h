@@ -68,7 +68,7 @@ public:
 
   virtual int SelectAction();
   virtual void SearchImp();
-  virtual bool Update(int action, int observation, double reward, STATE &state);
+  virtual bool Update(int action, int observation, STATE &state);
 
   result_t SearchTree(macro_action_t Action, HISTORY &history, STATE &state, int depth);
   result_t Rollout(macro_action_t Action, HISTORY &history, STATE &state, int depth);
@@ -77,7 +77,7 @@ public:
   bool Terminate(macro_action_t Action, HISTORY &history);
   bool Primitive(macro_action_t Action);
   macro_action_t MacroAction(int o);
-  void UpdateHistory(HISTORY &history, int action, int observation, double reward);
+  void UpdateHistory(HISTORY &history, int action, int observation);
   bool Applicable(HISTORY &history, macro_action_t action);
   void InsertNode(std::size_t hash);
 

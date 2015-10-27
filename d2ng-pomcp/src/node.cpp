@@ -32,7 +32,6 @@ void QNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
 }
 
 MEMORY_POOL<VNODE> VNODE::VNodePool;
-unordered_map<size_t, VNODE*> VNODE::BeliefPool;
 
 void VNODE::Initialise(size_t belief_hash) {
   assert(BeliefState.Empty());
@@ -43,25 +42,16 @@ void VNODE::Initialise(size_t belief_hash) {
   UCB.Value.Initialise();
 }
 
-VNODE *VNODE::Create(HISTORY &history, int memory_size) {
+VNODE *VNODE::Create(HISTORY &history) {
   size_t belief_hash = history.BeliefHash();
-
-  if (memory_size >= 0 && history.Size() >= memory_size && BeliefPool.count(belief_hash)) {
-    assert(0);  // will never create a replicate node according to MCTS algorithm
-    return BeliefPool[belief_hash];
-  }
-  else {
-    VNODE *vnode = VNODE::VNodePool.Allocate();
-    BeliefPool[belief_hash] = vnode;
-    vnode->Initialise(belief_hash);
-    return vnode;
-  }
+  VNODE *vnode = VNODE::VNodePool.Allocate();
+  vnode->Initialise(belief_hash);
+  return vnode;
 }
 
 void VNODE::Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore) {
-  if (root->IsAllocated() && root != ignore) {
+  if (root != ignore) {
     root->BeliefState.Free(simulator);
-    VNODE::BeliefPool.erase(root->BeliefHash);
     VNODE::VNodePool.Free(root);
 
     for (auto it = root->Children.begin(); it != root->Children.end(); ++it) {
@@ -72,7 +62,7 @@ void VNODE::Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore) {
   }
 }
 
-void VNODE::FreeAll() { VNODE::VNodePool.DeleteAll(); VNODE::BeliefPool.clear(); }
+void VNODE::FreeAll() { VNODE::VNodePool.DeleteAll(); }
 
 void VNODE::SetPrior(int actions, int count, double value, bool applicable) {
   for (int action = 0; action < actions; action++) {
@@ -87,7 +77,7 @@ void VNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
 
   for (auto it = Children.begin(); it != Children.end(); ++it) {
     int action = it->first;
-    history.Add(action, -1, -1, 0.0);
+    history.Add(action, -1);
     const QNODE &qnode = Children[action];
 
     if (qnode.Applicable()) {

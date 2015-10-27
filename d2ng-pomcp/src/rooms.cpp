@@ -189,7 +189,7 @@ void ROOMS::DisplayState(const STATE &state, std::ostream &ostr) const {
       ostr << endl;
     }
   }
-  ostr << endl;
+  ostr << "AgentPos=" << rstate.AgentPos << endl;
 }
 
 void ROOMS::DisplayObservation(const STATE &, int observation,

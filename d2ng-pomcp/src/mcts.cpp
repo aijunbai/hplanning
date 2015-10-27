@@ -10,6 +10,9 @@
 using namespace std;
 using namespace UTILS;
 
+double MCTS::UCB[UCB_N][UCB_n];
+bool MCTS::InitialisedFastUCB = false;
+
 MCTS::PARAMS::PARAMS()
   : Verbose(0),
     MaxDepth(100),
@@ -30,17 +33,11 @@ MCTS::PARAMS::PARAMS()
 MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
   :Simulator(simulator), Params(params), TreeDepth(0), TreeSize(0)
 {
-  VNODE::NumChildren = Simulator.GetNumActions();
-  QNODE::NumChildren = Simulator.GetNumObservations();
 }
 
 MCTS::~MCTS()
 {
 }
-
-
-double MCTS::UCB[UCB_N][UCB_n];
-bool MCTS::InitialisedFastUCB = false;
 
 void MCTS::InitFastUCB(double exploration)
 {

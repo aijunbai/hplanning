@@ -25,8 +25,7 @@ class VNODE;
 class QNODE {
  public:
   QNODE() {
-    mApplicable = false;
-    TS.UpdateCount = 0;
+    Initialise();
   }
 
   void Initialise();
@@ -56,25 +55,20 @@ class QNODE {
   }
 
   VNODE *&Child(int c) {
-    Assertion(c);
     return Children[c];
   }
+
   VNODE *Child(int c) const {
-    Assertion(c);
     return Children[c];
   }
 
   void DisplayValue(HISTORY &history, int maxDepth, std::ostream &ostr,
                     const double *qvalue = 0) const;
 
-  static int NumChildren;
+public:
+  mutable std::unordered_map<int, VNODE*> Children;
 
- private:
-  void Assertion(int c) const {
-    assert(c >= 0 && c < int(Children.size()) && c < NumChildren);
-  }
-
-  std::vector<VNODE *> Children;
+private:
   bool mApplicable;
 
 public:
@@ -98,17 +92,15 @@ class VNODE : public MEMORY_OBJECT {
   static void FreeAll();
 
   QNODE &Child(int c) {
-    Assertion(c);
     return Children[c];
   }
   const QNODE &Child(int c) const {
-    Assertion(c);
     return Children[c];
   }
   BELIEF_STATE &Beliefs() { return BeliefState; }
   const BELIEF_STATE &Beliefs() const { return BeliefState; }
 
-  void SetPrior(int count, double value, bool applicable);
+  void SetPrior(int actions, int count, double value, bool applicable);
 
   void DisplayValue(HISTORY &history, int maxDepth, std::ostream &ostr,
                     const std::vector<double> *qvalues = 0) const;
@@ -132,18 +124,13 @@ class VNODE : public MEMORY_OBJECT {
 
   static MEMORY_POOL<VNODE> VNodePool;
   static std::unordered_map<size_t, VNODE*> BeliefPool;
-  static int NumChildren;
 
   static int GetNumAllocated() {
     return VNodePool.GetNumAllocated();
   }
 
  private:
-  void Assertion(int c) const {
-    assert(c >= 0 && c < int(Children.size()) && c < NumChildren);
-  }
-
-  std::vector<QNODE> Children;
+  mutable std::unordered_map<int, QNODE> Children;
   BELIEF_STATE BeliefState;
   size_t BeliefHash;
 

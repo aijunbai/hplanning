@@ -474,8 +474,8 @@ void FlatMCTS::DisplayValue(int depth, ostream &ostr) const {
   HISTORY history;
   ostr << "MCTS Values:" << endl;
 
-  std::vector<double> qvalues(VNODE::NumChildren);
-  for (int action = 0; action < VNODE::NumChildren; action++) {
+  std::vector<double> qvalues(Simulator.GetNumActions());
+  for (int action = 0; action < Simulator.GetNumActions(); action++) {
     QNODE &qnode = Root->Child(action);
 
     if (qnode.Applicable()) {
@@ -517,7 +517,6 @@ void FlatMCTS::UnitTestUCB() {
   PARAMS params;
   FlatMCTS mcts(testSimulator, params);
   int numAct = testSimulator.GetNumActions();
-  int numObs = testSimulator.GetNumObservations();
   HISTORY History;
 
   // With equal value, action with lowest count is selected
@@ -535,7 +534,7 @@ void FlatMCTS::UnitTestUCB() {
   vnode2->UCB.Value.Set(1, 0);
   for (int action = 0; action < numAct; action++)
     if (action == 3)
-      vnode2->Child(action).UCB.Value.Set(99 + numObs, 1/*, 100 + numObs,1*/);
+      vnode2->Child(action).UCB.Value.Set(99, 1/*, 100 + numObs,1*/);
     else
       vnode2->Child(action).UCB.Value.Set(100 + numAct - action, 0/*, 1,101 + numAct - action*/);
   assert(mcts.GreedyUCB(vnode2, true) == 3);

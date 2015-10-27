@@ -14,6 +14,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
   }
 
   if (Simulator.mActionAbstraction) {
+    assert(Simulator.GetNumObservations() > 0);
     mGoals[mRootTask].insert(0);  // ground target state assumed to be in macro state 0 for rooms domain
 
     for (int o = 0; o < Simulator.GetNumObservations(); ++o) {

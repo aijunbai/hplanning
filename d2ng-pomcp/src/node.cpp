@@ -5,22 +5,14 @@
 
 using namespace std;
 
-int QNODE::NumChildren = 0;
-
-void QNODE::Initialise() {
-  assert(NumChildren);
-
-  Children.resize(NumChildren);
-
+void QNODE::Initialise()
+{
   mApplicable = false;
+  Children.clear();
   TS.UpdateCount = 0;
   TS.Observation.Clear();
   TS.ImmediateReward.Clear();
   UCB.Value.Initialise();
-
-  for (int observation = 0; observation < QNODE::NumChildren; observation++) {
-    Children[observation] = 0;  //初始化为空指针
-  }
 }
 
 void QNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
@@ -33,27 +25,20 @@ void QNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
 
   if (history.Size() >= maxDepth) return;
 
-  for (int observation = 0; observation < NumChildren; observation++) {
-    if (Children[observation]) {
-      history.Back().Observation = observation;
-      Children[observation]->DisplayValue(history, maxDepth, ostr);
-    }
+  for (auto it = Children.begin(); it != Children.end(); ++it) {
+    history.Back().Observation = it->first;
+    it->second->DisplayValue(history, maxDepth, ostr);
   }
 }
 
 MEMORY_POOL<VNODE> VNODE::VNodePool;
 unordered_map<size_t, VNODE*> VNODE::BeliefPool;
-int VNODE::NumChildren = 0;
 
 void VNODE::Initialise(size_t belief_hash) {
-  assert(NumChildren);
   assert(BeliefState.Empty());
 
   BeliefHash = belief_hash;
-  Children.resize(VNODE::NumChildren);
-  for (int action = 0; action < VNODE::NumChildren; action++)
-    Children[action].Initialise();
-
+  Children.clear();
   TS.CumulativeRewards.clear();
   UCB.Value.Initialise();
 }
@@ -79,17 +64,18 @@ void VNODE::Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore) {
     VNODE::BeliefPool.erase(root->BeliefHash);
     VNODE::VNodePool.Free(root);
 
-    for (int action = 0; action < VNODE::NumChildren; action++)
-      for (int observation = 0; observation < QNODE::NumChildren; observation++)
-        if (root->Child(action).Child(observation))
-          Free(root->Child(action).Child(observation), simulator, ignore);
+    for (auto it = root->Children.begin(); it != root->Children.end(); ++it) {
+      for (auto ii = it->second.Children.begin();  ii != it->second.Children.end(); ++ii) {
+        Free(ii->second, simulator, ignore);
+      }
+    }
   }
 }
 
 void VNODE::FreeAll() { VNODE::VNodePool.DeleteAll(); VNODE::BeliefPool.clear(); }
 
-void VNODE::SetPrior(int count, double value, bool applicable) {
-  for (int action = 0; action < NumChildren; action++) {
+void VNODE::SetPrior(int actions, int count, double value, bool applicable) {
+  for (int action = 0; action < actions; action++) {
     QNODE &qnode = Children[action];
     qnode.SetPrior(count, value, applicable);
   }
@@ -99,7 +85,8 @@ void VNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
                          const std::vector<double> *qvalues) const {
   if (history.Size() >= maxDepth) return;
 
-  for (int action = 0; action < NumChildren; action++) {
+  for (auto it = Children.begin(); it != Children.end(); ++it) {
+    int action = it->first;
     history.Add(action, -1, -1, 0.0);
     const QNODE &qnode = Children[action];
 

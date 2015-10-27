@@ -31,6 +31,13 @@ class HISTORY {
     History.back().BeliefHash = belief_hash();
   }
 
+  int LastObservation() const {
+    if (History.size()) {
+      return History.back().Observation;
+    }
+    return -1;
+  }
+
   size_t BeliefHash() const {
     if (History.size()) {
       return History.back().BeliefHash;

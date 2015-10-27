@@ -36,7 +36,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
   }
 
   for (int i = 0; i < Params.NumStartStates; i++) {
-    mRootBelief.AddSample(Simulator.CreateStartState());
+    mRootSampling.AddSample(Simulator.CreateStartState());
   }
 
   if (Simulator.mActionAbstraction) {
@@ -44,7 +44,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
 
     for (int i = 0; i < iterations; ++i) {
       HISTORY history;
-      STATE *state = mRootBelief.CreateSample(Simulator);
+      STATE *state = mRootSampling.CreateSample(Simulator);
       Simulator.Validate(*state);
       bool terminal = false;
       int step = 0;
@@ -54,7 +54,8 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
         double reward;
         int action = SimpleRNG::ins().Random(Simulator.GetNumActions());
         terminal = Simulator.Step(*state, action, observation, reward);
-        UpdateHistory(history, action, observation);
+        UpdateConnection(history.LastObservation(), observation);
+        history.Add(action, observation);
       }
 
       Simulator.FreeState(state);
@@ -65,12 +66,12 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
   }
 }
 
-HierarchicalMCTS::~HierarchicalMCTS() { mRootBelief.Free(Simulator); }
+HierarchicalMCTS::~HierarchicalMCTS() { mRootSampling.Free(Simulator); }
 
-bool HierarchicalMCTS::Applicable(HISTORY &history, macro_action_t action)
+bool HierarchicalMCTS::Applicable(int last_observation, macro_action_t action)
 {
-  if (history.Size() && !Primitive(action) && action != mRootTask) {
-    if (!mApplicable[history.Back().Observation][action]) {
+  if (last_observation >= 0 && !Primitive(action) && action != mRootTask) {
+    if (!mApplicable[last_observation][action]) {
       return false;
     }
   }
@@ -78,14 +79,35 @@ bool HierarchicalMCTS::Applicable(HISTORY &history, macro_action_t action)
   return true;
 }
 
+HierarchicalMCTS::data_t *HierarchicalMCTS::Query(macro_action_t Action, size_t belief_hash) {
+  if (mTable.count(belief_hash)) {
+    if (mTable[belief_hash].count(Action)) {
+      return mTable[belief_hash][Action];
+    }
+  }
+
+  return 0;
+}
+
 bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
-  UpdateHistory(History, action, observation);
+  UpdateConnection(History.LastObservation(), observation);
+  History.Add(action, observation);
 
   // Delete old tree and create new root
+  for (auto it = mTable.begin(); it != mTable.end(); ++it) {
+    for (auto ii = it->second.begin(); ii != it->second.end(); ++ii) {
+      delete ii->second;
+    }
+  }
   mTable.clear();
-  mRootBelief.Free(Simulator);
+
+  for (auto it = mBelief.begin(); it != mBelief.end(); ++it) {
+    it->second.Free(Simulator);
+  }
+
+  mRootSampling.Free(Simulator);
   STATE *sample = Simulator.Copy(state);
-  mRootBelief.AddSample(sample);
+  mRootSampling.AddSample(sample);
 
   return true;
 }
@@ -94,16 +116,15 @@ int HierarchicalMCTS::SelectAction() {
   return SelectPrimitiveAction(mRootTask, History);
 }
 
-int HierarchicalMCTS::SelectPrimitiveAction(macro_action_t Action, HISTORY &history) {
+int HierarchicalMCTS::SelectPrimitiveAction(macro_action_t Action, const HISTORY &history) {
   if (mSubTasks[Action].empty()) {
     return Action;
   }
 
-  size_t hash = hash_value(Action, history.BeliefHash());
-  auto it = mTable.find(hash);
+  data_t *data = Query(Action, history.BeliefHash());
 
   macro_action_t action;
-  if (it != mTable.end()) {
+  if (data) {
     if (Params.Verbose >= 1) {
       if (Params.Verbose >= 3) {
         cerr << "history=[";
@@ -113,8 +134,8 @@ int HierarchicalMCTS::SelectPrimitiveAction(macro_action_t Action, HISTORY &hist
       stringstream ss;
       ss << "V(" << Action << ", ";
       ss << "history)";
-      it->second.UCB.value_.Print(ss.str(), cerr);
-      for (auto ii = it->second.UCB.qvalues_.begin(); ii != it->second.UCB.qvalues_.end(); ++ii) {
+      data->UCB.value_.Print(ss.str(), cerr);
+      for (auto ii = data->UCB.qvalues_.begin(); ii != data->UCB.qvalues_.end(); ++ii) {
         stringstream ss;
         ss << "Q(" << Action << ", ";
         ss << "history, " << ii->first << ")";
@@ -122,7 +143,7 @@ int HierarchicalMCTS::SelectPrimitiveAction(macro_action_t Action, HISTORY &hist
       }
     }
 
-    action = GreedyUCB(Action, history, it->second, false);
+    action = GreedyUCB(Action, history.LastObservation(), *data, false);
     return SelectPrimitiveAction(action, history);
   }
   else {
@@ -138,7 +159,8 @@ int HierarchicalMCTS::SelectPrimitiveAction(macro_action_t Action, HISTORY &hist
 
     do {
       action = SimpleRNG::ins().Sample(mSubTasks[Action]);
-    } while (Terminate(action, history) || !Applicable(history, action));
+    } while (Terminate(action, history.LastObservation()) ||
+             !Applicable(history.LastObservation(), action));
   }
 
   return SelectPrimitiveAction(action, history);
@@ -147,10 +169,10 @@ int HierarchicalMCTS::SelectPrimitiveAction(macro_action_t Action, HISTORY &hist
 void HierarchicalMCTS::SearchImp() {
   int historyDepth = History.Size();
 
-  STATE *state = mRootBelief.CreateSample(Simulator);
+  STATE *state = mRootSampling.CreateSample(Simulator);
   Simulator.Validate(*state);
 
-  if (Terminate(mRootTask, History)) {
+  if (Terminate(mRootTask, History.LastObservation())) {
     if (Params.Verbose >= 2) {
       cerr << "Removing observation " << History.Back().Observation << " from task graph" << endl;
     }
@@ -159,20 +181,16 @@ void HierarchicalMCTS::SearchImp() {
     }
   }
 
-  SearchTree(mRootTask, History, *state, 0);
+  input_t input(History.BeliefHash(), History.LastObservation());
+  SearchTree(mRootTask, input, *state, 0);
 
   Simulator.FreeState(state);
+  assert(History.Size() == historyDepth);
   History.Truncate(historyDepth);
 }
 
-void HierarchicalMCTS::InsertNode(size_t hash)
-{
-  TreeSize += 1;
-  mTable.insert(make_pair(hash, data_t()));
-}
-
-HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, HISTORY &history,
-                                    STATE &state, int depth)
+HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(
+    macro_action_t Action, HierarchicalMCTS::input_t &input, STATE &state, int depth)
 {
   TreeDepth = max(TreeDepth, depth);
 
@@ -180,106 +198,127 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(macro_action_t Action, H
     cerr << "SearchTree" << endl;
     PRINT_VALUE(Action);
     PRINT_VALUE(depth);
-    cerr << "history={";
-    history.Display(cerr);
-    cerr << "}" << endl;
     cerr << "state={\n";
     Simulator.DisplayState(state, cerr);
     cerr << "}" << endl;
-    PRINT_VALUE(Terminate(Action, history));
+    PRINT_VALUE(Terminate(Action, input.last_observation));
   }
 
   if (Primitive(Action)) {
-    return Rollout(Action, history, state, depth);
+    return Rollout(Action, input, state, depth);
   }
   else {
-    if (depth >= Params.MaxDepth || Terminate(Action, history)) {
-      return result_t(0.0, 0, depth >= Params.MaxDepth);
+    if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
+      return result_t(
+            0.0, 0, depth >= Params.MaxDepth,
+            input.belief_hash, input.last_observation);
     }
 
-    size_t belief_hash = history.BeliefHash();
-    size_t hash = hash_value(Action, belief_hash);
-    auto it = mTable.find(hash);
+    STATE *sample = Simulator.Copy(state);
+    mBelief[input.belief_hash].AddSample(sample);
+    data_t *data = Query(Action, input.belief_hash);
 
-    if (it == mTable.end()) {
-      InsertNode(hash);
-      return Rollout(Action, history, state, depth);
+    if (!data) {
+      TreeSize += 1;
+      mTable[input.belief_hash][Action] = new data_t();
+      return Rollout(Action, input, state, depth);
     }
     else {
-      int action = GreedyUCB(Action, history, it->second, true);
-      auto reward_term = SearchTree(action, history, state, depth);  // history and state will be updated
+      // return cached result here.
+      int action = GreedyUCB(Action, input.last_observation, *data, true);
+      result_t reward_term = SearchTree(action, input, state, depth);  // history and state will be updated
       int steps = reward_term.steps;
-      result_t completion_term(0.0, 0, false);
+      result_t completion_term(
+            0.0, 0, false,
+            reward_term.belief_hash, reward_term.last_observation);
       if (!reward_term.terminal) {
-        completion_term = SearchTree(Action, history, state, depth + steps);
+        input_t input(reward_term.belief_hash, reward_term.last_observation);
+        completion_term = SearchTree(Action, input, state, depth + steps);
       }
       double totalReward = reward_term.reward + pow(Simulator.GetDiscount(), steps) * completion_term.reward;
-      it->second.UCB.value_.Add(totalReward);
-      it->second.UCB.qvalues_[action].Add(totalReward);
+      data->UCB.value_.Add(totalReward);
+      data->UCB.qvalues_[action].Add(totalReward);
 
       steps += completion_term.steps;
-      return result_t(totalReward, steps, reward_term.terminal || completion_term.terminal);
+      return result_t(
+            totalReward, steps, reward_term.terminal || completion_term.terminal,
+            completion_term.belief_hash, completion_term.last_observation);
     }
   }
 }
 
-void HierarchicalMCTS::UpdateHistory(HISTORY &history, int action, int observation)
+void HierarchicalMCTS::UpdateConnection(int last_observation, int observation)
 {
   if (Simulator.mActionAbstraction) {
-    if (history.Size()) {
-      mApplicable[history.Back().Observation][MacroAction(observation)] = true;
-      mApplicable[observation][MacroAction(history.Back().Observation)] = true;
+    if (last_observation >= 0) {
+      mApplicable[last_observation][MacroAction(observation)] = true;
+      mApplicable[observation][MacroAction(last_observation)] = true;
     }
-  }
-  history.Add(action, observation);
-}
+  }}
 
-HierarchicalMCTS::result_t HierarchicalMCTS::Rollout(macro_action_t Action, HISTORY &history, STATE &state, int depth)
+HierarchicalMCTS::result_t HierarchicalMCTS::Rollout(
+    macro_action_t Action, HierarchicalMCTS::input_t &input, STATE &state, int depth)
 {
   if (Params.Verbose >= 3) {
     cerr << "Rollout" << endl;
     PRINT_VALUE(Action);
     PRINT_VALUE(depth);
-    cerr << "history={";
-    history.Display(cerr);
-    cerr << "}" << endl;
     cerr << "state={\n";
     Simulator.DisplayState(state, cerr);
     cerr << "}" << endl;
-    PRINT_VALUE(Terminate(Action, history));
+    PRINT_VALUE(Terminate(Action, input.last_observation));
   }
 
   if (Primitive(Action)) {
     int observation;
     double immediateReward;
     bool terminal = Simulator.Step(state, Action, observation, immediateReward);
-    UpdateHistory(History, Action, observation);
-    return result_t(immediateReward, 1, terminal);
+    UpdateConnection(input.last_observation, observation);
+
+    size_t belief_hash = 0;
+    if (Simulator.mStateAbstraction) {  // whole history
+      belief_hash = input.belief_hash;
+      boost::hash_combine(belief_hash, Action);
+      boost::hash_combine(belief_hash, observation);
+    }
+    else {  // memory size = 1
+      boost::hash_combine(belief_hash, observation);  // observation is the ground state
+      boost::hash_combine(belief_hash, depth);
+    }
+
+    return result_t(immediateReward, 1, terminal, belief_hash, observation);
   }
   else {
-    if (depth >= Params.MaxDepth || Terminate(Action, history)) {
-      return result_t(0.0, 0, depth >= Params.MaxDepth);
+    if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
+      return result_t(
+            0.0, 0, depth >= Params.MaxDepth,
+            input.belief_hash, input.last_observation);
     }
 
     int action;
     do {
       action = SimpleRNG::ins().Sample(mSubTasks[Action]);
-    } while (Terminate(action, history) || !Applicable(history, action));
+    } while (Terminate(action, input.last_observation) || !Applicable(input.last_observation, action));
 
-    auto reward_term = Rollout(action, history, state, depth);  // history and state will be updated
+    auto reward_term = Rollout(action, input, state, depth);  // history and state will be updated
     int steps = reward_term.steps;
-    result_t completion_term(0.0, 0, false);
+    result_t completion_term(
+          0.0, 0, false,
+          reward_term.belief_hash, reward_term.last_observation);
     if (!reward_term.terminal) {
-      completion_term = Rollout(Action, history, state, depth + steps);
+      input_t input(reward_term.belief_hash, reward_term.last_observation);
+      completion_term = Rollout(Action, input, state, depth + steps);
     }
 
     double totalReward = reward_term.reward + pow(Simulator.GetDiscount(), steps) * completion_term.reward;
     steps += completion_term.steps;
-    return result_t(totalReward, steps, reward_term.terminal || completion_term.terminal);
+    return result_t(
+          totalReward, steps, reward_term.terminal || completion_term.terminal,
+          completion_term.belief_hash, completion_term.last_observation);
   }
 }
 
-macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action, HISTORY &history, data_t &data, bool ucb) {
+macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action, int last_observation, data_t &data, bool ucb) {
   static std::vector<int> besta;
   besta.clear();
   double bestq = -Infinity;
@@ -287,7 +326,7 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action, HISTORY &histo
 
   for (uint i = 0; i < mSubTasks[Action].size(); ++i) {
     int action = mSubTasks[Action][i];
-    if (Terminate(action, history) || !Applicable(history, action)) {
+    if (Terminate(action, last_observation) || !Applicable(last_observation, action)) {
       continue;
     }
 
@@ -321,8 +360,8 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action, HISTORY &histo
  * @param state
  * @return
  */
-bool HierarchicalMCTS::Terminate(macro_action_t Action, HISTORY &history) {
-  return !Primitive(Action) && history.Size() && mGoals[Action].count(history.Back().Observation);
+bool HierarchicalMCTS::Terminate(macro_action_t Action, int last_observation) {
+  return !Primitive(Action) && last_observation >= 0 && mGoals[Action].count(last_observation);
 }
 
 bool HierarchicalMCTS::Primitive(macro_action_t Action)

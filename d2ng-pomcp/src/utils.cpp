@@ -1,5 +1,7 @@
 #include "utils.h"
 #include "distribution.h"
+#include <boost/functional/hash.hpp>
+
 
 namespace UTILS {
 
@@ -28,5 +30,12 @@ void UnitTest() {
   SetFlag(flag, 2);
   SetFlag(flag, 4);
   assert(flag == 21);
+
+  size_t s1 = 0, s2 = 0;
+  boost::hash_combine(s1, 1);
+  boost::hash_combine(s1, 2);
+  boost::hash_combine(s2, 2);
+  boost::hash_combine(s2, 1);
+  assert(s1 != s2);
 }
 }

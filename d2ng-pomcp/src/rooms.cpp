@@ -92,6 +92,7 @@ void ROOMS::FreeState(STATE *state) const {
 bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) const
 {
   assert(action < NumActions);
+  Validate(state);
 
   ROOMS_STATE &rstate = safe_cast<ROOMS_STATE &>(state);
   reward = -1.0;
@@ -107,6 +108,7 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
   observation = GetObservation(rstate);
 
   if (rstate.AgentPos == mGoalPos) {
+    reward = 10.0;
     return true;
   }
 
@@ -123,9 +125,7 @@ bool ROOMS::LocalMove(STATE &state, const HISTORY &history, int) const  //局部
 }
 
 void ROOMS::GenerateLegal(const STATE &state, vector<int> &legal) const {
-  const ROOMS_STATE &rstate = safe_cast<const ROOMS_STATE &>(state);
-
-  assert(mGrid->Inside(rstate.AgentPos));
+  Validate(state);
 
   legal.push_back(coord::E_NORTH);
   legal.push_back(coord::E_EAST);

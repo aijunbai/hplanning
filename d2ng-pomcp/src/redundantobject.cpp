@@ -17,7 +17,7 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
   int grids = mGrid.GetSize();
   NumObservations = state_abstraction ? grids : grids * grids;
   Discount = 0.95;
-  RewardRange = 9.0;
+  RewardRange = 20.0;
   mName << "redundant_object_" << size << "_" << state_abstraction;
 
   mHierarchicalPlanning = true;
@@ -58,6 +58,7 @@ void REDUNDANT_OBJECT::FreeState(STATE *state) const {
 bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &reward) const
 {
   assert(action < NumActions);
+  Validate(state);
 
   REDUNDANT_OBJECT_STATE &rstate = safe_cast<REDUNDANT_OBJECT_STATE &>(state);
   reward = -1.0;
@@ -85,6 +86,7 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &
 
   observation = GetObservation(rstate);
   if (rstate.AgentPos == mGoalPos) {
+    reward = 10.0;
     return true;
   }
 
@@ -101,10 +103,7 @@ bool REDUNDANT_OBJECT::LocalMove(STATE &state, const HISTORY &history, int) cons
 }
 
 void REDUNDANT_OBJECT::GenerateLegal(const STATE &state, vector<int> &legal) const {
-  const REDUNDANT_OBJECT_STATE &rstate =
-      safe_cast<const REDUNDANT_OBJECT_STATE &>(state);
-
-  assert(mGrid.Inside(rstate.AgentPos));
+  Validate(state);
 
   legal.push_back(coord::E_NORTH);
   legal.push_back(coord::E_EAST);

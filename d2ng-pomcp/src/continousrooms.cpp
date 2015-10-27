@@ -16,9 +16,9 @@ ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction,
 
   NumActions = 4; //动作数
   NumObservations =
-      state_abstraction ? mRooms : -1 /*infinity number of observations*/;
+      state_abstraction ? mRooms : -1 /*infinitely many observations*/;
   Discount = 0.95;
-  RewardRange = 10.0;
+  RewardRange = 20.0;
   mName << "continousrooms_" << map_name << "_" << state_abstraction << "_"
         << action_abstraction;
 
@@ -118,6 +118,7 @@ void ContinousROOMS::FreeState(STATE *state) const {
 bool ContinousROOMS::Step(STATE &state, int action, int &observation,
                           double &reward) const {
   assert(action < NumActions);
+  Validate(state);
 
   ContinousROOMS_STATE &rstate = safe_cast<ContinousROOMS_STATE &>(state);
   reward = -1.0;
@@ -127,20 +128,21 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation,
   }
 
   COORD agent_grid = Position2Grid(rstate.AgentPos);
-  COORD pos_grid = agent_grid + coord::Compass[action];
-  if (mGrid->operator()(pos_grid) != 'x') { // not wall
-    agent_grid = pos_grid;
+  COORD target_grid = agent_grid + coord::Compass[action];
+  if (!IsValid(Grid2Position(target_grid)) ||
+      mGrid->operator ()(target_grid) == 'x') { // not valid
+    target_grid = agent_grid;
   }
-  assert(IsValid(Grid2Position(agent_grid)));
 
   do {
-    rstate.AgentPos = Grid2Position(agent_grid) +
+    rstate.AgentPos = Grid2Position(target_grid) +
                       Vector(SimpleRNG::ins().GetNormal(0.0, 0.1),
                              SimpleRNG::ins().GetNormal(0.0, 0.1));
   } while(!IsValid(rstate.AgentPos));
   observation = GetObservation(rstate);
 
   if (rstate.AgentPos.Dist(mGoalPos) < mThreshold) {
+    reward = 10.0;
     return true;
   }
 
@@ -159,10 +161,7 @@ bool ContinousROOMS::LocalMove(STATE &state, const HISTORY &history,
 
 void ContinousROOMS::GenerateLegal(const STATE &state,
                                    vector<int> &legal) const {
-  const ContinousROOMS_STATE &rstate =
-      safe_cast<const ContinousROOMS_STATE &>(state);
-
-  Validate(rstate);
+  Validate(state);
 
   legal.push_back(coord::E_NORTH);
   legal.push_back(coord::E_EAST);

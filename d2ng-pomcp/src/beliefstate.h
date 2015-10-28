@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstdlib>
+#include <iostream>
 #include "statistic.h"
 #include "distribution.h"
 

@@ -227,20 +227,29 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(
       return Rollout(Action, input, state, depth);
     }
     else {
-      int action = GreedyUCB(Action, input.last_observation, *data, true);
-
-      if (Simulator.mActionAbstraction && Params.UseCache && Action != mRootTask) {
-        if (data->cache[action].size() >= uint(Params.UseCache)) {
-          result_t cache = SimpleRNG::ins().Sample(data->cache[action]);  // cached result
+      if (Simulator.mActionAbstraction && Params.UseCache) {
+        if (data->cache.size() >= Params.UseCache) {
+          result_t cache = SimpleRNG::ins().Sample(data->cache);  // cached result
           assert(data_t::beliefpool.count(cache.belief_hash));
+
+          if (Params.Verbose >= 5) {
+            PRINT_VALUE(Action);
+            PRINT_VALUE(data->cache);
+            PRINT_VALUE(data->UCB.qvalues);
+            PRINT_VALUE(data->UCB.value);
+
+            for (int i = 0; i < data_t::beliefpool[cache.belief_hash].GetNumSamples(); ++i) {
+              Simulator.DisplayState(*data_t::beliefpool[cache.belief_hash].GetSample(i), cerr);
+            }
+          }
+
           Simulator.FreeState(state);  // drop current state
           state = Simulator.Copy(*data_t::beliefpool[cache.belief_hash].GetSample());  // sample an exit state
-          data->UCB.value.Add(cache.reward);
-          data->UCB.qvalues[action].Add(cache.reward);
           return cache;
         }
       }
 
+      int action = GreedyUCB(Action, input.last_observation, *data, true);
       result_t subtask = SearchTree(action, input, state, depth);  // history and state will be updated
       int steps = subtask.steps;
       result_t completion(
@@ -259,16 +268,16 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(
             totalReward, steps, subtask.terminal || completion.terminal,
             completion.belief_hash, completion.last_observation);
 
-      if (Simulator.mActionAbstraction && Params.UseCache && Action != mRootTask) {  // cache the result if converged
-        double m = data->UCB.qvalues[action].GetCount() - 1;
-        if (m >= Params.UseCache) {
+      if (Simulator.mActionAbstraction && Params.UseCache) {  // cache the result if converged
+        if (data->UCB.value.GetCount() - mSubTasks[Action].size() >= Params.UseCache) {
           if (ret.terminal || Terminate(Action, ret.last_observation)) {  // truly an exit
-            data->cache[action].push_back(ret);
+            data->cache.push_back(ret);
             STATE *sample = Simulator.Copy(*state);
             data_t::beliefpool[completion.belief_hash].AddSample(sample);  // terminal state
           }
         }
       }
+
       return ret;
     }
   }

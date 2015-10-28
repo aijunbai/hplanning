@@ -23,7 +23,7 @@ public:
     bool ReuseTree;
     bool ThompsonSampling;
     double TimeOutPerAction;
-    int UseCache;
+    uint UseCache;
   };
 
   MCTS(const SIMULATOR &simulator, const PARAMS &params);

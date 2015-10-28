@@ -73,6 +73,11 @@ class STATISTIC {
   void Print(const std::string &name, std::ostream &ostr) const;
   void Add(double val);
 
+  friend std::ostream &operator<<(std::ostream &os, const STATISTIC &o) {
+    o.Print("", os);
+    return os;
+  }
+
  private:
   double Count;
   double Mean;      //平均值

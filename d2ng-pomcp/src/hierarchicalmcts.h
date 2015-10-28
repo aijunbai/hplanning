@@ -35,6 +35,15 @@ public:
     bool terminal;  // global terminal state
     std::size_t belief_hash;
     int last_observation;
+
+    friend std::ostream &operator <<(std::ostream &os, const result_t &o) {
+      return os << "{"
+                << "reward=" << o.reward << ", "
+                << "steps=" << o.steps << ", "
+                << "terminal=" << o.terminal << ", "
+                << "belief_hash=" << o.belief_hash << ", "
+                << "last_observation=" << o.last_observation << "}";
+    }
   };
 
   struct data_t {
@@ -42,7 +51,7 @@ public:
       STATISTIC value;
       std::unordered_map<macro_action_t, STATISTIC> qvalues;
     } UCB;
-    std::unordered_map<macro_action_t, std::vector<result_t>> cache;
+    std::vector<result_t> cache;
     static std::unordered_map<std::size_t, BELIEF_STATE> beliefpool;
   };
 

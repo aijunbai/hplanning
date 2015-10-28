@@ -23,7 +23,7 @@ SEEDING=0
 TIMEOUT=3600
 THOMPSONSAMPLING=0
 TIMEOUTPERACTION=-1
-USECACHE=0
+CONVERGED=0
 
 OUTPUT="output-$$.txt"
 LOG="log-$$.txt"
@@ -46,7 +46,7 @@ while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:C:" OPTION; do
         h) TIMEOUT=`expr $OPTARG \* 3600` ;;
         T) THOMPSONSAMPLING=$OPTARG ;;
         a) TIMEOUTPERACTION=$OPTARG ;;
-        C) USECACHE=$OPTARG ;;
+        C) CONVERGED=$OPTARG ;;
     esac
 done
 
@@ -72,5 +72,5 @@ run ./d2ng-pomcp --outputfile $OUTPUT \
             --timeout $TIMEOUT \
             --thompsonsampling $THOMPSONSAMPLING \
             --timeoutperaction $TIMEOUTPERACTION \
-            --usecache $USECACHE
+            --converged $CONVERGED
 

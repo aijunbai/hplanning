@@ -23,7 +23,7 @@ public:
     bool ReuseTree;
     bool ThompsonSampling;
     double TimeOutPerAction;
-    uint UseCache;
+    int Converged;
   };
 
   MCTS(const SIMULATOR &simulator, const PARAMS &params);
@@ -45,10 +45,10 @@ public:
 
 protected:
  const SIMULATOR &Simulator;
- PARAMS Params;
  HISTORY History;
 
 public:
+ PARAMS Params;
  int TreeDepth;
  int TreeSize;
 };

@@ -129,7 +129,7 @@ inline double STATISTIC::GetVariance() const { return Variance; }
 
 inline double STATISTIC::GetStdDev() const { return sqrt(Variance); }
 
-inline double STATISTIC::GetStdErr() const { return sqrt(Variance / Count); }
+inline double STATISTIC::GetStdErr() const { return Count > 0? sqrt(Variance / Count): Infinity; }
 
 inline double STATISTIC::GetMax() const { return Max; }
 

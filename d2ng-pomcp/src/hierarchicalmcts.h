@@ -46,12 +46,34 @@ public:
     }
   };
 
+  struct bound_t {
+    bound_t(double l, double u, double p): lower(l), upper(u), prob(p) {}
+
+    double lower;
+    double upper;
+    double prob;
+
+    double range() const {
+      return upper - lower;
+    }
+
+    friend std::ostream &operator <<(std::ostream &os, const bound_t &o) {
+      return os << "{"
+                << "lower=" << o.lower
+                << ", upper=" << o.upper
+                << ", prob=" << o.prob
+                << ", range=" << o.range()
+                << "}";
+    }
+  };
+
   struct data_t {
-    struct {
-      STATISTIC value;
-      std::unordered_map<macro_action_t, STATISTIC> qvalues;
-    } UCB;
+    STATISTIC value;
+    std::unordered_map<macro_action_t, STATISTIC> qvalues;
     std::vector<result_t> cache;
+
+    bound_t bound(macro_action_t a, const MCTS *mcts);
+    static double min_range(const MCTS *mcts);
     static std::unordered_map<std::size_t, BELIEF_STATE> beliefpool;
   };
 
@@ -82,6 +104,7 @@ private:
   const macro_action_t mRootTask;  // root task
   std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t*>> mTable;
   BELIEF_STATE mRootSampling;
+  double mConvergedBound;
 };
 
 #endif // HIERARCHICALMCTS_H

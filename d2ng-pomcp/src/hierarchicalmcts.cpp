@@ -230,19 +230,6 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(
       if (Simulator.mActionAbstraction && Params.UseCache) {
         if (data->cache.size() >= Params.UseCache) {
           result_t cache = SimpleRNG::ins().Sample(data->cache);  // cached result
-          assert(data_t::beliefpool.count(cache.belief_hash));
-
-          if (Params.Verbose >= 5) {
-            PRINT_VALUE(Action);
-            PRINT_VALUE(data->cache);
-            PRINT_VALUE(data->UCB.qvalues);
-            PRINT_VALUE(data->UCB.value);
-
-            for (int i = 0; i < data_t::beliefpool[cache.belief_hash].GetNumSamples(); ++i) {
-              Simulator.DisplayState(*data_t::beliefpool[cache.belief_hash].GetSample(i), cerr);
-            }
-          }
-
           Simulator.FreeState(state);  // drop current state
           state = Simulator.Copy(*data_t::beliefpool[cache.belief_hash].GetSample());  // sample an exit state
           return cache;
@@ -259,6 +246,7 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(
         input_t input(subtask.belief_hash, subtask.last_observation);
         completion = SearchTree(Action, input, state, depth + steps);
       }
+
       double totalReward = subtask.reward + pow(Simulator.GetDiscount(), steps) * completion.reward;
       data->UCB.value.Add(totalReward);
       data->UCB.qvalues[action].Add(totalReward);

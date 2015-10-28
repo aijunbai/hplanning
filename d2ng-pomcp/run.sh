@@ -6,8 +6,8 @@ PROBLEM="redundant_object_0"
 PROBLEM="continousrooms_1_0"
 PROBLEM="continousrooms_0"
 PROBLEM="continousrooms_1_1"
-PROBLEM="rooms_1_0"
 PROBLEM="rooms_0"
+PROBLEM="rooms_1_0"
 PROBLEM="rooms_1_1"
 SIZE=7
 NUM=8
@@ -23,11 +23,12 @@ SEEDING=0
 TIMEOUT=3600
 THOMPSONSAMPLING=0
 TIMEOUTPERACTION=-1
+USECACHE=0
 
 OUTPUT="output-$$.txt"
 LOG="log-$$.txt"
 
-while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:" OPTION; do
+while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:C:" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -42,9 +43,10 @@ while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:" OPTION; do
         S) SEEDING=$OPTARG ;;
         P) USEPFILTER=$OPTARG ;;
         N) MINPOWER2=$OPTARG; MAXPOWER2=$OPTARG ;;
-        h) TIMEOUT=`expr $OPTARG \* 3600`;;
+        h) TIMEOUT=`expr $OPTARG \* 3600` ;;
         T) THOMPSONSAMPLING=$OPTARG ;;
         a) TIMEOUTPERACTION=$OPTARG ;;
+        C) USECACHE=$OPTARG ;;
     esac
 done
 
@@ -69,5 +71,6 @@ run ./d2ng-pomcp --outputfile $OUTPUT \
             --seeding $SEEDING \
             --timeout $TIMEOUT \
             --thompsonsampling $THOMPSONSAMPLING \
-            --timeoutperaction $TIMEOUTPERACTION
+            --timeoutperaction $TIMEOUTPERACTION \
+            --usecache $USECACHE
 

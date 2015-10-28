@@ -25,7 +25,8 @@ MCTS::PARAMS::PARAMS()
     ExplorationConstant(1.0),
     ReuseTree(false),
     ThompsonSampling(false),
-    TimeOutPerAction(-1) {}
+    TimeOutPerAction(-1),
+    UseCache(false) {}
 
 
 MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)

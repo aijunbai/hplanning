@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
         "use Thompson Sampling instead of UCB1")(
         "timeoutperaction", value<double>(&searchParams.TimeOutPerAction),
         "timeout per action (seconds)")(
-        "usecache", value<bool>(&searchParams.UseCache),
+        "usecache", value<int>(&searchParams.UseCache),
         "use cache for subtasks in hplanning");
 
   variables_map vm;

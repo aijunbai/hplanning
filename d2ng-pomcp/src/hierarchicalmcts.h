@@ -43,27 +43,7 @@ public:
       std::unordered_map<macro_action_t, STATISTIC> qvalues_;
     } UCB;
 
-    std::unordered_map<macro_action_t, std::vector<result_t>> CACHE;
-
-    data_t() {}
-    data_t(const STATISTIC &value, const std::unordered_map<macro_action_t, STATISTIC> &qvalues)
-    {
-      UCB.value_ = value;
-      UCB.qvalues_ = qvalues;
-    }
-    data_t(const data_t &data)
-    {
-      UCB.value_ = data.UCB.value_;
-      UCB.qvalues_ = data.UCB.qvalues_;
-    }
-
-    const data_t &operator=(const data_t &o) {
-      if (this != &o) {
-        UCB.value_ = o.UCB.value_;
-        UCB.qvalues_ = o.UCB.qvalues_;
-      }
-      return *this;
-    }
+    std::unordered_map<macro_action_t, std::vector<result_t>> cache_;
   };
 
 public:

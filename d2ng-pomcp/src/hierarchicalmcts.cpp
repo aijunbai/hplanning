@@ -228,44 +228,44 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(
       int action = GreedyUCB(Action, input.last_observation, *data, true);
 
       if (Params.UseCache) {
-        if (Action != mRootTask && !Primitive(Action) && data->CACHE.count(action)) {
-          double n = data->UCB.value_.GetCount() - mSubTasks[Action].size();
-          if (n > 0) {
-            double m = data->UCB.qvalues_[action].GetCount() - 1;
-            double prob = m / n;
-            assert(!IsNan(prob));
-
-            if (SimpleRNG::ins().Bernoulli(prob)) {
-              result_t cache = SimpleRNG::ins().Sample(data->CACHE[action]);  // cached result
-              assert(mBeliefPool.count(cache.belief_hash));
-              Simulator.FreeState(state);  // drop current state
-              state = Simulator.Copy(*mBeliefPool[cache.belief_hash].GetSample());  // sample an exit state
-              return cache;
-            }
-          }
+        if (data->cache_[action].size() >= uint(Params.UseCache)) {
+          result_t cache = SimpleRNG::ins().Sample(data->cache_[action]);  // cached result
+          assert(mBeliefPool.count(cache.belief_hash));
+          Simulator.FreeState(state);  // drop current state
+          state = Simulator.Copy(*mBeliefPool[cache.belief_hash].GetSample());  // sample an exit state
+          data->UCB.value_.Add(cache.reward);
+          data->UCB.qvalues_[action].Add(cache.reward);
+          return cache;
         }
       }
 
-      result_t reward_term = SearchTree(action, input, state, depth);  // history and state will be updated
-      int steps = reward_term.steps;
-      result_t completion_term(
+      result_t subtask = SearchTree(action, input, state, depth);  // history and state will be updated
+      int steps = subtask.steps;
+      result_t completion(
             0.0, 0, false,
-            reward_term.belief_hash, reward_term.last_observation);
-      if (!reward_term.terminal) {
-        input_t input(reward_term.belief_hash, reward_term.last_observation);
-        completion_term = SearchTree(Action, input, state, depth + steps);
+            subtask.belief_hash, subtask.last_observation);
+      if (!subtask.terminal) {
+        input_t input(subtask.belief_hash, subtask.last_observation);
+        completion = SearchTree(Action, input, state, depth + steps);
       }
-      double totalReward = reward_term.reward + pow(Simulator.GetDiscount(), steps) * completion_term.reward;
+      double totalReward = subtask.reward + pow(Simulator.GetDiscount(), steps) * completion.reward;
       data->UCB.value_.Add(totalReward);
       data->UCB.qvalues_[action].Add(totalReward);
 
-      steps += completion_term.steps;
+      steps += completion.steps;
       result_t ret(
-            totalReward, steps, reward_term.terminal || completion_term.terminal,
-            completion_term.belief_hash, completion_term.last_observation);
+            totalReward, steps, subtask.terminal || completion.terminal,
+            completion.belief_hash, completion.last_observation);
 
-      if (Params.UseCache) {  // cache the result
-        data->CACHE[action].push_back(ret);
+      if (Params.UseCache) {  // cache the result if converged
+        double m = data->UCB.qvalues_[action].GetCount() - 1;
+        if (m >= Params.UseCache) {
+          if (ret.terminal || Terminate(Action, ret.last_observation)) {  // truly an exit
+            data->cache_[action].push_back(ret);
+            STATE *sample = Simulator.Copy(*state);
+            mBeliefPool[completion.belief_hash].AddSample(sample);  // terminal state
+          }
+        }
       }
       return ret;
     }
@@ -310,10 +310,6 @@ HierarchicalMCTS::result_t HierarchicalMCTS::Rollout(
       boost::hash_combine(belief_hash, observation);  // observation is the ground state
       boost::hash_combine(belief_hash, depth);
     }
-    if (Params.UseCache) {
-      STATE *sample = Simulator.Copy(*state);
-      mBeliefPool[belief_hash].AddSample(sample);
-    }
     return result_t(immediateReward, 1, terminal, belief_hash, observation);
   }
   else {
@@ -326,21 +322,21 @@ HierarchicalMCTS::result_t HierarchicalMCTS::Rollout(
       action = SimpleRNG::ins().Sample(mSubTasks[Action]);
     } while (Terminate(action, input.last_observation) || !Applicable(input.last_observation, action));
 
-    auto reward_term = Rollout(action, input, state, depth);  // history and state will be updated
-    int steps = reward_term.steps;
-    result_t completion_term(
+    auto subtask = Rollout(action, input, state, depth);  // history and state will be updated
+    int steps = subtask.steps;
+    result_t completion(
           0.0, 0, false,
-          reward_term.belief_hash, reward_term.last_observation);
-    if (!reward_term.terminal) {
-      input_t input(reward_term.belief_hash, reward_term.last_observation);
-      completion_term = Rollout(Action, input, state, depth + steps);
+          subtask.belief_hash, subtask.last_observation);
+    if (!subtask.terminal) {
+      input_t input(subtask.belief_hash, subtask.last_observation);
+      completion = Rollout(Action, input, state, depth + steps);
     }
 
-    double totalReward = reward_term.reward + pow(Simulator.GetDiscount(), steps) * completion_term.reward;
-    steps += completion_term.steps;
+    double totalReward = subtask.reward + pow(Simulator.GetDiscount(), steps) * completion.reward;
+    steps += completion.steps;
     return result_t(
-          totalReward, steps, reward_term.terminal || completion_term.terminal,
-          completion_term.belief_hash, completion_term.last_observation);
+          totalReward, steps, subtask.terminal || completion.terminal,
+          completion.belief_hash, completion.last_observation);
   }
 }
 

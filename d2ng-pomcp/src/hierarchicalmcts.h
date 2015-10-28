@@ -39,11 +39,11 @@ public:
 
   struct data_t {
     struct {
-      STATISTIC value_;
-      std::unordered_map<macro_action_t, STATISTIC> qvalues_;
+      STATISTIC value;
+      std::unordered_map<macro_action_t, STATISTIC> qvalues;
     } UCB;
-
-    std::unordered_map<macro_action_t, std::vector<result_t>> cache_;
+    std::unordered_map<macro_action_t, std::vector<result_t>> cache;
+    static std::unordered_map<std::size_t, BELIEF_STATE> beliefpool;
   };
 
 public:
@@ -73,7 +73,6 @@ private:
   const macro_action_t mRootTask;  // root task
   std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t*>> mTable;
   BELIEF_STATE mRootSampling;
-  std::unordered_map<std::size_t, BELIEF_STATE> mBeliefPool;
 };
 
 #endif // HIERARCHICALMCTS_H

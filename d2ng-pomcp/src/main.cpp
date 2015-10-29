@@ -96,7 +96,9 @@ int main(int argc, char *argv[]) {
         "timeoutperaction", value<double>(&searchParams.TimeOutPerAction),
         "timeout per action (seconds)")(
         "converged", value<int>(&searchParams.Converged),
-        "use cache for subtasks in hplanning");
+        "convergence threshold for hplanning")(
+        "cacherate", value<double>(&searchParams.CacheRate),
+        "cache rate for hplanning");
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);

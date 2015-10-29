@@ -24,11 +24,12 @@ TIMEOUT=3600
 THOMPSONSAMPLING=0
 TIMEOUTPERACTION=-1
 CONVERGED=0
+CACHERATE=0.0
 
 OUTPUT="output-$$.txt"
 LOG="log-$$.txt"
 
-while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:C:" OPTION; do
+while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:C:c:" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -47,6 +48,7 @@ while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:C:" OPTION; do
         T) THOMPSONSAMPLING=$OPTARG ;;
         a) TIMEOUTPERACTION=$OPTARG ;;
         C) CONVERGED=$OPTARG ;;
+        c) CACHERATE=$OPTARG ;;
     esac
 done
 
@@ -72,5 +74,6 @@ run ./d2ng-pomcp --outputfile $OUTPUT \
             --timeout $TIMEOUT \
             --thompsonsampling $THOMPSONSAMPLING \
             --timeoutperaction $TIMEOUTPERACTION \
-            --converged $CONVERGED
+            --converged $CONVERGED \
+            --cacherate $CACHERATE
 

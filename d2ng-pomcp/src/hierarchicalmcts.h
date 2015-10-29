@@ -47,21 +47,20 @@ public:
   };
 
   struct bound_t {
-    bound_t(double l, double u, double p): lower(l), upper(u), prob(p) {}
+    bound_t(double l, double u): lower(l), upper(u) {}
 
     double lower;
     double upper;
-    double prob;
 
     double range() const {
       return upper - lower;
     }
+    static double min_range(const MCTS *mcts);
 
     friend std::ostream &operator <<(std::ostream &os, const bound_t &o) {
       return os << "{"
                 << "lower=" << o.lower
                 << ", upper=" << o.upper
-                << ", prob=" << o.prob
                 << ", range=" << o.range()
                 << "}";
     }
@@ -73,7 +72,7 @@ public:
     std::vector<result_t> cache;
 
     bound_t bound(macro_action_t a, const MCTS *mcts);
-    static double min_range(const MCTS *mcts);
+    static void clear(const SIMULATOR &simulator);
     static std::unordered_map<std::size_t, BELIEF_STATE> beliefpool;
   };
 
@@ -102,7 +101,7 @@ private:
   std::unordered_map<macro_action_t, std::unordered_set<int>> mGoals;  // target observation for subtasks
   std::unordered_map<int, std::unordered_map<macro_action_t, bool>> mApplicable;
   const macro_action_t mRootTask;  // root task
-  std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t*>> mTable;
+  std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t*>> mTree;
   BELIEF_STATE mRootSampling;
   double mConvergedBound;
 };

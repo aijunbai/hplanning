@@ -24,6 +24,7 @@ public:
     bool ThompsonSampling;
     double TimeOutPerAction;
     int Converged;
+    double CacheRate;
   };
 
   MCTS(const SIMULATOR &simulator, const PARAMS &params);

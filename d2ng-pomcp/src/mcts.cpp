@@ -26,7 +26,8 @@ MCTS::PARAMS::PARAMS()
     ReuseTree(false),
     ThompsonSampling(false),
     TimeOutPerAction(-1),
-    Converged(0.0) {}
+    Converged(0),
+    CacheRate(0.0) {}
 
 
 MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)

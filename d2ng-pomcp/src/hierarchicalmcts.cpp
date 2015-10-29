@@ -67,20 +67,33 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
     }
   }
 
-  mConvergedBound = pow(1.2, Params.Converged) * data_t::min_range(this);
-  PRINT_VALUE(mConvergedBound);
+  mConvergedBound = pow(1.2, Params.Converged) * bound_t::min_range(this);
+
+  if (Params.Verbose >= 2) {
+    PRINT_VALUE(bound_t::min_range(this));
+    PRINT_VALUE(mConvergedBound);
+    PRINT_VALUE(Params.CacheRate);
+  }
 }
 
 HierarchicalMCTS::~HierarchicalMCTS() {
   Clear();
 }
 
-double HierarchicalMCTS::data_t::min_range(const MCTS *mcts)
+void HierarchicalMCTS::data_t::clear(const SIMULATOR &simulator)
+{
+  for (auto &d: data_t::beliefpool) {
+    d.second.Free(simulator);
+  }
+  data_t::beliefpool.clear();
+}
+
+double HierarchicalMCTS::bound_t::min_range(const MCTS *mcts)
 {
   int N = mcts->Params.NumSimulations;
   int n = N;
-  double bound1 = 4.0 * mcts->FastUCB(N, n);
-  return 2.0 * bound1;
+  double bound = mcts->FastUCB(N, n);
+  return 2.0 * bound;
 }
 
 HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::bound(macro_action_t a, const MCTS *mcts)
@@ -88,11 +101,9 @@ HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::bound(macro_action_t a, cons
   int N = value.GetCount();
   int n = qvalues[a].GetCount();
   double q = qvalues[a].GetValue();
-  double bound1 = 4.0 * mcts->FastUCB(N, n);
-  double bound2 = 1.96 * qvalues[a].GetStdErr();
-  double prob = 0.95 * (1.0 - 2.0 * pow(N, -4.0));
+  double bound = mcts->FastUCB(N, n);
 
-  return bound_t(q - bound1 - bound2, q + bound1 + bound2, prob);
+  return bound_t(q - bound, q + bound);
 }
 
 bool HierarchicalMCTS::Applicable(int last_observation, macro_action_t action)
@@ -107,9 +118,9 @@ bool HierarchicalMCTS::Applicable(int last_observation, macro_action_t action)
 }
 
 HierarchicalMCTS::data_t *HierarchicalMCTS::Query(macro_action_t Action, size_t belief_hash) {
-  if (mTable.count(Action)) {
-    if (mTable[Action].count(belief_hash)) {
-      return mTable[Action][belief_hash];
+  if (mTree.count(Action)) {
+    if (mTree[Action].count(belief_hash)) {
+      return mTree[Action][belief_hash];
     }
   }
 
@@ -117,17 +128,14 @@ HierarchicalMCTS::data_t *HierarchicalMCTS::Query(macro_action_t Action, size_t 
 }
 
 void HierarchicalMCTS::Clear() {
-  for (auto &d: mTable) {
-    for (auto &e: d.second) {
+  for (auto &n: mTree) {
+    for (auto &e: n.second) {
       delete e.second;
     }
   }
-  mTable.clear();
-  for (auto &d: data_t::beliefpool) {
-    d.second.Free(Simulator);
-  }
-  data_t::beliefpool.clear();
+  mTree.clear();
   mRootSampling.Free(Simulator);
+  data_t::clear(Simulator);
 }
 
 bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
@@ -235,7 +243,7 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(
   }
 
   if (Primitive(Action)) {
-    return Rollout(Action, input, state, depth);
+    return Rollout(Action, input, state, depth);  // simulate Action
   }
   else {
     if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
@@ -246,26 +254,22 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(
 
     if (!data) {
       TreeSize += 1;
-      mTable[Action][input.belief_hash] = new data_t();
+      mTree[Action][input.belief_hash] = new data_t();
       return Rollout(Action, input, state, depth);
     }
     else {
-      double converged_prob = 0.0, useful_prob = 0.0;
-
       if (Simulator.mActionAbstraction && Params.Converged > 0) {
-        int greedy = GreedyUCB(Action, input.last_observation, *data, false);
-        bound_t bound = data->bound(greedy, this);
-        assert(bound.range() >= data->min_range(this));
+        if (uint(data->value.GetCount()) > mSubTasks[Action].size()) {
+          int greedy = GreedyUCB(Action, input.last_observation, *data, false);
+          bound_t bound = data->bound(greedy, this);
 
-        if (bound.range() <= mConvergedBound) {
-          converged_prob = bound.prob;
-          useful_prob = 1.0 * converged_prob + 0.0 * (1.0 - converged_prob);  // according to Bayes's rule
-
-          if (data->cache.size() && SimpleRNG::ins().Bernoulli(converged_prob * useful_prob)) {
-            result_t cache = SimpleRNG::ins().Sample(data->cache);  // cached result
-            Simulator.FreeState(state);  // drop current state
-            state = Simulator.Copy(*data_t::beliefpool[cache.belief_hash].GetSample());  // sample an exit state
-            return cache;
+          if (bound.range() <= mConvergedBound) {
+            if (data->cache.size() && SimpleRNG::ins().Bernoulli(Params.CacheRate)) {
+              result_t cache = SimpleRNG::ins().Sample(data->cache);  // cached result
+              Simulator.FreeState(state);  // drop current state
+              state = Simulator.Copy(*data_t::beliefpool[cache.belief_hash].GetSample());  // sample an exit state
+              return cache;
+            }
           }
         }
       }
@@ -291,12 +295,10 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(
             completion.belief_hash, completion.last_observation);
 
       if (Simulator.mActionAbstraction && Params.Converged > 0) {
-        if (SimpleRNG::ins().Bernoulli(converged_prob * useful_prob)) {  // cache the result if useful
-          if (ret.terminal || Terminate(Action, ret.last_observation)) {  // truly an exit
-            data->cache.push_back(ret);
-            STATE *sample = Simulator.Copy(*state);
-            data_t::beliefpool[completion.belief_hash].AddSample(sample);  // terminal state
-          }
+        if (ret.terminal || Terminate(Action, ret.last_observation)) {  // truly an exit
+          data->cache.push_back(ret);
+          STATE *sample = Simulator.Copy(*state);
+          data_t::beliefpool[completion.belief_hash].AddSample(sample);  // terminal state
         }
       }
 

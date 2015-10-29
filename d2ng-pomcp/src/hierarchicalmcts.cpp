@@ -67,7 +67,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
     }
   }
 
-  mConvergedBound = pow(1.2, Params.Converged) * bound_t::min_range(this);
+  mConvergedBound = pow(1.1, Params.Converged) * bound_t::min_range(this);
 
   if (Params.Verbose >= 2) {
     PRINT_VALUE(bound_t::min_range(this));
@@ -258,18 +258,20 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(
       return Rollout(Action, input, state, depth);
     }
     else {
-      if (Simulator.mActionAbstraction && Params.Converged > 0) {
-        if (uint(data->value.GetCount()) > mSubTasks[Action].size()) {
-          int greedy = GreedyUCB(Action, input.last_observation, *data, false);
-          bound_t bound = data->bound(greedy, this);
+      bool converged = false;
 
-          if (bound.range() <= mConvergedBound) {
-            if (data->cache.size() && SimpleRNG::ins().Bernoulli(Params.CacheRate)) {
-              result_t cache = SimpleRNG::ins().Sample(data->cache);  // cached result
-              Simulator.FreeState(state);  // drop current state
-              state = Simulator.Copy(*data_t::beliefpool[cache.belief_hash].GetSample());  // sample an exit state
-              return cache;
-            }
+      if (Simulator.mActionAbstraction && Params.Converged) {
+        int greedy = GreedyUCB(Action, input.last_observation, *data, false);
+        bound_t bound = data->bound(greedy, this);
+
+        if (bound.range() <= mConvergedBound) {
+          converged = true;
+
+          if (converged && data->cache.size() && SimpleRNG::ins().Bernoulli(Params.CacheRate)) {
+            result_t cache = SimpleRNG::ins().Sample(data->cache);  // cached result
+            Simulator.FreeState(state);  // drop current state
+            state = Simulator.Copy(*data_t::beliefpool[cache.belief_hash].GetSample());  // sample an exit state
+            return cache;
           }
         }
       }
@@ -294,7 +296,7 @@ HierarchicalMCTS::result_t HierarchicalMCTS::SearchTree(
             totalReward, steps, subtask.terminal || completion.terminal,
             completion.belief_hash, completion.last_observation);
 
-      if (Simulator.mActionAbstraction && Params.Converged > 0) {
+      if (Simulator.mActionAbstraction && Params.Converged && converged) {
         if (ret.terminal || Terminate(Action, ret.last_observation)) {  // truly an exit
           data->cache.push_back(ret);
           STATE *sample = Simulator.Copy(*state);
@@ -391,11 +393,11 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action, int last_obser
     int n = data.qvalues[action].GetCount();
     double q = data.qvalues[action].GetValue();
 
-    if (ucb) {
-      if (n == 0) {
-        return action;
-      }
+    if (n == 0) {
+      return action;
+    }
 
+    if (ucb) {
       q += FastUCB(N, n);
     }
 

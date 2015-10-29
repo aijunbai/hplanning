@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
         "use Thompson Sampling instead of UCB1")(
         "timeoutperaction", value<double>(&searchParams.TimeOutPerAction),
         "timeout per action (seconds)")(
-        "converged", value<int>(&searchParams.Converged),
+        "converged", value<double>(&searchParams.Converged),
         "convergence threshold for hplanning")(
         "cacherate", value<double>(&searchParams.CacheRate),
         "cache rate for hplanning");

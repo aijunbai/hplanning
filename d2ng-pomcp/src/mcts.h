@@ -23,7 +23,7 @@ public:
     bool ReuseTree;
     bool ThompsonSampling;
     double TimeOutPerAction;
-    int Converged;
+    double Converged;
     double CacheRate;
   };
 

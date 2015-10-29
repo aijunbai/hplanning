@@ -55,7 +55,6 @@ public:
     double range() const {
       return upper - lower;
     }
-    static double min_range(const MCTS *mcts);
 
     friend std::ostream &operator <<(std::ostream &os, const bound_t &o) {
       return os << "{"
@@ -66,6 +65,46 @@ public:
     }
   };
 
+  struct belief_t {
+    int size = 0;
+    std::unordered_map<std::size_t, std::pair<STATE*, int>> samples;
+
+    void add_sample(const STATE &state, const SIMULATOR &simulator) {
+      size += 1;
+      std::size_t hash = state.hash();
+      if (samples.count(state.hash())) {
+        samples[hash].second += 1;
+      }
+      else {
+        STATE *sample = simulator.Copy(state);
+        samples[hash] = std::make_pair(sample, 1);
+      }
+    }
+
+    void clear(const SIMULATOR &simulator) {
+      for (auto &e: samples) {
+        simulator.FreeState(e.second.first);
+      }
+    }
+
+    STATE *sample(const SIMULATOR &simulator) {
+      int i = SimpleRNG::ins().Random(size);
+
+      for (auto &e: samples) {
+        if (i < e.second.second) {
+          STATE *sample = simulator.Copy(*e.second.first);
+          return sample;
+        }
+        else {
+          i -= e.second.second;
+        }
+      }
+
+      assert(0);
+      return 0;
+    }
+  };
+
   struct data_t {
     STATISTIC value;
     std::unordered_map<macro_action_t, STATISTIC> qvalues;
@@ -73,7 +112,7 @@ public:
 
     bound_t bound(macro_action_t a, const MCTS *mcts);
     static void clear(const SIMULATOR &simulator);
-    static std::unordered_map<std::size_t, BELIEF_STATE> beliefpool;
+    static std::unordered_map<std::size_t, belief_t> beliefpool;
   };
 
 public:
@@ -104,6 +143,8 @@ private:
   std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t*>> mTree;
   BELIEF_STATE mRootSampling;
   double mConvergedBound;
+
+  static STATISTIC mCacheRate;
 };
 
 #endif // HIERARCHICALMCTS_H

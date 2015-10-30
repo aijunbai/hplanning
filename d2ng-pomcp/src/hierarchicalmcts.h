@@ -19,24 +19,23 @@ typedef int macro_action_t;
 class HierarchicalMCTS : public MCTS {
 public:
   struct input_t {
-    input_t(std::size_t b, int o):
-      belief_hash(b), last_observation(o) {}
+    input_t(std::size_t b, int o) : belief_hash(b), last_observation(o) {}
     std::size_t belief_hash;
     int last_observation;
   };
 
   struct result_t {
-    result_t(double r, int s, bool t, std::size_t b, int o):
-      reward(r), steps(s), terminal(t),
-      belief_hash(b), last_observation(o) {}
+    result_t(double r, int s, bool t, std::size_t b, int o)
+        : reward(r), steps(s), terminal(t), belief_hash(b),
+          last_observation(o) {}
 
     double reward;
     int steps;
-    bool terminal;  // global terminal state
+    bool terminal; // global terminal state
     std::size_t belief_hash;
     int last_observation;
 
-    friend std::ostream &operator <<(std::ostream &os, const result_t &o) {
+    friend std::ostream &operator<<(std::ostream &os, const result_t &o) {
       return os << "{"
                 << "reward=" << o.reward << ", "
                 << "steps=" << o.steps << ", "
@@ -47,42 +46,37 @@ public:
   };
 
   struct bound_t {
-    bound_t(double l, double u): lower(l), upper(u) {}
+    bound_t(double l, double u) : lower(l), upper(u) {}
 
     double lower;
     double upper;
 
-    double range() const {
-      return upper - lower;
-    }
+    double range() const { return upper - lower; }
 
-    friend std::ostream &operator <<(std::ostream &os, const bound_t &o) {
+    friend std::ostream &operator<<(std::ostream &os, const bound_t &o) {
       return os << "{"
-                << "lower=" << o.lower
-                << ", upper=" << o.upper
-                << ", range=" << o.range()
-                << "}";
+                << "lower=" << o.lower << ", upper=" << o.upper
+                << ", range=" << o.range() << "}";
     }
   };
 
   struct belief_t {
     int size = 0;
-    std::unordered_map<std::size_t, std::pair<STATE*, int>> samples;
+    std::unordered_map<std::size_t, std::pair<STATE *, int>> samples;
 
     void add_sample(const STATE &state, const SIMULATOR &simulator) {
       size += 1;
       std::size_t hash = state.hash();
       if (samples.count(state.hash())) {
         samples[hash].second += 1;
-      }
-      else {
+      } else {
         STATE *sample = simulator.Copy(state);
         samples[hash] = std::make_pair(sample, 1);
       }
     }
 
     void clear(const SIMULATOR &simulator) {
-      for (auto &e: samples) {
+      for (auto &e : samples) {
         simulator.FreeState(e.second.first);
       }
     }
@@ -90,12 +84,11 @@ public:
     STATE *sample(const SIMULATOR &simulator) {
       int i = SimpleRNG::ins().Random(size);
 
-      for (auto &e: samples) {
+      for (auto &e : samples) {
         if (i < e.second.second) {
           STATE *sample = simulator.Copy(*e.second.first);
           return sample;
-        }
-        else {
+        } else {
           i -= e.second.second;
         }
       }
@@ -123,9 +116,12 @@ public:
   virtual void SearchImp();
   virtual bool Update(int action, int observation, STATE &state);
 
-  result_t SearchTree(macro_action_t Action, const input_t &input, STATE *&state, int depth);
-  result_t Rollout(macro_action_t Action, const input_t &input, STATE *&state, int depth);
-  macro_action_t GreedyUCB(macro_action_t Action, int last_observation, data_t &data, bool ucb);
+  result_t SearchTree(macro_action_t Action, const input_t &input,
+                      STATE *&state, int depth);
+  result_t Rollout(macro_action_t Action, const input_t &input, STATE *&state,
+                   int depth);
+  macro_action_t GreedyUCB(macro_action_t Action, int last_observation,
+                           data_t &data, bool ucb);
   int SelectPrimitiveAction(macro_action_t Action, const HISTORY &history);
   bool Terminate(macro_action_t Action, int last_observation);
   bool Primitive(macro_action_t Action);
@@ -137,14 +133,18 @@ public:
 
 private:
   std::unordered_map<macro_action_t, std::vector<macro_action_t>> mSubTasks;
-  std::unordered_map<macro_action_t, std::unordered_set<int>> mGoals;  // target observation for subtasks
+  std::unordered_map<macro_action_t, std::unordered_set<int>>
+      mGoals; // target observation for subtasks
   std::unordered_map<int, std::unordered_map<macro_action_t, bool>> mApplicable;
-  const macro_action_t mRootTask;  // root task
-  std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t*>> mTree;
+  const macro_action_t mRootTask; // root task
+  std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t *>>
+      mTree;
   BELIEF_STATE mRootSampling;
   double mConvergedBound;
 
   static STATISTIC mCacheRate;
+  static STATISTIC mCacheDepth;
+  static STATISTIC mCacheStep;
 };
 
 #endif // HIERARCHICALMCTS_H

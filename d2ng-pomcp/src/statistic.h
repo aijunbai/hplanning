@@ -70,11 +70,11 @@ class STATISTIC {
     Max = std::max(max, Max);
   }
 
-  void Print(const std::string &name, std::ostream &ostr) const;
+  void Print(const std::string &name, std::ostream &ostr, bool endl = true) const;
   void Add(double val);
 
   friend std::ostream &operator<<(std::ostream &os, const STATISTIC &o) {
-    o.Print("", os);
+    o.Print("", os, false);
     return os;
   }
 
@@ -136,10 +136,12 @@ inline double STATISTIC::GetMax() const { return Max; }
 inline double STATISTIC::GetMin() const { return Min; }
 
 inline void STATISTIC::Print(const std::string &name,
-                             std::ostream &ostr) const {
+                             std::ostream &ostr, bool endl) const {
   ostr << name << ": " << Mean << " (" << GetCount() << ") [" << Min << ", "
-       << Max << "] +- " << GetStdErr() << ", sigma=" << GetStdDev()
-       << std::endl;
+       << Max << "] +- " << GetStdErr() << ", sigma=" << GetStdDev();
+  if (endl) {
+    ostr << std::endl;
+  }
 }
 
 class UniformGenerator {

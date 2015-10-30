@@ -6,16 +6,14 @@ using namespace std;
 std::unordered_map<std::size_t, HierarchicalMCTS::belief_t>
     HierarchicalMCTS::data_t::beliefpool;
 STATISTIC HierarchicalMCTS::mCacheRate;
+STATISTIC HierarchicalMCTS::mCacheDepth;
+STATISTIC HierarchicalMCTS::mCacheStep;
 
 namespace converge {
 
-double f(double alpha, double N) {
-  return Sqr(alpha) * N - 4.0 * log(N);
-}
+double f(double alpha, double N) { return Sqr(alpha) * N - 4.0 * log(N); }
 
-double df(double alpha, double N) {
-  return Sqr(alpha) - 4.0 / N;
-}
+double df(double alpha, double N) { return Sqr(alpha) - 4.0 / N; }
 
 double newton(double alpha) {
   double x = Infinity;
@@ -24,7 +22,6 @@ double newton(double alpha) {
   }
   return x;
 }
-
 }
 
 HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
@@ -88,13 +85,6 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
       PRINT_VALUE(mApplicable);
     }
   }
-
-  if (Params.Verbose >= 2) {
-    PRINT_VALUE(Params.ExplorationConstant);
-    PRINT_VALUE(Params.Converged);
-    PRINT_VALUE(converge::newton(Params.Converged));
-    PRINT_VALUE(Params.CacheRate);
-  }
 }
 
 HierarchicalMCTS::~HierarchicalMCTS() {
@@ -104,6 +94,8 @@ HierarchicalMCTS::~HierarchicalMCTS() {
     PRINT_VALUE(converge::newton(Params.Converged));
     PRINT_VALUE(Params.CacheRate);
     PRINT_VALUE(mCacheRate);
+    PRINT_VALUE(mCacheDepth);
+    PRINT_VALUE(mCacheStep);
   }
   Clear();
 }
@@ -292,8 +284,11 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
             result_t cache =
                 SimpleRNG::ins().Sample(data->cache); // cached result
             Simulator.FreeState(state);               // drop current state
-            state = data_t::beliefpool[cache.belief_hash].sample(Simulator); // sample an exit state
+            state = data_t::beliefpool[cache.belief_hash].sample(
+                Simulator); // sample an exit state
             mCacheRate.Add(1.0);
+            mCacheDepth.Add(depth);
+            mCacheStep.Add(cache.steps);
             return cache;
           }
         }
@@ -325,7 +320,8 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
         if (ret.terminal ||
             Terminate(Action, ret.last_observation)) { // truly an exit
           data->cache.push_back(ret);
-          data_t::beliefpool[completion.belief_hash].add_sample(*state, Simulator); // terminal state
+          data_t::beliefpool[completion.belief_hash].add_sample(
+              *state, Simulator); // terminal state
         }
       }
 

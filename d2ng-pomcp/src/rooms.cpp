@@ -17,7 +17,7 @@ ROOMS::ROOMS(const char *map_name, bool state_abstraction, bool action_abstracti
   NumObservations =
       state_abstraction ? mRooms : mGrid->GetXSize() * mGrid->GetYSize();
   Discount = 0.95;
-  RewardRange = 10.0;
+  RewardRange = 20.0;
   mName << "rooms_" << map_name << "_" << state_abstraction << "_" << action_abstraction;
 
   mHierarchicalPlanning = true;

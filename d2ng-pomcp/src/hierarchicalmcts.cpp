@@ -98,7 +98,13 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
 }
 
 HierarchicalMCTS::~HierarchicalMCTS() {
-  PRINT_VALUE(mCacheRate);
+  if (Params.Verbose >= 2) {
+    PRINT_VALUE(Params.ExplorationConstant);
+    PRINT_VALUE(Params.Converged);
+    PRINT_VALUE(converge::newton(Params.Converged));
+    PRINT_VALUE(Params.CacheRate);
+    PRINT_VALUE(mCacheRate);
+  }
   Clear();
 }
 

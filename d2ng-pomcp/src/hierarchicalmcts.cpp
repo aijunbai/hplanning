@@ -194,12 +194,11 @@ double HierarchicalMCTS::data_t::greater_prob(double x1, double x2, double y1,
       area -= 0.5 * Sqr(y1 - x1);
     }
     if (y1 > x2) {
-      area -= 0.5 * Sqr(y1 - x2);
+      area += 0.5 * Sqr(y1 - x2);
     }
 
     double prob = area / (x2 - x1) / (y2 - y1);
-    assert(0.0 <= prob && prob <= 1.0);
-    return prob;
+    return MinMax(0.0, prob, 1.0);
   } else {
     return 1.0;
   }

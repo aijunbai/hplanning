@@ -46,12 +46,14 @@ public:
   };
 
   struct bound_t {
+    bound_t() {}
     bound_t(double l, double u) : lower(l), upper(u) {}
 
     double lower;
     double upper;
 
     double range() const { return upper - lower; }
+    double sample() const { return SimpleRNG::ins().GetUniform(lower, upper); }
 
     friend std::ostream &operator<<(std::ostream &os, const bound_t &o) {
       return os << "{"
@@ -104,6 +106,9 @@ public:
     std::vector<result_t> cache;
 
     bound_t bound(macro_action_t a, const MCTS *mcts);
+    bool optimal_prob_at_least(macro_action_t a, const MCTS *mcts, int N, double threshold);
+
+    static double greater_prob(double x1, double x2, double y1, double y2);
     static void clear(const SIMULATOR &simulator);
     static std::unordered_map<std::size_t, belief_t> beliefpool;
   };
@@ -130,6 +135,8 @@ public:
   bool Applicable(int last_observation, macro_action_t action);
   data_t *Query(macro_action_t Action, size_t belief_hash);
   void Clear();
+
+  static void UnitTest();
 
 private:
   std::unordered_map<macro_action_t, std::vector<macro_action_t>> mSubTasks;

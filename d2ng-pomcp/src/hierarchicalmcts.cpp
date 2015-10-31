@@ -1,4 +1,6 @@
 #include "hierarchicalmcts.h"
+#include "utils.h"
+#include "coord.h"
 #include <sstream>
 
 using namespace std;
@@ -90,9 +92,6 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
 HierarchicalMCTS::~HierarchicalMCTS() {
   if (Params.Verbose >= 2) {
     PRINT_VALUE(Params.ExplorationConstant);
-    PRINT_VALUE(Params.Converged);
-    PRINT_VALUE(converge::newton(Params.Converged));
-    PRINT_VALUE(Params.CacheRate);
     PRINT_VALUE(mCacheRate);
     PRINT_VALUE(mCacheDepth);
     PRINT_VALUE(mCacheStep);
@@ -116,6 +115,94 @@ HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::bound(macro_action_t a,
   double bound = mcts->FastUCB(N, n);
 
   return bound_t(q - bound, q + bound);
+}
+
+bool HierarchicalMCTS::data_t::optimal_prob_at_least(macro_action_t a,
+                                                     const MCTS *mcts, int N,
+                                                     double threshold) {
+  if (threshold <= 0.0) {
+    return true;
+  }
+
+  bound_t bounda = bound(a, mcts);
+  vector<bound_t> bounds;
+  for (auto &e : qvalues) {
+    if (e.first != a) {
+      bounds.push_back(bound(e.first, mcts));
+    }
+  }
+
+  if (qvalues.size() == 2) {
+    assert(bounds.size() == 1);
+    return greater_prob(bounds[0].lower, bounds[0].upper, bounda.lower,
+                        bounda.upper) >= threshold;
+  }
+
+  int n = 0;
+  for (int i = 0; i < N; ++i) {
+    if (double(n + N - i) / double(N) < threshold) {
+      return false;
+    }
+
+    if (double(n) / double(N) >= threshold) {
+      return true;
+    }
+
+    double q = bounda.sample();
+    bool optimal = true;
+    for (auto &e : bounds) {
+      double sample = e.sample();
+      if (sample > q) {
+        optimal = false;
+      }
+    }
+    if (optimal) {
+      n += 1;
+    }
+  }
+
+  return double(n) / double(N) >= threshold;
+}
+
+void HierarchicalMCTS::UnitTest() {
+  assert(data_t::greater_prob(1, 2, 3, 4) == 0.0);
+  assert(data_t::greater_prob(1, 4, 3, 4) == 2.5 / 3.0);
+  assert(data_t::greater_prob(1, 5, 3, 4) == 2.5 / 4.0);
+  assert(data_t::greater_prob(3, 5, 3, 4) == 0.5 / 2.0);
+  assert(data_t::greater_prob(5, 6, 3, 4) == 1.0);
+}
+
+/**
+ * @brief HierarchicalMCTS::data_t::greater_prob
+ * @param x1 x \in [x1, x2]
+ * @param x2 x \in [x1, x2]
+ * @param y1 y \in [y1, y2]
+ * @param y2 y \in [y1, y2]
+ * @return probability that y >= x
+ */
+double HierarchicalMCTS::data_t::greater_prob(double x1, double x2, double y1,
+                                              double y2) {
+  assert(x1 <= x2 && y1 <= y2);
+
+  if (y2 > x1) {
+    double area = 0.5 * Sqr(y2 - x1);
+
+    if (y2 > x2) {
+      area -= 0.5 * Sqr(y2 - x2);
+    }
+    if (y1 > x1) {
+      area -= 0.5 * Sqr(y1 - x1);
+    }
+    if (y1 > x2) {
+      area -= 0.5 * Sqr(y1 - x2);
+    }
+
+    double prob = area / (x2 - x1) / (y2 - y1);
+    assert(0.0 <= prob && prob <= 1.0);
+    return prob;
+  } else {
+    return 1.0;
+  }
 }
 
 bool HierarchicalMCTS::Applicable(int last_observation, macro_action_t action) {
@@ -272,14 +359,13 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
     } else {
       bool converged = false;
 
-      if (Simulator.mActionAbstraction && Params.Converged > 0.0) {
+      if (Simulator.mActionAbstraction &&
+          uint(data->value.GetCount()) > mSubTasks[Action].size() &&
+          Params.Converged < 1.0) {
         int greedy = GreedyUCB(Action, input.last_observation, *data, false);
-        bound_t bound = data->bound(greedy, this);
-
-        if (bound.range() <= Params.Converged * Params.ExplorationConstant) {
+        if (data->optimal_prob_at_least(greedy, this, 33, Params.Converged)) {
           converged = true;
-
-          if (converged && data->cache.size() &&
+          if (data->cache.size() &&
               SimpleRNG::ins().Bernoulli(Params.CacheRate)) {
             result_t cache =
                 SimpleRNG::ins().Sample(data->cache); // cached result
@@ -316,7 +402,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
       result_t ret(totalReward, steps, subtask.terminal || completion.terminal,
                    completion.belief_hash, completion.last_observation);
 
-      if (Simulator.mActionAbstraction && Params.Converged > 0.0 && converged) {
+      if (Simulator.mActionAbstraction && converged) {
         if (ret.terminal ||
             Terminate(Action, ret.last_observation)) { // truly an exit
           data->cache.push_back(ret);

@@ -154,6 +154,7 @@ bool HierarchicalMCTS::data_t::optimal_prob_at_least(macro_action_t a,
       double sample = e.sample();
       if (sample > q) {
         optimal = false;
+        break;
       }
     }
     if (optimal) {

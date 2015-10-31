@@ -117,6 +117,14 @@ HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::bound(macro_action_t a,
   return bound_t(q - bound, q + bound);
 }
 
+/**
+ * @brief HierarchicalMCTS::data_t::optimal_prob_at_least
+ * @param a
+ * @param mcts
+ * @param N
+ * @param threshold
+ * @return probability of a being optimal at least threshold
+ */
 bool HierarchicalMCTS::data_t::optimal_prob_at_least(macro_action_t a,
                                                      const MCTS *mcts, int N,
                                                      double threshold) {

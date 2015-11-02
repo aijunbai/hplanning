@@ -87,7 +87,7 @@ class VNODE : public MEMORY_OBJECT {
  public:
   void Initialise(size_t belief_hash);
 
-  static VNODE *Create(HISTORY &history);
+  static VNODE *Create(HISTORY &history, int memory_size);
   static void Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore = 0);
   static void FreeAll();
 
@@ -123,6 +123,7 @@ class VNODE : public MEMORY_OBJECT {
   }
 
   static MEMORY_POOL<VNODE> VNodePool;
+  static std::unordered_map<size_t, VNODE*> BeliefPool;
 
   static int GetNumAllocated() {
     return VNodePool.GetNumAllocated();

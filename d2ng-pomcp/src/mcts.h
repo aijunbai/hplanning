@@ -23,8 +23,8 @@ public:
     bool ReuseTree;
     bool ThompsonSampling;
     double TimeOutPerAction;
-    double Converged;
-    double CacheRate;
+    int MemorySize;
+    bool AllStateUpdating;
   };
 
   MCTS(const SIMULATOR &simulator, const PARAMS &params);
@@ -32,7 +32,7 @@ public:
 
   virtual int SelectAction() = 0;
   virtual void SearchImp() = 0;
-  virtual bool Update(int action, int observation, STATE &state) = 0;  // update history and ground state (if possible)
+  virtual bool Update(int action, int observation, double reward, STATE &state) = 0;  // update history and ground state (if possible)
 
   void Search();
   const HISTORY &GetHistory() const { return History; }

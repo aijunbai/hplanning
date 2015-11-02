@@ -72,7 +72,6 @@ class STATISTIC {
 
   void Print(const std::string &name, std::ostream &ostr, bool endl = true) const;
   void Add(double val);
-
   friend std::ostream &operator<<(std::ostream &os, const STATISTIC &o) {
     o.Print("", os, false);
     return os;

@@ -73,7 +73,8 @@ void EXPERIMENT::Run() {
     }
 
     outOfParticles = !mcts->Update(
-        action, observation, *state); //更新历史信息，得到新的 Root 节点，设置好初始信念状态
+        action, observation, reward,
+        *state); //更新历史信息，得到新的 Root 节点，设置好初始信念状态
     if (outOfParticles) {
       assert(!Real.mHierarchicalPlanning);
       break; // Out of particles, finishing episode with SelectRandom

@@ -33,8 +33,6 @@ void UnitTests() {
   COORD::UnitTest();
   cout << "Testing FlatMCTS" << endl;
   FlatMCTS::UnitTest();
-  cout << "Testing HierarchicalMCTS" << endl;
-  HierarchicalMCTS::UnitTest();
 }
 
 void disableBufferedIO(void) {
@@ -97,11 +95,12 @@ int main(int argc, char *argv[]) {
       "thompsonsampling", value<bool>(&searchParams.ThompsonSampling),
       "use Thompson Sampling instead of UCB1")(
       "timeoutperaction", value<double>(&searchParams.TimeOutPerAction),
-      "timeout per action (seconds)")("converged",
-                                      value<double>(&searchParams.Converged),
-                                      "convergence threshold for hplanning")(
-      "cacherate", value<double>(&searchParams.CacheRate),
-      "cache rate for hplanning");
+      "timeout per action (seconds)")(
+      "memorysize", value<int>(&searchParams.MemorySize),
+      "number of observation-action pairs to represent a belief")(
+      "allstateupdating", value<bool>(&searchParams.AllStateUpdating),
+      "use all state updating in hierarchical planning with action "
+      "abstraction");
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);

@@ -371,8 +371,10 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
           uint(data->value.GetCount()) > mSubTasks[Action].size() &&
           Params.Converged < 1.0) {
         int greedy = GreedyUCB(Action, input.last_observation, *data, false);
+
         if (data->optimal_prob_at_least(greedy, this, 33, Params.Converged)) {
           converged = true;
+
           if (data->cache.size() &&
               SimpleRNG::ins().Bernoulli(Params.CacheRate)) {
             result_t cache =

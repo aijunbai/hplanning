@@ -24,12 +24,16 @@ TIMEOUT=3600
 THOMPSONSAMPLING=0
 TIMEOUTPERACTION=-1
 CONVERGED=1.0
-CACHERATE=0.5
+CACHERATE=0.95
+MAP="data/8_rooms.map"
+FAKE="false"
 
 OUTPUT="output-$$.txt"
 LOG="log-$$.txt"
 
-while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:C:c:" OPTION; do
+make -j4
+
+while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:C:c:m:F" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -49,13 +53,17 @@ while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:C:c:" OPTION; do
         a) TIMEOUTPERACTION=$OPTARG ;;
         C) CONVERGED=$OPTARG ;;
         c) CACHERATE=$OPTARG ;;
+        m) MAP=$OPTARG ;;
+        F) FAKE="true" ;;
     esac
 done
 
 run() {
     echo "$*" > $OUTPUT
     echo "$*" | tee $LOG
-    exec $* 2>&1 | tee -a $LOG
+    if [ $FAKE == "false" ]; then
+        exec $* 2>&1 | tee -a $LOG
+    fi
 }
 
 run ./d2ng-pomcp --outputfile $OUTPUT \
@@ -75,5 +83,6 @@ run ./d2ng-pomcp --outputfile $OUTPUT \
             --thompsonsampling $THOMPSONSAMPLING \
             --timeoutperaction $TIMEOUTPERACTION \
             --converged $CONVERGED \
-            --cacherate $CACHERATE
+            --cacherate $CACHERATE \
+            --map $MAP
 

@@ -50,13 +50,14 @@ int main(int argc, char *argv[]) {
   MCTS::PARAMS searchParams;
   EXPERIMENT::PARAMS expParams;
   SIMULATOR::KNOWLEDGE knowledge;
-  string problem, outputfile;
+  string problem, map, outputfile;
   int size = 0, number = 0;
   bool seeding = false;
 
   options_description desc("Allowed options");
   desc.add_options()("help", "produce help message")("test", "run unit tests")(
       "problem", value<string>(&problem), "problem to run")(
+      "map", value<string>(&map), "map to use for (continus) rooms domain")(
       "outputfile", value<string>(&outputfile)->default_value("output.txt"),
       "summary output file")("size", value<int>(&size),
                              "size of problem (problem specific)")(
@@ -164,23 +165,23 @@ int main(int argc, char *argv[]) {
     real = new TAG(number);
     simulator = new TAG(number);
   } else if (problem == "rooms_0") {
-    real = new ROOMS("data/rooms.map", false, false);
-    simulator = new ROOMS("data/rooms.map", false, false);
+    real = new ROOMS(map.c_str(), false, false);
+    simulator = new ROOMS(map.c_str(), false, false);
   } else if (problem == "rooms_1_0") {
-    real = new ROOMS("data/rooms.map", true, false);
-    simulator = new ROOMS("data/rooms.map", true, false);
+    real = new ROOMS(map.c_str(), true, false);
+    simulator = new ROOMS(map.c_str(), true, false);
   } else if (problem == "rooms_1_1") {
-    real = new ROOMS("data/rooms.map", true, true);
-    simulator = new ROOMS("data/rooms.map", true, true);
+    real = new ROOMS(map.c_str(), true, true);
+    simulator = new ROOMS(map.c_str(), true, true);
   } else if (problem == "continousrooms_0") {
-    real = new ContinousROOMS("data/rooms.map", false, false);
-    simulator = new ContinousROOMS("data/rooms.map", false, false);
+    real = new ContinousROOMS(map.c_str(), false, false);
+    simulator = new ContinousROOMS(map.c_str(), false, false);
   } else if (problem == "continousrooms_1_0") {
-    real = new ContinousROOMS("data/rooms.map", true, false);
-    simulator = new ContinousROOMS("data/rooms.map", true, false);
+    real = new ContinousROOMS(map.c_str(), true, false);
+    simulator = new ContinousROOMS(map.c_str(), true, false);
   } else if (problem == "continousrooms_1_1") {
-    real = new ContinousROOMS("data/rooms.map", true, true);
-    simulator = new ContinousROOMS("data/rooms.map", true, true);
+    real = new ContinousROOMS(map.c_str(), true, true);
+    simulator = new ContinousROOMS(map.c_str(), true, true);
   } else if (problem == "redundant_object_0") {
     real = new REDUNDANT_OBJECT(size, false);
     simulator = new REDUNDANT_OBJECT(size, false);

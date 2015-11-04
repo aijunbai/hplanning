@@ -11,21 +11,6 @@ STATISTIC HierarchicalMCTS::mCacheRate;
 STATISTIC HierarchicalMCTS::mCacheDepth;
 STATISTIC HierarchicalMCTS::mCacheStep;
 
-namespace converge {
-
-double f(double alpha, double N) { return Sqr(alpha) * N - 4.0 * log(N); }
-
-double df(double alpha, double N) { return Sqr(alpha) - 4.0 / N; }
-
-double newton(double alpha) {
-  double x = Infinity;
-  while (fabs(f(alpha, x)) > FLOAT_EPS) {
-    x = x - f(alpha, x) / df(alpha, x);
-  }
-  return x;
-}
-}
-
 HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
                                    const PARAMS &params)
     : MCTS(simulator, params), mRootTask(-1) {
@@ -107,7 +92,7 @@ void HierarchicalMCTS::data_t::clear(const SIMULATOR &simulator) {
   data_t::beliefpool.clear();
 }
 
-HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::bound(macro_action_t a,
+HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::ucb_bound(macro_action_t a,
                                                           const MCTS *mcts) {
   int N = value.GetCount();
   int n = qvalues[a].GetCount();
@@ -132,11 +117,11 @@ bool HierarchicalMCTS::data_t::optimal_prob_at_least(macro_action_t a,
     return true;
   }
 
-  bound_t bounda = bound(a, mcts);
+  bound_t bounda = ucb_bound(a, mcts);
   vector<bound_t> bounds;
   for (auto &e : qvalues) {
     if (e.first != a) {
-      bounds.push_back(bound(e.first, mcts));
+      bounds.push_back(ucb_bound(e.first, mcts));
     }
   }
 
@@ -232,6 +217,17 @@ HierarchicalMCTS::data_t *HierarchicalMCTS::Query(macro_action_t Action,
   }
 
   return 0;
+}
+
+HierarchicalMCTS::data_t *HierarchicalMCTS::Insert(macro_action_t Action,
+                                                   size_t belief_hash) {
+  data_t *data = Query(Action, belief_hash);
+  if (!data) {
+    data = new data_t();
+    mTree[Action][belief_hash] = data;
+    TreeSize += 1;
+  }
+  return data;
 }
 
 void HierarchicalMCTS::Clear() {
@@ -361,14 +357,12 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
     data_t *data = Query(Action, input.belief_hash);
 
     if (!data) {
-      TreeSize += 1;
-      mTree[Action][input.belief_hash] = new data_t();
+      Insert(Action, input.belief_hash);
       return Rollout(Action, input, state, depth);
     } else {
       bool converged = false;
 
       if (Simulator.mActionAbstraction &&
-          uint(data->value.GetCount()) > mSubTasks[Action].size() &&
           Params.Converged < 1.0) {
         int greedy = GreedyUCB(Action, input.last_observation, *data, false);
 
@@ -391,8 +385,8 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
       }
       mCacheRate.Add(0.0);
 
-      int action = GreedyUCB(Action, input.last_observation, *data, true);
-      result_t subtask = SearchTree(action, input, state,
+      const int action = GreedyUCB(Action, input.last_observation, *data, true);
+      const result_t subtask = SearchTree(action, input, state,
                                     depth); // history and state will be updated
       int steps = subtask.steps;
       result_t completion(0.0, 0, false, subtask.belief_hash,
@@ -402,14 +396,14 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
         completion = SearchTree(Action, input, state, depth + steps);
       }
 
-      double totalReward =
+      const double totalReward =
           subtask.reward +
           pow(Simulator.GetDiscount(), steps) * completion.reward;
       data->value.Add(totalReward);
       data->qvalues[action].Add(totalReward);
 
       steps += completion.steps;
-      result_t ret(totalReward, steps, subtask.terminal || completion.terminal,
+      const result_t ret(totalReward, steps, subtask.terminal || completion.terminal,
                    completion.belief_hash, completion.last_observation);
 
       if (Simulator.mActionAbstraction && converged) {

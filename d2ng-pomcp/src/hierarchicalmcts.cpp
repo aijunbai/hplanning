@@ -1,7 +1,5 @@
 #include "hierarchicalmcts.h"
-#include "utils.h"
 #include "coord.h"
-#include <sstream>
 
 using namespace std;
 
@@ -23,7 +21,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
   if (Simulator.mActionAbstraction) {
     assert(Simulator.GetNumObservations() > 0);
     mGoals[mRootTask].insert(0); // ground target state assumed to be in macro
-                                 // state 0 for rooms domain
+    // state 0 for rooms domain
 
     for (int o = 0; o < Simulator.GetNumObservations(); ++o) {
       mSubTasks[MacroAction(o)] = vector<macro_action_t>();
@@ -93,7 +91,7 @@ void HierarchicalMCTS::data_t::clear(const SIMULATOR &simulator) {
 }
 
 HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::ucb_bound(macro_action_t a,
-                                                          const MCTS *mcts) {
+                                                              const MCTS *mcts) {
   int N = value.GetCount();
   int n = qvalues[a].GetCount();
   double q = qvalues[a].GetValue();
@@ -316,7 +314,7 @@ void HierarchicalMCTS::SearchImp() {
   if (Terminate(mRootTask, History.LastObservation())) {
     if (Params.Verbose >= 2) {
       cerr << "Removing observation " << History.Back().Observation
-           << " from task graph" << endl;
+      << " from task graph" << endl;
     }
     for (auto it = mGoals.begin(); it != mGoals.end(); ++it) {
       it->second.erase(History.Back().Observation);
@@ -363,6 +361,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
       bool converged = false;
 
       if (Simulator.mActionAbstraction &&
+          data->value.GetCount() > int(data->qvalues.size()) &&
           Params.Converged < 1.0) {
         int greedy = GreedyUCB(Action, input.last_observation, *data, false);
 
@@ -387,7 +386,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
 
       const int action = GreedyUCB(Action, input.last_observation, *data, true);
       const result_t subtask = SearchTree(action, input, state,
-                                    depth); // history and state will be updated
+                                          depth); // history and state will be updated
       int steps = subtask.steps;
       result_t completion(0.0, 0, false, subtask.belief_hash,
                           subtask.last_observation);
@@ -404,7 +403,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
 
       steps += completion.steps;
       const result_t ret(totalReward, steps, subtask.terminal || completion.terminal,
-                   completion.belief_hash, completion.last_observation);
+                         completion.belief_hash, completion.last_observation);
 
       if (Simulator.mActionAbstraction && converged) {
         if (ret.terminal ||

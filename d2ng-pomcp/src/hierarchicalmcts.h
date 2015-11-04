@@ -131,9 +131,14 @@ public:
                       STATE *&state, int depth);
   result_t Rollout(macro_action_t Action, const input_t &input, STATE *&state,
                    int depth);
+  result_t PollingRollout(macro_action_t Action, const input_t &input, STATE *&state,
+                   int depth);
+  result_t HierarchicalRollout(macro_action_t Action, const input_t &input, STATE *&state,
+                          int depth);
   macro_action_t GreedyUCB(macro_action_t Action, int last_observation,
                            data_t &data, bool ucb);
-  int SelectPrimitiveAction(macro_action_t Action, const HISTORY &history);
+  int GreedyPrimitiveAction(macro_action_t Action, const input_t &input);
+  int RandomPrimitiveAction(macro_action_t Action, const input_t &input);
   bool Terminate(macro_action_t Action, int last_observation);
   bool Primitive(macro_action_t Action);
   macro_action_t MacroAction(int o);

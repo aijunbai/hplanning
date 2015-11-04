@@ -1,5 +1,6 @@
 #include "hierarchicalmcts.h"
 #include "coord.h"
+#include "rooms.h"
 
 using namespace std;
 
@@ -252,25 +253,37 @@ bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
 }
 
 int HierarchicalMCTS::SelectAction() {
-  return SelectPrimitiveAction(mRootTask, History);
+  input_t input(History.BeliefHash(), History.LastObservation());
+  return GreedyPrimitiveAction(mRootTask, input);
 }
 
-int HierarchicalMCTS::SelectPrimitiveAction(macro_action_t Action,
-                                            const HISTORY &history) {
-  if (mSubTasks[Action].empty()) {
+int HierarchicalMCTS::RandomPrimitiveAction(macro_action_t Action,
+                                            const input_t &input)
+{
+  if (Primitive(Action)) {
+    return Action;
+  }
+  macro_action_t action;
+
+  do {
+    action = SimpleRNG::ins().Sample(mSubTasks[Action]);
+  } while (Terminate(action, input.last_observation) ||
+           !Applicable(input.last_observation, action));
+
+  return RandomPrimitiveAction(action, input);
+}
+
+int HierarchicalMCTS::GreedyPrimitiveAction(macro_action_t Action,
+                                            const input_t &input) {
+  if (Primitive(Action)) {
     return Action;
   }
 
-  data_t *data = Query(Action, history.BeliefHash());
+  data_t *data = Query(Action, input.belief_hash);
   macro_action_t action;
 
   if (data) {
     if (Params.Verbose >= 1) {
-      if (Params.Verbose >= 3) {
-        cerr << "history=[";
-        history.Display(cerr);
-        cerr << "]" << endl;
-      }
       stringstream ss;
       ss << "V(" << Action << ", ";
       ss << "history)";
@@ -283,26 +296,16 @@ int HierarchicalMCTS::SelectPrimitiveAction(macro_action_t Action,
       }
     }
 
-    action = GreedyUCB(Action, history.LastObservation(), *data, false);
-    return SelectPrimitiveAction(action, history);
+    action = GreedyUCB(Action, input.last_observation, *data, false);
+    return GreedyPrimitiveAction(action, input);
   } else {
     if (Params.Verbose >= 1) {
-      if (Params.Verbose >= 3) {
-        cerr << "history=[";
-        history.Display(cerr);
-        cerr << "]" << endl;
-      }
       cerr << "Random Selecting V(" << Action << ", ";
       cerr << "history)" << endl;
     }
 
-    do {
-      action = SimpleRNG::ins().Sample(mSubTasks[Action]);
-    } while (Terminate(action, history.LastObservation()) ||
-             !Applicable(history.LastObservation(), action));
+    return RandomPrimitiveAction(Action, input);
   }
-
-  return SelectPrimitiveAction(action, history);
 }
 
 void HierarchicalMCTS::SearchImp() {
@@ -346,7 +349,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
   }
 
   if (Primitive(Action)) {
-    return Rollout(Action, input, state, depth); // simulate Action
+    return Rollout(Action, input, state, depth); // simulate primitive Action
   } else {
     if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
       return result_t(0.0, 0, false, input.belief_hash, input.last_observation);
@@ -428,10 +431,51 @@ void HierarchicalMCTS::UpdateConnection(int last_observation, int observation) {
   }
 }
 
+
+HierarchicalMCTS::result_t
+HierarchicalMCTS::PollingRollout(macro_action_t Action,
+                          const HierarchicalMCTS::input_t &input, STATE *&state,
+                          int depth)
+{
+  assert(!Primitive(Action));
+
+  if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
+    return result_t(0.0, 0, false, input.belief_hash, input.last_observation);
+  }
+
+  macro_action_t action = RandomPrimitiveAction(Action, input);
+  int observation;
+  double immediateReward;
+  bool terminal =
+      Simulator.Step(*state, action, observation, immediateReward);
+  UpdateConnection(input.last_observation, observation);
+
+  size_t belief_hash = 0;
+  if (Simulator.mStateAbstraction) { // whole history
+    belief_hash = input.belief_hash;
+    boost::hash_combine(belief_hash, action);
+    boost::hash_combine(belief_hash, observation);
+  } else { // memory size = 1
+    boost::hash_combine(belief_hash,
+                        observation); // observation is the ground state
+    boost::hash_combine(belief_hash, depth);
+  }
+
+  if (!terminal) {
+    input_t input(belief_hash, observation);
+    result_t completion = Rollout(Action, input, state, depth+1);
+    double totalReward = immediateReward + Simulator.GetDiscount() * completion.reward;
+    return result_t(totalReward, 1 + completion.steps, completion.terminal, completion.belief_hash, completion.last_observation);
+  }
+
+  return result_t(immediateReward, 1, terminal, belief_hash, observation);
+}
+
 HierarchicalMCTS::result_t
 HierarchicalMCTS::Rollout(macro_action_t Action,
-                          const HierarchicalMCTS::input_t &input, STATE *&state,
-                          int depth) {
+                                      const HierarchicalMCTS::input_t &input, STATE *&state,
+                                      int depth)
+{
   if (Params.Verbose >= 3) {
     cerr << "Rollout" << endl;
     PRINT_VALUE(Action);
@@ -460,34 +504,50 @@ HierarchicalMCTS::Rollout(macro_action_t Action,
       boost::hash_combine(belief_hash, depth);
     }
     return result_t(immediateReward, 1, terminal, belief_hash, observation);
-  } else {
-    if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
-      return result_t(0.0, 0, false, input.belief_hash, input.last_observation);
-    }
-
-    int action;
-    do {
-      action = SimpleRNG::ins().Sample(mSubTasks[Action]);
-    } while (Terminate(action, input.last_observation) ||
-             !Applicable(input.last_observation, action));
-
-    auto subtask = Rollout(action, input, state,
-                           depth); // history and state will be updated
-    int steps = subtask.steps;
-    result_t completion(0.0, 0, false, subtask.belief_hash,
-                        subtask.last_observation);
-    if (!subtask.terminal) {
-      input_t input(subtask.belief_hash, subtask.last_observation);
-      completion = Rollout(Action, input, state, depth + steps);
-    }
-
-    double totalReward =
-        subtask.reward +
-        pow(Simulator.GetDiscount(), steps) * completion.reward;
-    steps += completion.steps;
-    return result_t(totalReward, steps, subtask.terminal || completion.terminal,
-                    completion.belief_hash, completion.last_observation);
   }
+  else {
+    if (Params.Polling) {
+      return PollingRollout(Action, input, state, depth);
+    }
+    else {
+      return HierarchicalRollout(Action, input, state, depth);
+    }
+  }
+}
+
+HierarchicalMCTS::result_t
+HierarchicalMCTS::HierarchicalRollout(macro_action_t Action,
+                          const HierarchicalMCTS::input_t &input, STATE *&state,
+                          int depth)
+{
+  assert(!Primitive(Action));
+
+  if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
+    return result_t(0.0, 0, false, input.belief_hash, input.last_observation);
+  }
+
+  int action;
+  do {
+    action = SimpleRNG::ins().Sample(mSubTasks[Action]);
+  } while (Terminate(action, input.last_observation) ||
+           !Applicable(input.last_observation, action));
+
+  auto subtask = Rollout(action, input, state,
+                                     depth); // history and state will be updated
+  int steps = subtask.steps;
+  result_t completion(0.0, 0, false, subtask.belief_hash,
+                      subtask.last_observation);
+  if (!subtask.terminal) {
+    input_t input(subtask.belief_hash, subtask.last_observation);
+    completion = Rollout(Action, input, state, depth + steps);
+  }
+
+  double totalReward =
+      subtask.reward +
+      pow(Simulator.GetDiscount(), steps) * completion.reward;
+  steps += completion.steps;
+  return result_t(totalReward, steps, subtask.terminal || completion.terminal,
+                  completion.belief_hash, completion.last_observation);
 }
 
 macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,

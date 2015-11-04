@@ -25,6 +25,7 @@ public:
     double TimeOutPerAction;
     double Converged;
     double CacheRate;
+    bool Polling;
   };
 
   MCTS(const SIMULATOR &simulator, const PARAMS &params);

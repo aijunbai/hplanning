@@ -8,11 +8,7 @@
 #include "continousrooms.h"
 #include "tag.h"
 #include "experiment.h"
-#include "statistic.h"
-#include "utils.h"
-#include "distribution.h"
 #include "redundantobject.h"
-#include <boost/program_options.hpp>
 
 using namespace std;
 using namespace boost::program_options;
@@ -98,11 +94,14 @@ int main(int argc, char *argv[]) {
       "thompsonsampling", value<bool>(&searchParams.ThompsonSampling),
       "use Thompson Sampling instead of UCB1")(
       "timeoutperaction", value<double>(&searchParams.TimeOutPerAction),
-      "timeout per action (seconds)")("converged",
-                                      value<double>(&searchParams.Converged),
-                                      "convergence threshold for hplanning")(
+      "timeout per action (seconds)")(
+      "converged",
+      value<double>(&searchParams.Converged),
+      "convergence threshold for hplanning")(
       "cacherate", value<double>(&searchParams.CacheRate),
-      "cache rate for hplanning");
+      "cache rate for hplanning")(
+      "polling", value<bool>(&searchParams.Polling),
+      "use polling rollout for hplanning");
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);
@@ -113,7 +112,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (vm.count("test") || !vm.count("test")) {
+  if (vm.count("test")) {
     cout << "Running unit tests" << endl;
     UnitTests();
   }

@@ -15,7 +15,6 @@ LEVELT=1
 LEVELR=2
 RUNS=1
 VERBOSE=2
-USEPFILTER=0
 REUSETREE=0
 MINPOWER2=10
 MAXPOWER2=10
@@ -25,6 +24,7 @@ THOMPSONSAMPLING=0
 TIMEOUTPERACTION=-1
 CONVERGED=1.0
 CACHERATE=0.9
+POLLING=1
 MAP="data/8_rooms.map"
 FAKE="false"
 
@@ -46,7 +46,7 @@ while getopts "p:s:n:t:r:R:v:u:L:H:S:P:N:h:a:T:C:c:m:F" OPTION; do
         L) MINPOWER2=$OPTARG ;;
         H) MAXPOWER2=$OPTARG ;;
         S) SEEDING=$OPTARG ;;
-        P) USEPFILTER=$OPTARG ;;
+        P) POLLING=$OPTARG ;;
         N) MINPOWER2=$OPTARG; MAXPOWER2=$OPTARG ;;
         h) TIMEOUT=`expr $OPTARG \* 3600` ;;
         T) THOMPSONSAMPLING=$OPTARG ;;
@@ -72,7 +72,7 @@ run ./d2ng-pomcp --outputfile $OUTPUT \
             --number $NUM \
             --verbose $VERBOSE \
             --reusetree $REUSETREE \
-            --useparticlefilter $USEPFILTER \
+            --polling $POLLING \
             --treeknowledge $LEVELT \
             --rolloutknowledge $LEVELR \
             --mindoubles $MINPOWER2 \

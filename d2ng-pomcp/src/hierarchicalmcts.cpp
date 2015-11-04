@@ -157,19 +157,19 @@ bool HierarchicalMCTS::data_t::optimal_prob_at_least(macro_action_t a,
 }
 
 void HierarchicalMCTS::UnitTest() {
-  assert(data_t::greater_prob(1, 2, 3, 4) == 0.0);
+  assert(data_t::greater_prob(1, 2, 3, 4) == 1.0);
   assert(data_t::greater_prob(1, 4, 3, 4) == 2.5 / 3.0);
   assert(data_t::greater_prob(1, 5, 3, 4) == 2.5 / 4.0);
   assert(data_t::greater_prob(3, 5, 3, 4) == 0.5 / 2.0);
-  assert(data_t::greater_prob(5, 6, 3, 4) == 1.0);
+  assert(data_t::greater_prob(5, 6, 3, 4) == 0.0);
 }
 
 /**
  * @brief HierarchicalMCTS::data_t::greater_prob
- * @param x1 x \in [x1, x2]
- * @param x2 x \in [x1, x2]
- * @param y1 y \in [y1, y2]
- * @param y2 y \in [y1, y2]
+ * @param x1: x \in [x1, x2]
+ * @param x2: x \in [x1, x2]
+ * @param y1: y \in [y1, y2]
+ * @param y2: y \in [y1, y2]
  * @return probability that y >= x
  */
 double HierarchicalMCTS::data_t::greater_prob(double x1, double x2, double y1,
@@ -192,7 +192,7 @@ double HierarchicalMCTS::data_t::greater_prob(double x1, double x2, double y1,
     double prob = area / (x2 - x1) / (y2 - y1);
     return MinMax(0.0, prob, 1.0);
   } else {
-    return 1.0;
+    return 0.0;
   }
 }
 

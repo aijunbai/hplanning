@@ -113,10 +113,9 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (vm.count("test")) {
+  if (vm.count("test") || !vm.count("test")) {
     cout << "Running unit tests" << endl;
     UnitTests();
-    return 0;
   }
 
   if (vm.count("problem") == 0) {

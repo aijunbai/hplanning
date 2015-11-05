@@ -43,7 +43,6 @@ void EXPERIMENT::Run() {
     double reward;
 
     boost::timer timer_per_action;
-    mcts->Search();
     int action = mcts->SelectAction(); // 用 Monte Carlo 方法选择一个动作
     Results.TimePerAction.Add(timer_per_action.elapsed());
 

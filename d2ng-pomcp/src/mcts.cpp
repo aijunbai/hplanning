@@ -28,7 +28,8 @@ MCTS::PARAMS::PARAMS()
     TimeOutPerAction(-1),
     Converged(1.0),
     CacheRate(0.0),
-    Polling(true) {}
+    Polling(true),
+    Stack(false) {}
 
 
 MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)

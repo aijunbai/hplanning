@@ -111,6 +111,7 @@ bool FlatMCTS::Update(int action, int observation, STATE & state)
 }
 
 int FlatMCTS::SelectAction() {
+  Search();
   int action = Params.ThompsonSampling? ThompsonSampling(Root, false, 0): GreedyUCB(Root, false);
 
   if (Params.Verbose >= 1) {

@@ -101,7 +101,9 @@ int main(int argc, char *argv[]) {
       "cacherate", value<double>(&searchParams.CacheRate),
       "cache rate for hplanning")(
       "polling", value<bool>(&searchParams.Polling),
-      "use polling rollout for hplanning");
+      "use polling rollout for hplanning")(
+      "stack", value<bool>(&searchParams.Stack),
+      "use call stack for hplanning");
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);

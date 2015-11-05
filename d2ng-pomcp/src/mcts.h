@@ -26,6 +26,7 @@ public:
     double Converged;
     double CacheRate;
     bool Polling;
+    bool Stack;
   };
 
   MCTS(const SIMULATOR &simulator, const PARAMS &params);

@@ -21,8 +21,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
 
   if (Simulator.mActionAbstraction) {
     assert(Simulator.GetNumObservations() > 0);
-    mGoals[mRootTask].insert(0); // ground target state assumed to be in macro
-    // state 0 for rooms domain
+    mGoals[mRootTask].insert(0);  // goal for root task
 
     for (int o = 0; o < Simulator.GetNumObservations(); ++o) {
       mSubTasks[MacroAction(o)] = vector<macro_action_t>();
@@ -71,6 +70,8 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
       PRINT_VALUE(mApplicable);
     }
   }
+
+  mCallStack.push(mRootTask);
 }
 
 HierarchicalMCTS::~HierarchicalMCTS() {
@@ -254,7 +255,68 @@ bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
 
 int HierarchicalMCTS::SelectAction() {
   input_t input(History.BeliefHash(), History.LastObservation());
-  return GreedyPrimitiveAction(mRootTask, input);
+
+  if (Simulator.mActionAbstraction) {
+    if (input.last_observation == 0) {  // enter target macro state
+      if (Params.Verbose >= 2) {
+        cerr << "Cancelling action abstraction" << endl;
+      }
+
+      mSubTasks[mRootTask].clear();
+      for (int a = 0; a < Simulator.GetNumActions(); ++a) {
+        mSubTasks[mRootTask].push_back(a);
+      }
+
+      for (auto it = mGoals.begin(); it != mGoals.end(); ++it) {
+        it->second.erase(0);
+      }
+
+      while (mCallStack.size()) {
+        mCallStack.pop();
+      }
+      mCallStack.push(mRootTask);
+      const_cast<SIMULATOR&>(Simulator).mActionAbstraction = false;
+    }
+    else {
+      if (Params.Stack) {
+        while (mCallStack.size() &&
+              (Terminate(mCallStack.top(), input.last_observation) ||
+              Primitive(mCallStack.top()))) {
+          mCallStack.pop();
+        }
+
+        if (mCallStack.empty()) {
+          mCallStack.push(mRootTask);
+        }
+      }
+    }
+  }
+
+  if (Params.Verbose >= 2) {
+    cerr << "Searching for task " << mCallStack.top() << endl;
+  }
+
+  Search();
+
+  if (Simulator.mActionAbstraction) {
+    if (Params.Stack) {
+      if (input.last_observation != -1) {
+        while (!Primitive(mCallStack.top())) {
+          data_t *data = Query(mCallStack.top(), input.belief_hash);
+          if (data) {
+            int subtask = GreedyUCB(mCallStack.top(), input.last_observation, *data, false);
+            mCallStack.push(subtask);
+          }
+        }
+      }
+    }
+  }
+
+  if (Params.Verbose >= 2) {
+    cerr << "Executing task " << mCallStack.top() << endl;
+  }
+  int action = GreedyPrimitiveAction(mCallStack.top(), input);
+  return action;
 }
 
 int HierarchicalMCTS::RandomPrimitiveAction(macro_action_t Action,
@@ -263,8 +325,8 @@ int HierarchicalMCTS::RandomPrimitiveAction(macro_action_t Action,
   if (Primitive(Action)) {
     return Action;
   }
-  macro_action_t action;
 
+  macro_action_t action;
   do {
     action = SimpleRNG::ins().Sample(mSubTasks[Action]);
   } while (Terminate(action, input.last_observation) ||
@@ -314,18 +376,8 @@ void HierarchicalMCTS::SearchImp() {
   STATE *state = mRootSampling.CreateSample(Simulator);
   Simulator.Validate(*state);
 
-  if (Terminate(mRootTask, History.LastObservation())) {
-    if (Params.Verbose >= 2) {
-      cerr << "Removing observation " << History.Back().Observation
-      << " from task graph" << endl;
-    }
-    for (auto it = mGoals.begin(); it != mGoals.end(); ++it) {
-      it->second.erase(History.Back().Observation);
-    }
-  }
-
   input_t input(History.BeliefHash(), History.LastObservation());
-  SearchTree(mRootTask, input, state, 0);
+  SearchTree(mCallStack.top(), input, state, 0);
 
   Simulator.FreeState(state);
   assert(History.Size() == historyDepth);

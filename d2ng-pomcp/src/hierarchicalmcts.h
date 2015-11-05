@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <stack>
 
 typedef int macro_action_t;
 
@@ -152,10 +153,10 @@ public:
 
 private:
   std::unordered_map<macro_action_t, std::vector<macro_action_t>> mSubTasks;
-  std::unordered_map<macro_action_t, std::unordered_set<int>>
-      mGoals; // target observation for subtasks
+  std::unordered_map<macro_action_t, std::unordered_set<int>> mGoals; // terminal observation for subtasks
   std::unordered_map<int, std::unordered_map<macro_action_t, bool>> mApplicable;
   const macro_action_t mRootTask; // root task
+  std::stack<macro_action_t> mCallStack;
   std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t *>>
       mTree;
   BELIEF_STATE mRootSampling;

@@ -306,6 +306,9 @@ int HierarchicalMCTS::SelectAction() {
             int subtask = GreedyUCB(mCallStack.top(), input.last_observation, *data, false);
             mCallStack.push(subtask);
           }
+          else {
+            break;
+          }
         }
       }
     }

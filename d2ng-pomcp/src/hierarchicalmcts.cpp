@@ -9,6 +9,7 @@ std::unordered_map<std::size_t, HierarchicalMCTS::belief_t>
 STATISTIC HierarchicalMCTS::mCacheRate;
 STATISTIC HierarchicalMCTS::mCacheDepth;
 STATISTIC HierarchicalMCTS::mCacheStep;
+
 HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
                                    const PARAMS &params)
     : MCTS(simulator, params), mRootTask(-1) {
@@ -274,7 +275,6 @@ int HierarchicalMCTS::SelectAction() {
         mCallStack.pop();
       }
       mCallStack.push(mRootTask);
-      const_cast<SIMULATOR&>(Simulator).mActionAbstraction = false;
     }
     else {
       if (Params.Stack) {

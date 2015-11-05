@@ -275,7 +275,6 @@ int HierarchicalMCTS::SelectAction() {
         mCallStack.pop();
       }
       mCallStack.push(mRootTask);
-      const_cast<SIMULATOR&>(Simulator).mActionAbstraction = false;
     }
     else {
       if (Params.Stack) {

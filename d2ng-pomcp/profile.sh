@@ -5,8 +5,7 @@
 # You'll need to install the following packages: valgrind, kcachegrind
 
 ./clear.sh
-make
-./run.sh
+./run.sh -F
 
 if [ ! -d "profile_results" ]; then
     mkdir profile_results

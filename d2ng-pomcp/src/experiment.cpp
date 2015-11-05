@@ -43,7 +43,6 @@ void EXPERIMENT::Run() {
     double reward;
 
     boost::timer timer_per_action;
-    mcts->Search();
     int action = mcts->SelectAction(); // 用 Monte Carlo 方法选择一个动作
     Results.TimePerAction.Add(timer_per_action.elapsed());
 
@@ -73,8 +72,7 @@ void EXPERIMENT::Run() {
     }
 
     outOfParticles = !mcts->Update(
-        action, observation, reward,
-        *state); //更新历史信息，得到新的 Root 节点，设置好初始信念状态
+        action, observation, *state); //更新历史信息，得到新的 Root 节点，设置好初始信念状态
     if (outOfParticles) {
       assert(!Real.mHierarchicalPlanning);
       break; // Out of particles, finishing episode with SelectRandom

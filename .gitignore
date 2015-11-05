@@ -36,3 +36,8 @@ experiment
 valgrind.txt
 callgrind.txt
 result
+.idea/
+Debug/
+Release/
+backup/
+

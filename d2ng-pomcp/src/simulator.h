@@ -90,8 +90,7 @@ class SIMULATOR {
   int GetNumObservations() const { return NumObservations; }
   bool IsEpisodic() const { return false; }
   double GetDiscount() const { return Discount; }
-  double GetHorizon(double accuracy,
-                    int undiscountedHorizon = 100) const;  // XXX 这是怎么算的？
+  double GetHorizon(double accuracy, int undiscountedHorizon = 100) const;
   double GetRewardRange() const { return RewardRange; }
 
  protected:

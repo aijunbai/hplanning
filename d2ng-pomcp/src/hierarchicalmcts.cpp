@@ -614,9 +614,8 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
 
     if (ucb) {
       q += FastUCB(N, n);
+      assert(n != 0 || q == Infinity);
     }
-
-    assert(n != 0 || q == Infinity);
 
     if (q >= bestq) {
       if (q > bestq)

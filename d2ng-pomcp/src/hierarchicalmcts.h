@@ -127,6 +127,8 @@ public:
     static std::unordered_map<std::size_t, belief_t> beliefpool;
   };
 
+
+
 public:
   HierarchicalMCTS(const SIMULATOR &simulator, const PARAMS &params);
 

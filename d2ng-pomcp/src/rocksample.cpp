@@ -480,8 +480,8 @@ bool FieldVisionRockSample::LocalMove(STATE &state, const HISTORY & /*history*/,
   return true;
 }
 
-void FieldVisionRockSample::DisplayObservation(const STATE &, int observation,
-                                               std::ostream &ostr) const {
-  std::bitset<32> x(observation);
-  ostr << "observation: " << x << endl;
+void FieldVisionRockSample::DisplayObservation(const STATE &, int /*observation*/,
+                                               std::ostream &/*ostr*/) const {
+  //std::bitset<32> x(observation);
+  //ostr << "observation: " << x << endl;
 }

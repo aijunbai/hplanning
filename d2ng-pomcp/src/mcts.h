@@ -5,8 +5,7 @@
 #include "statistic.h"
 #include "dot_graph.h"
 
-class MCTS
-{
+class MCTS {
 public:
   struct PARAMS {
     PARAMS();
@@ -30,30 +29,36 @@ public:
   };
 
   MCTS(const SIMULATOR &simulator, const PARAMS &params);
+
   virtual ~MCTS();
 
   virtual int SelectAction() = 0;
+
   virtual void SearchImp() = 0;
+
   virtual bool Update(int action, int observation, STATE &state) = 0;  // update history and ground state (if possible)
 
   void Search();
+
   const HISTORY &GetHistory() const { return History; }
+
   static void InitFastUCB(double exploration);
 
   // Fast lookup table for UCB
   static const int UCB_N = 1 << 14, UCB_n = 1 << 7;
   static double UCB[UCB_N][UCB_n];
   static bool InitialisedFastUCB;
+
   double FastUCB(int N, int n) const;
 
 protected:
- const SIMULATOR &Simulator;
- HISTORY History;
+  const SIMULATOR &Simulator;
+  HISTORY History;
 
 public:
- PARAMS Params;
- int TreeDepth;
- int TreeSize;
+  PARAMS Params;
+  int TreeDepth;
+  int TreeSize;
 };
 
 #endif // METAMCTS_H

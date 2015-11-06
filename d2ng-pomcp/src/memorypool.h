@@ -5,8 +5,8 @@
 #include <ostream>
 
 class MEMORY_OBJECT {
- public:
-  MEMORY_OBJECT() : Allocated(false) {}
+public:
+  MEMORY_OBJECT() : Allocated(false) { }
 
   const MEMORY_OBJECT &operator=(const MEMORY_OBJECT &) { return *this; }
 
@@ -16,20 +16,20 @@ class MEMORY_OBJECT {
 
   bool IsAllocated() const { return Allocated; }
 
- private:
+private:
   bool Allocated;
 };
 
-template <class T>
+template<class T>
 class MEMORY_POOL {
- public:
-  MEMORY_POOL() : NumAllocated(0) {}
+public:
+  MEMORY_POOL() : NumAllocated(0) { }
 
   ~MEMORY_POOL() { DeleteAll(); }
 
   T *Construct() {
     T *obj = Allocate();
-    return new (obj) T;
+    return new(obj) T;
   }
 
   void Destroy(T *obj) {
@@ -75,7 +75,7 @@ class MEMORY_POOL {
 
   int GetNumAllocated() const { return NumAllocated; }
 
- private:
+private:
   struct CHUNK {
     static const int Size = 4096;
 

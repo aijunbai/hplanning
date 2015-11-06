@@ -1,5 +1,4 @@
 #include "coord.h"
-#include "utils.h"
 
 namespace coord {
 const COORD Null(-1, -1);
@@ -12,7 +11,7 @@ const COORD SouthEast(1, -1);
 const COORD SouthWest(-1, -1);
 const COORD NorthWest(-1, 1);
 
-const COORD Compass[8] = {North,     East,      South,     West,
+const COORD Compass[8] = {North, East, South, West,
                           NorthEast, SouthEast, SouthWest, NorthWest};
 
 const char *CompassString[8] = {"N", "E", "S", "W", "NE", "SE", "SW", "NW"};

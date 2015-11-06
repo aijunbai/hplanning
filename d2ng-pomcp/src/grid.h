@@ -4,9 +4,9 @@
 #include "coord.h"
 #include "distribution.h"
 
-template <class T>
+template<class T>
 class GRID {
- public:
+public:
   GRID(int xsize = 0, int ysize = 0) : XSize(xsize), YSize(ysize) {
     Grid.resize(xsize * ysize);
   }
@@ -18,7 +18,9 @@ class GRID {
   }
 
   int GetXSize() const { return XSize; }
+
   int GetYSize() const { return YSize; }
+
   int GetSize() const { return XSize * YSize; }
 
   T &operator()(int index) {
@@ -102,12 +104,12 @@ class GRID {
                  SimpleRNG::ins().Random(YSize));
   }
 
- public:
+public:
   int XSize, YSize;
   std::vector<T> Grid;
 };
 
-template <class T>
+template<class T>
 inline std::size_t hash_value(const GRID<T> &v) {
   using boost::hash_value;
   using boost::hash_combine;

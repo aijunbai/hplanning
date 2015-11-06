@@ -30,9 +30,8 @@ inline void RESULTS::Clear() {
 }
 
 
-
 class EXPERIMENT {
- public:
+public:
   struct PARAMS {
     PARAMS();
 
@@ -51,10 +50,12 @@ class EXPERIMENT {
              MCTS::PARAMS &searchParams);
 
   void Run();
+
   void MultiRun();
+
   void DiscountedReturn();
 
- private:
+private:
   const SIMULATOR &Real;
   const SIMULATOR &Simulator;
   EXPERIMENT::PARAMS &ExpParams;
@@ -63,7 +64,6 @@ class EXPERIMENT {
 
   std::ofstream OutputFile;
 };
-
 
 
 #endif  // EXPERIMENT_H

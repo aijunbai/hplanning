@@ -11,7 +11,7 @@
 struct COORD {
   int X, Y;
 
-  COORD(int x = -1, int y = -1) : X(x), Y(y) {}
+  COORD(int x = -1, int y = -1) : X(x), Y(y) { }
 
   bool Valid() const { return X >= 0 && Y >= 0; }
 
@@ -54,40 +54,51 @@ inline std::size_t hash_value(const COORD &v) {
 
 namespace std {
 template<>
-struct hash<COORD>
-{
+struct hash<COORD> {
   size_t operator()(const COORD &o) const {
     return hash_value(o);
   }
 };
 }
 
-class Vector
-{
+class Vector {
 public:
-  explicit Vector(const double x = 0.0, const double y = 0.0): mX(x), mY(y) {
+  explicit Vector(const double x = 0.0, const double y = 0.0) : mX(x), mY(y) {
     assertion();
   }
 
-  Vector(const Vector & v) : mX(v.X()), mY(v.Y()) {
+  Vector(const Vector &v) : mX(v.X()), mY(v.Y()) {
     assertion();
   }
 
-  const Vector & operator=(const Vector & v) {
+  const Vector &operator=(const Vector &v) {
     SetX(v.X());
     SetY(v.Y());
 
     return *this;
   }
 
-  const double & X() const { return mX; }
-  const double & Y() const { return mY; }
+  const double &X() const { return mX; }
 
-  void SetX(const double & x) { mX = x; assert(!IsNan(mX)); }
-  void SetY(const double & y) { mY = y; assert(!IsNan(mY)); }
+  const double &Y() const { return mY; }
 
-  void SetValue(const double & x, const double & y) { mX = x; mY = y; assertion(); }
-  void SetValuePolar(const double & r, const AngleDeg & theta) {
+  void SetX(const double &x) {
+    mX = x;
+    assert(!IsNan(mX));
+  }
+
+  void SetY(const double &y) {
+    mY = y;
+    assert(!IsNan(mY));
+  }
+
+  void SetValue(const double &x, const double &y) {
+    mX = x;
+    mY = y;
+    assertion();
+  }
+
+  void SetValuePolar(const double &r, const AngleDeg &theta) {
     SinCosT value = SinCos(theta);
 
     mX = r * Cos(value);
@@ -97,24 +108,53 @@ public:
   }
 
   Vector operator-() const { return Vector(-mX, -mY); }
+
   Vector operator+(const Vector &v) const { return Vector(mX + v.mX, mY + v.mY); }
+
   Vector operator-(const Vector &v) const { return Vector(mX - v.mX, mY - v.mY); }
+
   Vector operator*(const double &a) const { return Vector(mX * a, mY * a); }
+
   Vector operator/(const double &a) const { return Vector(mX / a, mY / a); }
 
-  void operator+=(const Vector &v) { mX += v.mX; mY += v.mY; assertion(); }
-  void operator-=(const Vector &v) { mX -= v.mX; mY -= v.mY; assertion(); }
-  void operator*=(const double &a) { mX *= a; mY *= a; assertion(); }
-  void operator/=(const double &a) { mX /= a; mY /= a; assertion(); }
+  void operator+=(const Vector &v) {
+    mX += v.mX;
+    mY += v.mY;
+    assertion();
+  }
+
+  void operator-=(const Vector &v) {
+    mX -= v.mX;
+    mY -= v.mY;
+    assertion();
+  }
+
+  void operator*=(const double &a) {
+    mX *= a;
+    mY *= a;
+    assertion();
+  }
+
+  void operator/=(const double &a) {
+    mX /= a;
+    mY /= a;
+    assertion();
+  }
 
   bool operator!=(const Vector &v) const { return (mX != v.mX) || (mY != v.mY); }
+
   bool operator==(const Vector &v) const { return (mX == v.mX) && (mY == v.mY); }
 
-  friend std::ostream& operator<<(std::ostream & os, const Vector & v) { return os << "(" << v.mX << ", " << v.mY << ")"; }
+  friend std::ostream &operator<<(std::ostream &os, const Vector &v) {
+    return os << "(" << v.mX << ", " << v.mY << ")";
+  }
 
   double Mod() const { return Sqrt(mX * mX + mY * mY); }
+
   double Mod2() const { return mX * mX + mY * mY; }
+
   double Dist(const Vector &v) const { return (*this - v).Mod(); }
+
   double Dist2(const Vector &v) const { return (*this - v).Mod2(); }
 
   AngleDeg Dir() const { return ATan2(mY, mX); }
@@ -122,8 +162,7 @@ public:
   /**
    * \return a Vector with length r at the same direction, or Vector (0, 0) if the original Vector was (0, 0).
    */
-  Vector Normalize(const double r = 1.0) const
-  {
+  Vector Normalize(const double r = 1.0) const {
     const double mod = Mod();
 
     if (mod > 0.0) {
@@ -136,13 +175,11 @@ public:
   /**
    * \return a Vector rotated by angle.
    */
-  Vector Rotate(const AngleDeg & angle) const
-  {
+  Vector Rotate(const AngleDeg &angle) const {
     return Rotate(SinCos(angle));
   }
 
-  Vector Rotate(const SinCosT & value) const
-  {
+  Vector Rotate(const SinCosT &value) const {
     return Vector(mX * Cos(value) - mY * Sin(value), mY * Cos(value) + mX * Sin(value));
   }
 
@@ -151,9 +188,8 @@ public:
    * @param point to be checked.
    * return true when they are approximate equal, false else;
    */
-  bool ApproxEqual(const Vector & v) const
-  {
-    return fabs(mX-v.X()) < FLOAT_EPS && fabs(mY-v.Y()) < FLOAT_EPS;
+  bool ApproxEqual(const Vector &v) const {
+    return fabs(mX - v.X()) < FLOAT_EPS && fabs(mY - v.Y()) < FLOAT_EPS;
   }
 
 public:
@@ -167,8 +203,7 @@ private:
   double mY;
 };
 
-inline Vector Polar2Vector(const double & mod, const AngleDeg & ang)
-{
+inline Vector Polar2Vector(const double &mod, const AngleDeg &ang) {
   SinCosT value = SinCos(ang);
   return Vector(mod * Cos(value), mod * Sin(value));
 }
@@ -190,8 +225,7 @@ inline std::size_t hash_value(const Vector &v) {
 
 namespace std {
 template<>
-struct hash<Vector>
-{
+struct hash<Vector> {
   size_t operator()(const Vector &o) const {
     return hash_value(o);
   }
@@ -217,7 +251,9 @@ extern const COORD Compass[8];
 extern const char *CompassString[8];
 
 inline int Clockwise(int dir) { return (dir + 1) % 4; }
+
 inline int Opposite(int dir) { return (dir + 2) % 4; }
+
 inline int Anticlockwise(int dir) { return (dir + 3) % 4; }
 
 inline double EuclideanDistance(const COORD &lhs, const COORD &rhs) {

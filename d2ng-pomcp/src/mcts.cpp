@@ -1,11 +1,5 @@
 #include "mcts.h"
-#include "testsimulator.h"
-#include "statistic.h"
 #include "boost/timer.hpp"
-#include "distribution.h"
-
-#include <math.h>
-#include <algorithm>
 
 using namespace std;
 using namespace UTILS;
@@ -14,35 +8,32 @@ double MCTS::UCB[UCB_N][UCB_n];
 bool MCTS::InitialisedFastUCB = false;
 
 MCTS::PARAMS::PARAMS()
-  : Verbose(0),
-    MaxDepth(100),
-    NumSimulations(1000),
-    NumStartStates(1000),
-    UseTransforms(true),
-    UseParticleFilter(false),
-    NumTransforms(0),
-    MaxAttempts(0),
-    ExplorationConstant(1.0),
-    ReuseTree(false),
-    ThompsonSampling(false),
-    TimeOutPerAction(-1),
-    Converged(1.0),
-    CacheRate(0.0),
-    Polling(true),
-    Stack(false) {}
+    : Verbose(0),
+      MaxDepth(100),
+      NumSimulations(1000),
+      NumStartStates(1000),
+      UseTransforms(true),
+      UseParticleFilter(false),
+      NumTransforms(0),
+      MaxAttempts(0),
+      ExplorationConstant(1.0),
+      ReuseTree(false),
+      ThompsonSampling(false),
+      TimeOutPerAction(-1),
+      Converged(1.0),
+      CacheRate(0.0),
+      Polling(true),
+      Stack(false) { }
 
 
 MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
-  :Simulator(simulator), Params(params), TreeDepth(0), TreeSize(0)
-{
+    : Simulator(simulator), Params(params), TreeDepth(0), TreeSize(0) {
 }
 
-MCTS::~MCTS()
-{
+MCTS::~MCTS() {
 }
 
-void MCTS::InitFastUCB(double exploration)
-{
+void MCTS::InitFastUCB(double exploration) {
   cout << "Initialising fast UCB table... ";
 
   for (int N = 0; N < UCB_N; ++N)
@@ -56,8 +47,7 @@ void MCTS::InitFastUCB(double exploration)
   InitialisedFastUCB = true;
 }
 
-double MCTS::FastUCB(int N, int n) const
-{
+double MCTS::FastUCB(int N, int n) const {
   if (InitialisedFastUCB && N < UCB_N && n < UCB_n)
     return UCB[N][n];
 
@@ -69,8 +59,7 @@ double MCTS::FastUCB(int N, int n) const
 }
 
 
-void MCTS::Search()
-{
+void MCTS::Search() {
   TreeDepth = 0;
   TreeSize = 0;
 

@@ -1,17 +1,11 @@
 #include "flatmcts.h"
 #include "testsimulator.h"
-#include "statistic.h"
-#include "boost/timer.hpp"
-#include "distribution.h"
-
-#include <math.h>
-#include <algorithm>
 
 using namespace std;
 using namespace UTILS;
 
 FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params)
-  : MCTS(simulator, params) {
+    : MCTS(simulator, params) {
   STATE *state = Simulator.CreateStartState();  //可能的开始状态
 
   Root = ExpandNode(state, History);  //生成根节点并初始化
@@ -19,7 +13,7 @@ FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params)
 
   for (int i = 1; i < Params.NumStartStates; i++) {
     Root->Beliefs().AddSample(
-          Simulator.CreateStartState());  //生成初始信念空间（样本集合）
+        Simulator.CreateStartState());  //生成初始信念空间（样本集合）
   }
   if (Params.Verbose >= 1) Simulator.DisplayBeliefs(Root->Beliefs(), cout);
 
@@ -33,8 +27,7 @@ FlatMCTS::~FlatMCTS() {
   assert(VNODE::GetNumAllocated() == 0);
 }
 
-bool FlatMCTS::Update(int action, int observation, STATE & state)
-{
+bool FlatMCTS::Update(int action, int observation, STATE &state) {
   History.Add(action, observation);  //更新历史
 
   if (Simulator.mFullyObservable) {  // running an MDP in fact in cases of hplanning
@@ -58,7 +51,7 @@ bool FlatMCTS::Update(int action, int observation, STATE & state)
     if (vnode) {
       if (Params.Verbose >= 1)
         cout << "Matched " << vnode->Beliefs().GetNumSamples() << " states"
-             << endl;
+        << endl;
       beliefs.Copy(vnode->Beliefs(), Simulator);  //把 vnode 中的 belief 复制出来
     } else {
       if (Params.Verbose >= 1) cout << "No matching node found" << endl;
@@ -112,7 +105,7 @@ bool FlatMCTS::Update(int action, int observation, STATE & state)
 
 int FlatMCTS::SelectAction() {
   Search();
-  int action = Params.ThompsonSampling? ThompsonSampling(Root, false, 0): GreedyUCB(Root, false);
+  int action = Params.ThompsonSampling ? ThompsonSampling(Root, false, 0) : GreedyUCB(Root, false);
 
   if (Params.Verbose >= 1) {
     DisplayValue(1, cerr);
@@ -134,7 +127,7 @@ void FlatMCTS::SearchImp() {
   History.Truncate(historyDepth);
 }
 
-int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
+int FlatMCTS::GreedyUCB(VNODE *vnode, bool ucb) const //argmax_a {Q[a]}
 {
   static std::vector<int> besta;
   besta.clear();
@@ -145,7 +138,7 @@ int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
     double q;
     int n;
 
-    QNODE& qnode = vnode->Child(action);
+    QNODE &qnode = vnode->Child(action);
 
     if (!qnode.Applicable()) {  //非合法动作
       continue;
@@ -158,8 +151,7 @@ int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
       q += FastUCB(N, n);
     }
 
-    if (q >= bestq)
-    {
+    if (q >= bestq) {
       if (q > bestq)
         besta.clear();
       bestq = q;
@@ -172,7 +164,7 @@ int FlatMCTS::GreedyUCB(VNODE* vnode, bool ucb) const //argmax_a {Q[a]}
 }
 
 double FlatMCTS::SimulateV(STATE &state, VNODE *vnode, int depth) {
-  int action = Params.ThompsonSampling? ThompsonSampling(vnode, true, depth): GreedyUCB(vnode, true);
+  int action = Params.ThompsonSampling ? ThompsonSampling(vnode, true, depth) : GreedyUCB(vnode, true);
 
   TreeDepth = max(TreeDepth, depth);
   TreeSize += 1;
@@ -330,7 +322,7 @@ double FlatMCTS::QValue(QNODE &qnode, bool sampling, int depth) const  //改成�
     const std::vector<std::pair<int, double>> &observations =
         qnode.TS.Observation.ThompsonSampling(sampling);  //得到可能的观察分布
     for (std::vector<std::pair<int, double>>::const_iterator it =
-         observations.begin();
+        observations.begin();
          it != observations.end(); ++it) {
       qvalue += it->second * HValue(qnode.Child(it->first), sampling, depth);
     }
@@ -342,7 +334,7 @@ double FlatMCTS::QValue(QNODE &qnode, bool sampling, int depth) const  //改成�
     const std::vector<std::pair<double, double>> &rewards =
         qnode.TS.ImmediateReward.ThompsonSampling(sampling);  //得到可能的立即收益分布
     for (std::vector<std::pair<double, double>>::const_iterator it =
-         rewards.begin();
+        rewards.begin();
          it != rewards.end(); ++it) {
       qvalue += it->second * it->first;
     }
@@ -380,7 +372,7 @@ double FlatMCTS::Rollout(STATE &state, int depth)  //从 state 出发随机选�
 
   if (Params.Verbose >= 3)
     cout << "Ending rollout after " << numSteps << " steps, with total reward "
-         << totalReward << endl;
+    << totalReward << endl;
   return totalReward;
 }
 
@@ -395,8 +387,8 @@ void FlatMCTS::ParticleFilter(BELIEF_STATE &beliefs)  // unweighted particle fil
 
   if (Params.Verbose >= 1) {
     cout << "MCTS::ParticleFilter: last step belief size "
-         << Root->Beliefs().GetNumSamples() << ", current belief size "
-         << beliefs.GetNumSamples() << endl;
+    << Root->Beliefs().GetNumSamples() << ", current belief size "
+    << beliefs.GetNumSamples() << endl;
   }
 
   while (beliefs.GetNumSamples() < Params.NumStartStates &&
@@ -418,7 +410,7 @@ void FlatMCTS::ParticleFilter(BELIEF_STATE &beliefs)  // unweighted particle fil
 
   if (Params.Verbose >= 1) {
     cout << "MCTS::ParticleFilter: Created " << added
-         << " local transformations out of " << attempts << " attempts" << endl;
+    << " local transformations out of " << attempts << " attempts" << endl;
   }
 }
 
@@ -427,8 +419,8 @@ void FlatMCTS::AddTransforms(BELIEF_STATE &beliefs) {
 
   if (Params.Verbose >= 1) {
     cout << "MCTS::AddTransforms: last step belief size "
-         << Root->Beliefs().GetNumSamples() << ", current belief size "
-         << beliefs.GetNumSamples() << endl;
+    << Root->Beliefs().GetNumSamples() << ", current belief size "
+    << beliefs.GetNumSamples() << endl;
   }
 
   // Local transformations of state that are consistent with history
@@ -443,7 +435,7 @@ void FlatMCTS::AddTransforms(BELIEF_STATE &beliefs) {
 
   if (Params.Verbose >= 1) {
     cout << "MCTS::AddTransforms: Created " << added
-         << " local transformations out of " << attempts << " attempts" << endl;
+    << " local transformations out of " << attempts << " attempts" << endl;
   }
 }
 
@@ -472,9 +464,9 @@ void FlatMCTS::DisplayValue(int depth, ostream &ostr) const {
     QNODE &qnode = Root->Child(action);
 
     if (qnode.Applicable()) {
-      qvalues[action] = Params.ThompsonSampling?
-            QValue(qnode, false, depth):
-            qnode.UCB.Value.GetMean();
+      qvalues[action] = Params.ThompsonSampling ?
+                        QValue(qnode, false, depth) :
+                        qnode.UCB.Value.GetMean();
     }
   }
 
@@ -495,7 +487,7 @@ void FlatMCTS::UnitTestGreedy() {
   int numAct = testSimulator.GetNumActions();
 
   HISTORY History;
-  VNODE* vnode = mcts.ExpandNode(testSimulator.CreateStartState(), History);
+  VNODE *vnode = mcts.ExpandNode(testSimulator.CreateStartState(), History);
   vnode->UCB.Value.Set(1, 0);
   vnode->Child(0).UCB.Value.Set(1, 1/*, 2, 1*/);
   for (int action = 1; action < numAct; action++)
@@ -513,7 +505,7 @@ void FlatMCTS::UnitTestUCB() {
   HISTORY History;
 
   // With equal value, action with lowest count is selected
-  VNODE* vnode1 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
+  VNODE *vnode1 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
   vnode1->UCB.Value.Set(1, 0);
   for (int action = 0; action < numAct; action++)
     if (action == 3)
@@ -523,7 +515,7 @@ void FlatMCTS::UnitTestUCB() {
   assert(mcts.GreedyUCB(vnode1, true) == 3);
 
   // With high counts, action with highest value is selected
-  VNODE* vnode2 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
+  VNODE *vnode2 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
   vnode2->UCB.Value.Set(1, 0);
   for (int action = 0; action < numAct; action++)
     if (action == 3)
@@ -533,7 +525,7 @@ void FlatMCTS::UnitTestUCB() {
   assert(mcts.GreedyUCB(vnode2, true) == 3);
 
   // Action with low value and low count beats actions with high counts
-  VNODE* vnode3 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
+  VNODE *vnode3 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
   vnode3->UCB.Value.Set(1, 0);
   for (int action = 0; action < numAct; action++)
     if (action == 3)
@@ -543,7 +535,7 @@ void FlatMCTS::UnitTestUCB() {
   assert(mcts.GreedyUCB(vnode3, true) == 3);
 
   // Actions with zero count is always selected
-  VNODE* vnode4 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
+  VNODE *vnode4 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
   vnode4->UCB.Value.Set(1, 0);
   for (int action = 0; action < numAct; action++)
     if (action == 3)
@@ -560,9 +552,8 @@ void FlatMCTS::UnitTestRollout() {
   params.MaxDepth = 10;
   FlatMCTS mcts(testSimulator, params);
   double totalReward = 0.0;
-  for (int n = 0; n < mcts.Params.NumSimulations; ++n)
-  {
-    STATE* state = testSimulator.CreateStartState();
+  for (int n = 0; n < mcts.Params.NumSimulations; ++n) {
+    STATE *state = testSimulator.CreateStartState();
     totalReward += mcts.Rollout(*state, 0);
   }
   double rootValue = totalReward / mcts.Params.NumSimulations;

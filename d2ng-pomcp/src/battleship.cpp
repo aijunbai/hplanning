@@ -1,9 +1,4 @@
 #include "battleship.h"
-#include "beliefstate.h"
-#include "utils.h"
-#include "distribution.h"
-#include <math.h>
-#include <iomanip>
 
 using namespace std;
 using namespace UTILS;
@@ -116,7 +111,7 @@ bool BATTLESHIP::LocalMove(STATE &state, const HISTORY &history, int /*stepObs*/
   BATTLESHIP_STATE &bsstate = safe_cast<BATTLESHIP_STATE &>(state);
   bool refreshDiagonals = history.Size() &&
                           bsstate.Cells(history.Back().Action).Occupied !=
-                              history.Back().Observation;
+                          history.Back().Observation;
 
   int mode = SimpleRNG::ins().Random(3);
   bool success = false;
@@ -325,7 +320,7 @@ void BATTLESHIP::DisplayBeliefs(const BELIEF_STATE &beliefState,
     for (int x = 0; x < XSize; x++) {
       ostr.width(6);
       ostr.precision(2);
-      ostr << fixed << (double)counts(x, y) / beliefState.GetNumSamples();
+      ostr << fixed << (double) counts(x, y) / beliefState.GetNumSamples();
     }
     ostr << endl;
   }
@@ -334,7 +329,7 @@ void BATTLESHIP::DisplayBeliefs(const BELIEF_STATE &beliefState,
 void BATTLESHIP::DisplayState(const STATE &state, ostream &ostr) const {
   const BATTLESHIP_STATE &bsstate = safe_cast<const BATTLESHIP_STATE &>(state);
   ostr << endl
-       << "  ";
+  << "  ";
   for (int x = 0; x < XSize; x++) ostr << setw(1) << x << ' ';
   ostr << "  " << endl;
   for (int y = YSize - 1; y >= 0; y--) {
@@ -372,7 +367,7 @@ void BATTLESHIP::DisplayAction(int action, ostream &ostr) const {
   COORD actionPos = COORD(action % XSize, action / XSize);
 
   ostr << endl
-       << "  ";
+  << "  ";
   for (int x = 0; x < XSize; x++) ostr << setw(1) << x << ' ';
   ostr << "  " << endl;
   for (int y = YSize - 1; y >= 0; y--) {

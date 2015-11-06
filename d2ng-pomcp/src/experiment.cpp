@@ -8,7 +8,7 @@ using namespace std;
 EXPERIMENT::PARAMS::PARAMS()
     : NumRuns(1000), NumSteps(100000), TimeOut(3600), MinDoubles(0),
       MaxDoubles(20), TransformDoubles(-4), TransformAttempts(1000),
-      Accuracy(0.001), UndiscountedHorizon(1000) {}
+      Accuracy(0.001), UndiscountedHorizon(1000) { }
 
 EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
                        const string &outputFile, EXPERIMENT::PARAMS &expParams,
@@ -24,8 +24,8 @@ void EXPERIMENT::Run() {
   boost::timer timer;
   MCTS *mcts =
       Real.mHierarchicalPlanning
-          ? safe_cast<MCTS *>(new HierarchicalMCTS(Simulator, SearchParams))
-          : safe_cast<MCTS *>(new FlatMCTS(Simulator, SearchParams));
+      ? safe_cast<MCTS *>(new HierarchicalMCTS(Simulator, SearchParams))
+      : safe_cast<MCTS *>(new FlatMCTS(Simulator, SearchParams));
 
   double undiscountedReturn = 0.0;
   double discountedReturn = 0.0;
@@ -80,7 +80,7 @@ void EXPERIMENT::Run() {
 
     if (timer.elapsed() > ExpParams.TimeOut) {
       cout << "Timed out after " << t << " steps in " << Results.Time.GetTotal()
-           << "seconds" << endl;
+      << "seconds" << endl;
       break;
     }
   }
@@ -125,9 +125,9 @@ void EXPERIMENT::Run() {
 
   cout << "\n#End of experiment:" << endl;
   cout << "#Discounted return = " << discountedReturn
-       << ", average = " << Results.DiscountedReturn.GetMean() << endl;
+  << ", average = " << Results.DiscountedReturn.GetMean() << endl;
   cout << "#Undiscounted return = " << undiscountedReturn
-       << ", average = " << Results.UndiscountedReturn.GetMean() << endl;
+  << ", average = " << Results.UndiscountedReturn.GetMean() << endl;
 
   delete mcts;
 }
@@ -136,14 +136,14 @@ void EXPERIMENT::MultiRun() {
   for (int n = 0; n < ExpParams.NumRuns; n++) //实验次数
   {
     cout << "Starting run " << n + 1 << " with " << SearchParams.NumSimulations
-         << " simulations... " << endl;
+    << " simulations... " << endl;
 
     Run();
     assert(VNODE::GetNumAllocated() == 0);
 
     if (Results.Time.GetTotal() > ExpParams.TimeOut) {
       cout << "Timed out after " << n << " runs in " << Results.Time.GetTotal()
-           << "seconds" << endl;
+      << "seconds" << endl;
       break;
     }
   }
@@ -152,9 +152,9 @@ void EXPERIMENT::MultiRun() {
 void EXPERIMENT::DiscountedReturn() {
   cout << "Main runs" << endl;
   OutputFile << "#Simulations\tRuns\tUndiscountedReturn\tUndiscountedError\t"
-                "DiscountedReturn\tDiscountedError\t"
-                "Time\tTimePerAction\tExploredNodes\tExploredNodesError\t"
-                "ExploredDepth\tExploredDepthError\n";
+      "DiscountedReturn\tDiscountedError\t"
+      "Time\tTimePerAction\tExploredNodes\tExploredNodesError\t"
+      "ExploredDepth\tExploredDepthError\n";
 
   SearchParams.MaxDepth = Simulator.GetHorizon(
       ExpParams.Accuracy,
@@ -181,28 +181,28 @@ void EXPERIMENT::DiscountedReturn() {
     MultiRun();
 
     cout << "#Simulations = " << SearchParams.NumSimulations << endl
-         << "#Runs = " << Results.Time.GetCount() << endl
-         << "#Undiscounted return = " << Results.UndiscountedReturn.GetMean()
-         << " +- " << Results.UndiscountedReturn.GetStdErr() << endl
-         << "#Discounted return = " << Results.DiscountedReturn.GetMean()
-         << " +- " << Results.DiscountedReturn.GetStdErr() << endl
-         << "#Time = " << Results.Time.GetMean() << endl
-         << "#TimePerAction = " << Results.TimePerAction.GetMean() << endl
-         << "#ExploredNodes = " << Results.ExploredNodes.GetMean() << " +- "
-         << Results.ExploredNodes.GetStdErr() << endl
-         << "#ExploredDepth = " << Results.ExploredDepth.GetMean() << " +- "
-         << Results.ExploredDepth.GetStdErr() << endl;
+    << "#Runs = " << Results.Time.GetCount() << endl
+    << "#Undiscounted return = " << Results.UndiscountedReturn.GetMean()
+    << " +- " << Results.UndiscountedReturn.GetStdErr() << endl
+    << "#Discounted return = " << Results.DiscountedReturn.GetMean()
+    << " +- " << Results.DiscountedReturn.GetStdErr() << endl
+    << "#Time = " << Results.Time.GetMean() << endl
+    << "#TimePerAction = " << Results.TimePerAction.GetMean() << endl
+    << "#ExploredNodes = " << Results.ExploredNodes.GetMean() << " +- "
+    << Results.ExploredNodes.GetStdErr() << endl
+    << "#ExploredDepth = " << Results.ExploredDepth.GetMean() << " +- "
+    << Results.ExploredDepth.GetStdErr() << endl;
 
     OutputFile << SearchParams.NumSimulations << "\t" << Results.Time.GetCount()
-               << "\t" << Results.UndiscountedReturn.GetMean() << "\t"
-               << Results.UndiscountedReturn.GetStdErr() << "\t"
-               << Results.DiscountedReturn.GetMean() << "\t"
-               << Results.DiscountedReturn.GetStdErr() << "\t"
-               << Results.Time.GetMean() << "\t"
-               << Results.TimePerAction.GetMean() << "\t"
-               << Results.ExploredNodes.GetMean() << "\t"
-               << Results.ExploredNodes.GetStdErr() << "\t"
-               << Results.ExploredDepth.GetMean() << "\t"
-               << Results.ExploredDepth.GetStdErr() << "\t" << endl;
+    << "\t" << Results.UndiscountedReturn.GetMean() << "\t"
+    << Results.UndiscountedReturn.GetStdErr() << "\t"
+    << Results.DiscountedReturn.GetMean() << "\t"
+    << Results.DiscountedReturn.GetStdErr() << "\t"
+    << Results.Time.GetMean() << "\t"
+    << Results.TimePerAction.GetMean() << "\t"
+    << Results.ExploredNodes.GetMean() << "\t"
+    << Results.ExploredNodes.GetStdErr() << "\t"
+    << Results.ExploredDepth.GetMean() << "\t"
+    << Results.ExploredDepth.GetStdErr() << "\t" << endl;
   }
 }

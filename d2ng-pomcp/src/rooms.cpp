@@ -1,16 +1,10 @@
 #include "rooms.h"
-#include "utils.h"
-#include "distribution.h"
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <unordered_map>
 
 using namespace std;
 using namespace UTILS;
 
 ROOMS::ROOMS(const char *map_name, bool state_abstraction, bool action_abstraction)
-    :mGrid(0), mRooms(0) {
+    : mGrid(0), mRooms(0) {
   Parse(map_name);
 
   NumActions = 4;  //动作数
@@ -89,8 +83,7 @@ void ROOMS::FreeState(STATE *state) const {
   mMemoryPool.Free(rstate);
 }
 
-bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) const
-{
+bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) const {
   assert(action < NumActions);
   Validate(state);
 
@@ -196,10 +189,10 @@ void ROOMS::DisplayObservation(const STATE &, int observation,
                                std::ostream &ostr) const {
   if (mStateAbstraction)
     ostr << "Observation: "
-         << "Room " << char(observation + '0') << endl;
+    << "Room " << char(observation + '0') << endl;
   else
     ostr << "Observation: "
-         << "Coord " << mGrid->Coord(observation) << endl;
+    << "Coord " << mGrid->Coord(observation) << endl;
 }
 
 void ROOMS::DisplayAction(int action, std::ostream &ostr) const {

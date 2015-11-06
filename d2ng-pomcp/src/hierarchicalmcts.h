@@ -20,7 +20,8 @@ typedef int macro_action_t;
 class HierarchicalMCTS : public MCTS {
 public:
   struct input_t {
-    input_t(std::size_t b, int o) : belief_hash(b), last_observation(o) {}
+    input_t(std::size_t b, int o) : belief_hash(b), last_observation(o) { }
+
     std::size_t belief_hash;
     int last_observation;
   };
@@ -28,7 +29,7 @@ public:
   struct result_t {
     result_t(double r, int s, bool t, std::size_t b, int o)
         : reward(r), steps(s), global_terminal(t), belief_hash(b),
-          last_observation(o) {}
+          last_observation(o) { }
 
     double reward;
     int steps;
@@ -47,8 +48,9 @@ public:
   };
 
   struct bound_t {
-    bound_t(): lower(-Infinity), upper(Infinity) {}
-    bound_t(double l, double u) : lower(l), upper(u) {}
+    bound_t() : lower(-Infinity), upper(Infinity) { }
+
+    bound_t(double l, double u) : lower(l), upper(u) { }
 
     double lower;
     double upper;
@@ -59,17 +61,19 @@ public:
     }
 
     double width() const { return upper - lower; }
+
     double sample() const { return SimpleRNG::ins().GetUniform(lower, upper); }
 
     friend std::ostream &operator<<(std::ostream &os, const bound_t &o) {
       return os << "{"
-                << "lower=" << o.lower << ", upper=" << o.upper
+             << "lower=" << o.lower << ", upper=" << o.upper
              << ", width=" << o.width() << "}";
     }
   };
 
   struct belief_t {
-    belief_t(): size(0) {}
+    belief_t() : size(0) { }
+
     int size = 0;
     std::unordered_map<std::size_t, std::pair<STATE *, int>> samples;
 
@@ -113,42 +117,63 @@ public:
     std::vector<result_t> cache;
 
     bound_t ucb_bound(macro_action_t a, const MCTS *mcts);
+
     bool optimal_prob_at_least(macro_action_t a, const MCTS *mcts, int N, double threshold);
 
     static double greater_prob(double x1, double x2, double y1, double y2);
+
     static void clear(const SIMULATOR &simulator);
+
     static std::unordered_map<std::size_t, belief_t> beliefpool;
   };
 
 public:
   HierarchicalMCTS(const SIMULATOR &simulator, const PARAMS &params);
+
   virtual ~HierarchicalMCTS();
 
   virtual int SelectAction();
+
   virtual void SearchImp();
+
   virtual bool Update(int action, int observation, STATE &state);
 
   result_t SearchTree(macro_action_t Action, const input_t &input,
                       STATE *&state, int depth);
+
   result_t Simulate(macro_action_t action, const input_t &input, STATE *&state,
                     int depth);
+
   result_t Rollout(macro_action_t Action, const input_t &input, STATE *&state,
                    int depth);
+
   result_t PollingRollout(macro_action_t Action, const input_t &input, STATE *&state,
-                   int depth);
-  result_t HierarchicalRollout(macro_action_t Action, const input_t &input, STATE *&state,
                           int depth);
+
+  result_t HierarchicalRollout(macro_action_t Action, const input_t &input, STATE *&state,
+                               int depth);
+
   macro_action_t GreedyUCB(macro_action_t Action, int last_observation,
                            data_t &data, bool ucb);
+
   int GreedyPrimitiveAction(macro_action_t Action, const input_t &input);
+
   int RandomPrimitiveAction(macro_action_t Action, const input_t &input);
+
   bool Terminate(macro_action_t Action, int last_observation);
+
   bool Primitive(macro_action_t Action);
+
   macro_action_t MacroAction(int o);
+
   void UpdateConnection(int last_observation, int observation);
+
   bool Applicable(int last_observation, macro_action_t action);
+
   data_t *Query(macro_action_t Action, size_t belief_hash);
+
   data_t *Insert(macro_action_t Action, size_t belief_hash);
+
   void Clear();
 
   static void UnitTest();
@@ -159,10 +184,8 @@ private:
   std::unordered_map<int, std::unordered_map<macro_action_t, bool>> mApplicable;
   const macro_action_t mRootTask; // root task
   std::stack<macro_action_t> mCallStack;
-  std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t *>>
-      mTree;
+  std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t *>> mTree;
   BELIEF_STATE mRootSampling;
-  double mConvergedBound;
 
   static STATISTIC mCacheRate;
   static STATISTIC mCacheDepth;

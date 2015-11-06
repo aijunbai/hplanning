@@ -136,21 +136,21 @@ int main(int argc, char *argv[]) {
     simulator = new BATTLESHIP(size, size, number);
   } else if (problem == "pocman") {
     switch (size) {
-    case 0:
-      real = new MICRO_POCMAN;
-      simulator = new MICRO_POCMAN;
-      break;
-    case 1:
-      real = new MINI_POCMAN;
-      simulator = new MINI_POCMAN;
-      break;
-    case 2:
-      real = new FULL_POCMAN;
-      simulator = new FULL_POCMAN;
-      break;
-    default:
-      cout << "PocMan size 0|1|2" << endl;
-      return 1;
+      case 0:
+        real = new MICRO_POCMAN;
+        simulator = new MICRO_POCMAN;
+        break;
+      case 1:
+        real = new MINI_POCMAN;
+        simulator = new MINI_POCMAN;
+        break;
+      case 2:
+        real = new FULL_POCMAN;
+        simulator = new FULL_POCMAN;
+        break;
+      default:
+        cout << "PocMan size 0|1|2" << endl;
+        return 1;
     }
   } else if (problem == "network") {
     real = new NETWORK(size, number);
@@ -208,7 +208,7 @@ int main(int argc, char *argv[]) {
   EXPERIMENT experiment(*real, *simulator, outputfile, expParams, searchParams);
 
   cout << "Running experiment for problem " << simulator->Name() << "..."
-       << endl;
+  << endl;
   experiment.DiscountedReturn();
 
   delete real;

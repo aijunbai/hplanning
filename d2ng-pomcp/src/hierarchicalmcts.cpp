@@ -1,6 +1,5 @@
 #include "hierarchicalmcts.h"
 #include "coord.h"
-#include "rooms.h"
 
 using namespace std;
 
@@ -279,8 +278,8 @@ int HierarchicalMCTS::SelectAction() {
     else {
       if (Params.Stack) {
         while (mCallStack.size() &&
-              (Terminate(mCallStack.top(), input.last_observation) ||
-              Primitive(mCallStack.top()))) {
+               (Terminate(mCallStack.top(), input.last_observation) ||
+                Primitive(mCallStack.top()))) {
           mCallStack.pop();
         }
 
@@ -322,8 +321,7 @@ int HierarchicalMCTS::SelectAction() {
 }
 
 int HierarchicalMCTS::RandomPrimitiveAction(macro_action_t Action,
-                                            const input_t &input)
-{
+                                            const input_t &input) {
   if (Primitive(Action)) {
     return Action;
   }
@@ -366,7 +364,7 @@ int HierarchicalMCTS::GreedyPrimitiveAction(macro_action_t Action,
     if (Params.Verbose >= 1) {
       cerr << "Random Selecting V(" << Action << ", ";
       cerr << "history)" << endl;
-      }
+    }
 
     return RandomPrimitiveAction(Action, input);
   }
@@ -455,8 +453,8 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
       const double totalReward =
           subtask.reward +
           pow(Simulator.GetDiscount(), steps) * completion.reward;
-        data->value.Add(totalReward);
-        data->qvalues[action].Add(totalReward);
+      data->value.Add(totalReward);
+      data->qvalues[action].Add(totalReward);
       steps += completion.steps;
       const result_t ret(totalReward, steps, subtask.global_terminal || completion.global_terminal,
                          completion.belief_hash, completion.last_observation);
@@ -488,8 +486,7 @@ void HierarchicalMCTS::UpdateConnection(int last_observation, int observation) {
 HierarchicalMCTS::result_t
 HierarchicalMCTS::PollingRollout(macro_action_t Action,
                                  const HierarchicalMCTS::input_t &input, STATE *&state,
-                                 int depth)
-{
+                                 int depth) {
   assert(!Primitive(Action));
 
   if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
@@ -502,7 +499,7 @@ HierarchicalMCTS::PollingRollout(macro_action_t Action,
 
   if (!atomic.global_terminal) {
     input_t input(atomic.belief_hash, atomic.last_observation);
-    result_t completion = Rollout(Action, input, state, depth+1);
+    result_t completion = Rollout(Action, input, state, depth + 1);
     double totalReward = atomic.reward + Simulator.GetDiscount() * completion.reward;
     return result_t(totalReward,
                     atomic.steps + completion.steps,
@@ -516,8 +513,7 @@ HierarchicalMCTS::PollingRollout(macro_action_t Action,
 
 HierarchicalMCTS::result_t
 HierarchicalMCTS::Simulate(macro_action_t action, const input_t &input, STATE *&state,
-                           int depth)
-{
+                           int depth) {
   assert(Primitive(action));
 
   int observation;
@@ -542,8 +538,7 @@ HierarchicalMCTS::Simulate(macro_action_t action, const input_t &input, STATE *&
 HierarchicalMCTS::result_t
 HierarchicalMCTS::Rollout(macro_action_t Action,
                           const HierarchicalMCTS::input_t &input, STATE *&state,
-                          int depth)
-{
+                          int depth) {
   if (Params.Verbose >= 3) {
     cerr << "Rollout" << endl;
     PRINT_VALUE(Action);
@@ -569,9 +564,8 @@ HierarchicalMCTS::Rollout(macro_action_t Action,
 
 HierarchicalMCTS::result_t
 HierarchicalMCTS::HierarchicalRollout(macro_action_t Action,
-                          const HierarchicalMCTS::input_t &input, STATE *&state,
-                          int depth)
-{
+                                      const HierarchicalMCTS::input_t &input, STATE *&state,
+                                      int depth) {
   assert(!Primitive(Action));
 
   if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
@@ -604,8 +598,7 @@ HierarchicalMCTS::HierarchicalRollout(macro_action_t Action,
 macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
                                            int last_observation, data_t &data,
                                            bool ucb) {
-  static std::vector<int> besta;
-  besta.clear();
+  std::vector<int> besta;
   double bestq = -Infinity;
   int N = data.value.GetCount();
 
@@ -619,13 +612,11 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
     int n = data.qvalues[action].GetCount();
     double q = data.qvalues[action].GetValue();
 
-      if (n == 0) {
-        return action;
-      }
-
     if (ucb) {
       q += FastUCB(N, n);
     }
+
+    assert(n != 0 || q == Infinity);
 
     if (q >= bestq) {
       if (q > bestq)

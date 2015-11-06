@@ -10,9 +10,9 @@
 #include "distribution.h"
 #include "utils.h"
 
-template <class COUNT>
+template<class COUNT>
 class VALUE {
- public:
+public:
   VALUE() {
     Count = 0;
     Total = 0;
@@ -37,28 +37,34 @@ class VALUE {
 
   COUNT GetCount() const { return Count; }
 
- private:
+private:
   COUNT Count;
   double Total;
 };
 
 class STATISTIC {
- public:
+public:
   STATISTIC();
 
-  ~STATISTIC() {}
+  ~STATISTIC() { }
 
   int GetCount() const;
+
   double GetValue() const;            // merge from VALUE
   void Set(int count, double value);  // merge from VALUE
 
   void Initialise();
+
   double GetTotal() const;
+
   double GetMean() const;
+
   double GetVariance() const;
+
   double GetStdDev() const;  //标准差
   double GetStdErr() const;  //标准误差（平均值的标准差）
   double GetMax() const;
+
   double GetMin() const;
 
   void SetMin(double min) { Min = min; }
@@ -71,13 +77,15 @@ class STATISTIC {
   }
 
   void Print(const std::string &name, std::ostream &ostr, bool endl = true) const;
+
   void Add(double val);
+
   friend std::ostream &operator<<(std::ostream &os, const STATISTIC &o) {
     o.Print("", os, false);
     return os;
   }
 
- private:
+private:
   double Count;
   double Mean;      //平均值
   double Variance;  //方差
@@ -128,7 +136,7 @@ inline double STATISTIC::GetVariance() const { return Variance; }
 
 inline double STATISTIC::GetStdDev() const { return sqrt(Variance); }
 
-inline double STATISTIC::GetStdErr() const { return Count > 0? sqrt(Variance / Count): Infinity; }
+inline double STATISTIC::GetStdErr() const { return Count > 0 ? sqrt(Variance / Count) : Infinity; }
 
 inline double STATISTIC::GetMax() const { return Max; }
 
@@ -137,15 +145,15 @@ inline double STATISTIC::GetMin() const { return Min; }
 inline void STATISTIC::Print(const std::string &name,
                              std::ostream &ostr, bool endl) const {
   ostr << name << ": " << Mean << " (" << GetCount() << ") [" << Min << ", "
-       << Max << "] +- " << GetStdErr() << ", sigma=" << GetStdDev();
+  << Max << "] +- " << GetStdErr() << ", sigma=" << GetStdDev();
   if (endl) {
     ostr << std::endl;
   }
 }
 
 class UniformGenerator {
- public:
-  UniformGenerator(double low, double high) : mLow(low), mHigh(high) {}
+public:
+  UniformGenerator(double low, double high) : mLow(low), mHigh(high) { }
 
   double operator()() { return SimpleRNG::ins().GetUniform(mLow, mHigh); }
 
@@ -154,9 +162,9 @@ class UniformGenerator {
 };
 
 class NormalGammaGenerator {
- public:
+public:
   NormalGammaGenerator(double mu, double lambda, double alpha, double beta)
-      : Mu(mu), Lambda(lambda), Alpha(alpha), Beta(beta) {}
+      : Mu(mu), Lambda(lambda), Alpha(alpha), Beta(beta) { }
 
   double operator()() {
     const double t = SimpleRNG::ins().GetGamma(Alpha, 1.0 / Beta);
@@ -166,7 +174,7 @@ class NormalGammaGenerator {
     return m;
   }
 
- private:
+private:
   const double Mu;
   const double Lambda;
   const double Alpha;
@@ -174,10 +182,10 @@ class NormalGammaGenerator {
 };
 
 class BetaInfo {
- public:
+public:
   BetaInfo() { Initialise(); }
 
-  ~BetaInfo() {}
+  ~BetaInfo() { }
 
   void Initialise() {
     Alpha = ALPHA;
@@ -213,7 +221,7 @@ class BetaInfo {
   double GetExpectation() const { return ThompsonSampling(false); }
 
   double ThompsonSampling(bool sampling = true)
-      const {  // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
+  const {  // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
     if (sampling) {
       double x = SimpleRNG::ins().GetGamma(Alpha);
       double y = SimpleRNG::ins().GetGamma(Beta);
@@ -226,8 +234,8 @@ class BetaInfo {
 
   void Print(const std::string &name, std::ostream &ostr) const {
     ostr << name << "{"
-         << "a=" << Alpha << " b=" << Beta << " p=" << Alpha / (Alpha + Beta)
-         << " m=" << GetExpectation() << "}";
+    << "a=" << Alpha << " b=" << Beta << " p=" << Alpha / (Alpha + Beta)
+    << " m=" << GetExpectation() << "}";
   }
 
   static void setMinMax(double min, double max) {
@@ -235,7 +243,7 @@ class BetaInfo {
     MAX = max;
   }
 
- private:
+private:
   static double MIN;
   static double MAX;
   static double ALPHA;
@@ -246,12 +254,12 @@ class BetaInfo {
 };
 
 class NormalGammaInfo {
- public:
+public:
   NormalGammaInfo() : Mu(0.0), Lambda(0.0), Alpha(ALPHA), Beta(BETA) {
     Initialise();
   }
 
-  ~NormalGammaInfo() {}
+  ~NormalGammaInfo() { }
 
   void Initialise() {
     Mu = 0.0;
@@ -301,16 +309,16 @@ class NormalGammaInfo {
 
   void Print(const std::string &name, std::ostream &ostr) const {
     ostr << name << ":"
-         << " mu=" << Mu << " lambda=" << Lambda << " alpha=" << Alpha
-         << " beta=" << Beta << " error=" << sqrt(Beta / (Lambda * (Alpha - 1)))
-         << " sigma=" << sqrt(Beta / (Alpha - 1)) << std::endl;
+    << " mu=" << Mu << " lambda=" << Lambda << " alpha=" << Alpha
+    << " beta=" << Beta << " error=" << sqrt(Beta / (Lambda * (Alpha - 1)))
+    << " sigma=" << sqrt(Beta / (Alpha - 1)) << std::endl;
   }
 
   static void SetALPHA(double alpha) { ALPHA = alpha; }
 
   static void SetBETA(double beta) { BETA = beta; }
 
- private:
+private:
   double Mu;
   double Lambda;
   double Alpha;
@@ -320,9 +328,9 @@ class NormalGammaInfo {
   static double BETA;
 };
 
-template <class T, class H>
+template<class T, class H>
 class DirichletInfo {
- public:
+public:
   const DirichletInfo<T, H> &operator=(const DirichletInfo<T, H> &o) {
     Alpha = o.Alpha;
 
@@ -347,7 +355,7 @@ class DirichletInfo {
 
   const std::vector<std::pair<T, double>> &ThompsonSampling(
       bool sampling = true)
-      const {  // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
+  const {  // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
     outcomes_.clear();
 
     double sum = 0.0;
@@ -359,7 +367,7 @@ class DirichletInfo {
     }
 
     for (typename std::vector<std::pair<T, double>>::iterator it =
-             outcomes_.begin();
+        outcomes_.begin();
          it != outcomes_.end(); ++it) {
       it->second /= sum;
     }
@@ -372,7 +380,7 @@ class DirichletInfo {
 
     ostr << name << ":[";
     for (typename std::vector<std::pair<T, double>>::const_iterator it =
-             outcomes.begin();
+        outcomes.begin();
          it != outcomes.end(); ++it) {
       if (it != outcomes.begin()) {
         ostr << ", ";
@@ -383,16 +391,18 @@ class DirichletInfo {
     ostr << "]";
   }
 
- private:
+private:
   mutable H Alpha;
   mutable std::vector<std::pair<T, double>> outcomes_;
 };
 
-template <typename T>
+template<typename T>
 class DirichletInfo_POMCP
-    : public DirichletInfo<T, std::unordered_map<T, double>> {};
+    : public DirichletInfo<T, std::unordered_map<T, double>> {
+};
 
 class NormalGammaInfo_POMCP
-    : public std::unordered_map<size_t, NormalGammaInfo> {};
+    : public std::unordered_map<size_t, NormalGammaInfo> {
+};
 
 #endif  // STATISTIC

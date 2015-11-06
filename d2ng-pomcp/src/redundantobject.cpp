@@ -1,10 +1,4 @@
 #include "redundantobject.h"
-#include "utils.h"
-#include "distribution.h"
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <unordered_map>
 
 using namespace std;
 using namespace UTILS;
@@ -26,7 +20,7 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
   mActionAbstraction = false;
 }
 
-REDUNDANT_OBJECT::~REDUNDANT_OBJECT() {}
+REDUNDANT_OBJECT::~REDUNDANT_OBJECT() { }
 
 STATE *REDUNDANT_OBJECT::Copy(const STATE &state) const {
   const REDUNDANT_OBJECT_STATE &rstate =
@@ -55,8 +49,7 @@ void REDUNDANT_OBJECT::FreeState(STATE *state) const {
   mMemoryPool.Free(rstate);
 }
 
-bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &reward) const
-{
+bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &reward) const {
   assert(action < NumActions);
   Validate(state);
 
@@ -137,8 +130,8 @@ REDUNDANT_OBJECT_STATE REDUNDANT_OBJECT::Decode(int index) const {
 int REDUNDANT_OBJECT::GetObservation(
     const REDUNDANT_OBJECT_STATE &rstate) const {
   return mStateAbstraction ?
-        mGrid.Index(rstate.AgentPos) :  // only agent's position
-        Encode(rstate);  // agent's and object's positions
+         mGrid.Index(rstate.AgentPos) :  // only agent's position
+         Encode(rstate);  // agent's and object's positions
 }
 
 void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE &belief,
@@ -163,7 +156,7 @@ void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE &belief,
   for (uint i = 0; i < sorted.size(); ++i) {
     REDUNDANT_OBJECT_STATE state = Decode(sorted[i].second);
     ostr << "#" << state.AgentPos << ":" << state.ObjectPos << " ("
-         << sorted[i].first << ") ";
+    << sorted[i].first << ") ";
   }
   ostr << std::endl;
 }
@@ -197,12 +190,12 @@ void REDUNDANT_OBJECT::DisplayObservation(const STATE &, int observation,
                                           std::ostream &ostr) const {
   if (mStateAbstraction) {
     ostr << "Observation: "
-         << "Agent " << mGrid.Coord(observation) << endl;
+    << "Agent " << mGrid.Coord(observation) << endl;
   } else {
     REDUNDANT_OBJECT_STATE rstate = Decode(observation);
     ostr << "Observation: "
-         << "Agent " << rstate.AgentPos << " Object " << rstate.ObjectPos
-         << endl;
+    << "Agent " << rstate.AgentPos << " Object " << rstate.ObjectPos
+    << endl;
   }
 }
 

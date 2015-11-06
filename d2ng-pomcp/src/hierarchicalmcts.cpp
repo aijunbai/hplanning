@@ -404,7 +404,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
   }
 
   if (Primitive(Action)) {
-    return Rollout(Action, input, state, depth); // simulate primitive Action
+    return Simulate(Action, input, state, depth); // simulate primitive Action
   } else {
     if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
       return result_t(0.0, 0, false, input.belief_hash, input.last_observation);
@@ -448,7 +448,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
       int steps = subtask.steps;
       result_t completion(0.0, 0, false, subtask.belief_hash,
                           subtask.last_observation);
-      if (!subtask.terminal) {
+      if (!subtask.global_terminal) {
         input_t input(subtask.belief_hash, subtask.last_observation);
         completion = SearchTree(Action, input, state, depth + steps);
       }
@@ -458,11 +458,11 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
         data->value.Add(totalReward);
         data->qvalues[action].Add(totalReward);
       steps += completion.steps;
-      const result_t ret(totalReward, steps, subtask.terminal || completion.terminal,
+      const result_t ret(totalReward, steps, subtask.global_terminal || completion.global_terminal,
                          completion.belief_hash, completion.last_observation);
 
       if (Simulator.mActionAbstraction && converged) {
-        if (ret.terminal ||
+        if (ret.global_terminal ||
             Terminate(Action, ret.last_observation)) { // truly an exit
           data->cache.push_back(ret);
           data_t::beliefpool[completion.belief_hash].add_sample(
@@ -487,8 +487,8 @@ void HierarchicalMCTS::UpdateConnection(int last_observation, int observation) {
 
 HierarchicalMCTS::result_t
 HierarchicalMCTS::PollingRollout(macro_action_t Action,
-                          const HierarchicalMCTS::input_t &input, STATE *&state,
-                          int depth)
+                                 const HierarchicalMCTS::input_t &input, STATE *&state,
+                                 int depth)
 {
   assert(!Primitive(Action));
 
@@ -497,6 +497,29 @@ HierarchicalMCTS::PollingRollout(macro_action_t Action,
   }
 
   macro_action_t action = RandomPrimitiveAction(Action, input);
+  result_t atomic = Simulate(action, input, state, depth);
+  assert(atomic.steps == 1);
+
+  if (!atomic.global_terminal) {
+    input_t input(atomic.belief_hash, atomic.last_observation);
+    result_t completion = Rollout(Action, input, state, depth+1);
+    double totalReward = atomic.reward + Simulator.GetDiscount() * completion.reward;
+    return result_t(totalReward,
+                    atomic.steps + completion.steps,
+                    completion.global_terminal,
+                    completion.belief_hash,
+                    completion.last_observation);
+  }
+
+  return atomic;
+}
+
+HierarchicalMCTS::result_t
+HierarchicalMCTS::Simulate(macro_action_t action, const input_t &input, STATE *&state,
+                           int depth)
+{
+  assert(Primitive(action));
+
   int observation;
   double immediateReward;
   bool terminal =
@@ -513,21 +536,13 @@ HierarchicalMCTS::PollingRollout(macro_action_t Action,
                         observation); // observation is the ground state
     boost::hash_combine(belief_hash, depth);
   }
-
-  if (!terminal) {
-    input_t input(belief_hash, observation);
-    result_t completion = Rollout(Action, input, state, depth+1);
-    double totalReward = immediateReward + Simulator.GetDiscount() * completion.reward;
-    return result_t(totalReward, 1 + completion.steps, completion.terminal, completion.belief_hash, completion.last_observation);
-  }
-
   return result_t(immediateReward, 1, terminal, belief_hash, observation);
 }
 
 HierarchicalMCTS::result_t
 HierarchicalMCTS::Rollout(macro_action_t Action,
-                                      const HierarchicalMCTS::input_t &input, STATE *&state,
-                                      int depth)
+                          const HierarchicalMCTS::input_t &input, STATE *&state,
+                          int depth)
 {
   if (Params.Verbose >= 3) {
     cerr << "Rollout" << endl;
@@ -540,23 +555,7 @@ HierarchicalMCTS::Rollout(macro_action_t Action,
   }
 
   if (Primitive(Action)) {
-    int observation;
-    double immediateReward;
-    bool terminal =
-        Simulator.Step(*state, Action, observation, immediateReward);
-    UpdateConnection(input.last_observation, observation);
-
-    size_t belief_hash = 0;
-    if (Simulator.mStateAbstraction) { // whole history
-      belief_hash = input.belief_hash;
-      boost::hash_combine(belief_hash, Action);
-      boost::hash_combine(belief_hash, observation);
-    } else { // memory size = 1
-      boost::hash_combine(belief_hash,
-                          observation); // observation is the ground state
-      boost::hash_combine(belief_hash, depth);
-    }
-    return result_t(immediateReward, 1, terminal, belief_hash, observation);
+    return Simulate(Action, input, state, depth);
   }
   else {
     if (Params.Polling) {
@@ -585,12 +584,11 @@ HierarchicalMCTS::HierarchicalRollout(macro_action_t Action,
   } while (Terminate(action, input.last_observation) ||
            !Applicable(input.last_observation, action));
 
-  auto subtask = Rollout(action, input, state,
-                                     depth); // history and state will be updated
+  auto subtask = Rollout(action, input, state, depth); // history and state will be updated
   int steps = subtask.steps;
   result_t completion(0.0, 0, false, subtask.belief_hash,
                       subtask.last_observation);
-  if (!subtask.terminal) {
+  if (!subtask.global_terminal) {
     input_t input(subtask.belief_hash, subtask.last_observation);
     completion = Rollout(Action, input, state, depth + steps);
   }
@@ -599,7 +597,7 @@ HierarchicalMCTS::HierarchicalRollout(macro_action_t Action,
       subtask.reward +
       pow(Simulator.GetDiscount(), steps) * completion.reward;
   steps += completion.steps;
-  return result_t(totalReward, steps, subtask.terminal || completion.terminal,
+  return result_t(totalReward, steps, subtask.global_terminal || completion.global_terminal,
                   completion.belief_hash, completion.last_observation);
 }
 

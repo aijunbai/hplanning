@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set -o nounset
+
 PROBLEM="rocksample"
 PROBLEM="continousrooms_1_0"
 PROBLEM="continousrooms_0"
@@ -9,6 +12,7 @@ PROBLEM="redundant_object_1"
 PROBLEM="rooms_0"
 PROBLEM="rooms_1_0"
 PROBLEM="rooms_1_1"
+MAP="data/8_rooms.map"
 SIZE=7
 NUM=8
 RUNS=1
@@ -22,7 +26,6 @@ CONVERGED=1.0
 CACHERATE=0.9
 POLLING=1
 STACK=1
-MAP="data/8_rooms.map"
 FAKE="false"
 
 OUTPUT="output-$$.txt"

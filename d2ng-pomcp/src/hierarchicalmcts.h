@@ -27,22 +27,22 @@ public:
 
   struct result_t {
     result_t(double r, int s, bool t, std::size_t b, int o)
-        : reward(r), steps(s), terminal(t), belief_hash(b),
+        : reward(r), steps(s), global_terminal(t), belief_hash(b),
           last_observation(o) {}
 
     double reward;
     int steps;
-    bool terminal; // global terminal state
+    bool global_terminal; // global terminal state
     std::size_t belief_hash;
     int last_observation;
 
     friend std::ostream &operator<<(std::ostream &os, const result_t &o) {
       return os << "{"
-                << "reward=" << o.reward << ", "
-                << "steps=" << o.steps << ", "
-                << "terminal=" << o.terminal << ", "
-                << "belief_hash=" << o.belief_hash << ", "
-                << "last_observation=" << o.last_observation << "}";
+             << "reward=" << o.reward << ", "
+             << "steps=" << o.steps << ", "
+             << "terminal=" << o.global_terminal << ", "
+             << "belief_hash=" << o.belief_hash << ", "
+             << "last_observation=" << o.last_observation << "}";
     }
   };
 
@@ -130,6 +130,8 @@ public:
 
   result_t SearchTree(macro_action_t Action, const input_t &input,
                       STATE *&state, int depth);
+  result_t Simulate(macro_action_t action, const input_t &input, STATE *&state,
+                    int depth);
   result_t Rollout(macro_action_t Action, const input_t &input, STATE *&state,
                    int depth);
   result_t PollingRollout(macro_action_t Action, const input_t &input, STATE *&state,
@@ -150,6 +152,7 @@ public:
   void Clear();
 
   static void UnitTest();
+
 private:
   std::unordered_map<macro_action_t, std::vector<macro_action_t>> mSubTasks;
   std::unordered_map<macro_action_t, std::unordered_set<int>> mGoals; // terminal observation for subtasks

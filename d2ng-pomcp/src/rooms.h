@@ -61,6 +61,7 @@ class ROOMS : public SIMULATOR {
 
  private:
   mutable MEMORY_POOL<ROOMS_STATE> mMemoryPool;
+  bool mMoreOutcomes;
 };
 
 #endif  // ROOMS_H

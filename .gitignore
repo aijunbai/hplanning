@@ -33,9 +33,10 @@ rooms.map.orig
 profile_results
 exps
 experiment
+experiment2
 valgrind.txt
 callgrind.txt
-result
+results
 .idea/
 Debug/
 Release/

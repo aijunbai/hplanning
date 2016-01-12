@@ -122,9 +122,9 @@ public:
 
     static double greater_prob(double x1, double x2, double y1, double y2);
 
-    static void clear(const SIMULATOR &simulator);
+//    static void clear(const SIMULATOR &simulator);
 
-    static std::unordered_map<std::size_t, belief_t> beliefpool;
+//    static std::unordered_map<std::size_t, belief_t> beliefpool;
   };
 
 
@@ -189,9 +189,9 @@ private:
   std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t *>> mTree;
   BELIEF_STATE mRootSampling;
 
-  static STATISTIC mCacheRate;
-  static STATISTIC mCacheDepth;
-  static STATISTIC mCacheStep;
+//  static STATISTIC mCacheRate;
+//  static STATISTIC mCacheDepth;
+//  static STATISTIC mCacheStep;
 };
 
 #endif // HIERARCHICALMCTS_H

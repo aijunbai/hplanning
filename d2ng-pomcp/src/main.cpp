@@ -94,12 +94,14 @@ int main(int argc, char *argv[]) {
       "thompsonsampling", value<bool>(&searchParams.ThompsonSampling),
       "use Thompson Sampling instead of UCB1")(
       "timeoutperaction", value<double>(&searchParams.TimeOutPerAction),
-      "timeout per action (seconds)")(
-      "converged",
-      value<double>(&searchParams.Converged),
-      "convergence threshold for hplanning")(
-      "cacherate", value<double>(&searchParams.CacheRate),
-      "cache rate for hplanning")(
+      "timeout per action (seconds)")
+//      (
+//      "converged",
+//      value<double>(&searchParams.Converged),
+//      "convergence threshold for hplanning")(
+//      "cacherate", value<double>(&searchParams.CacheRate),
+//      "cache rate for hplanning")
+      (
       "polling", value<bool>(&searchParams.Polling),
       "use polling rollout for hplanning")(
       "stack", value<bool>(&searchParams.Stack),

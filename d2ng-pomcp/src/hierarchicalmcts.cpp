@@ -3,11 +3,11 @@
 
 using namespace std;
 
-std::unordered_map<std::size_t, HierarchicalMCTS::belief_t>
-    HierarchicalMCTS::data_t::beliefpool;
-STATISTIC HierarchicalMCTS::mCacheRate;
-STATISTIC HierarchicalMCTS::mCacheDepth;
-STATISTIC HierarchicalMCTS::mCacheStep;
+//std::unordered_map<std::size_t, HierarchicalMCTS::belief_t>
+//    HierarchicalMCTS::data_t::beliefpool;
+//STATISTIC HierarchicalMCTS::mCacheRate;
+//STATISTIC HierarchicalMCTS::mCacheDepth;
+//STATISTIC HierarchicalMCTS::mCacheStep;
 
 HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
                                    const PARAMS &params)
@@ -76,20 +76,20 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
 HierarchicalMCTS::~HierarchicalMCTS() {
   if (Params.Verbose >= 2) {
     PRINT_VALUE(Params.ExplorationConstant);
-    PRINT_VALUE(mCacheRate);
-    PRINT_VALUE(mCacheDepth);
-    PRINT_VALUE(mCacheStep);
+//    PRINT_VALUE(mCacheRate);
+//    PRINT_VALUE(mCacheDepth);
+//    PRINT_VALUE(mCacheStep);
   }
   Clear();
 }
 
-void HierarchicalMCTS::data_t::clear(const SIMULATOR &simulator) {
-
-  for (auto &d : data_t::beliefpool) {
-    d.second.clear(simulator);
-  }
-  data_t::beliefpool.clear();
-}
+//void HierarchicalMCTS::data_t::clear(const SIMULATOR &simulator) {
+//
+//  for (auto &d : data_t::beliefpool) {
+//    d.second.clear(simulator);
+//  }
+//  data_t::beliefpool.clear();
+//}
 
 HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::ucb_bound(macro_action_t a,
                                                               const MCTS *mcts) {
@@ -114,6 +114,10 @@ bool HierarchicalMCTS::data_t::optimal_prob_at_least(macro_action_t a,
                                                      double threshold) {
   if (threshold <= 0.0) {
     return true;
+  }
+
+  if (threshold >= 1.0) {
+    return false;
   }
 
   bound_t bounda = ucb_bound(a, mcts);
@@ -237,7 +241,7 @@ void HierarchicalMCTS::Clear() {
   }
   mTree.clear();
   mRootSampling.Free(Simulator);
-  data_t::clear(Simulator);
+//  data_t::clear(Simulator);
 }
 
 bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
@@ -414,31 +418,31 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
       Insert(Action, input.belief_hash);
       return Rollout(Action, input, state, depth);
     } else {
-      bool converged = false;
-
-      if (Simulator.mActionAbstraction &&
-          data->value.GetCount() > int(data->qvalues.size()) &&
-          Params.Converged < 1.0) {
-        int greedy = GreedyUCB(Action, input.last_observation, *data, false);
-
-        if (data->optimal_prob_at_least(greedy, this, 33, Params.Converged)) {
-          converged = true;
-
-          if (data->cache.size() &&
-              SimpleRNG::ins().Bernoulli(Params.CacheRate)) {
-            result_t cache =
-                SimpleRNG::ins().Sample(data->cache); // cached result
-            Simulator.FreeState(state);               // drop current state
-            state = data_t::beliefpool[cache.belief_hash].sample(
-                Simulator); // sample an exit state
-            mCacheRate.Add(1.0);
-            mCacheDepth.Add(depth);
-            mCacheStep.Add(cache.steps);
-            return cache;
-          }
-        }
-      }
-      mCacheRate.Add(0.0);
+//      bool converged = false;
+//
+//      if (Simulator.mActionAbstraction &&
+//          data->value.GetCount() > int(data->qvalues.size()) &&
+//          Params.Converged < 1.0) {
+//        int greedy = GreedyUCB(Action, input.last_observation, *data, false);
+//
+//        if (data->optimal_prob_at_least(greedy, this, 33, Params.Converged)) {
+//          converged = true;
+//
+//          if (data->cache.size() &&
+//              SimpleRNG::ins().Bernoulli(Params.CacheRate)) {
+//            result_t cache =
+//                SimpleRNG::ins().Sample(data->cache); // cached result
+//            Simulator.FreeState(state);               // drop current state
+//            state = data_t::beliefpool[cache.belief_hash].sample(
+//                Simulator); // sample an exit state
+//            mCacheRate.Add(1.0);
+//            mCacheDepth.Add(depth);
+//            mCacheStep.Add(cache.steps);
+//            return cache;
+//          }
+//        }
+//      }
+//      mCacheRate.Add(0.0);
 
       const int action = GreedyUCB(Action, input.last_observation, *data, true);
       const result_t subtask = SearchTree(action, input, state,
@@ -459,14 +463,14 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
       const result_t ret(totalReward, steps, subtask.global_terminal || completion.global_terminal,
                          completion.belief_hash, completion.last_observation);
 
-      if (Simulator.mActionAbstraction && converged) {
-        if (ret.global_terminal ||
-            Terminate(Action, ret.last_observation)) { // truly an exit
-          data->cache.push_back(ret);
-          data_t::beliefpool[completion.belief_hash].add_sample(
-              *state, Simulator); // terminal state
-        }
-      }
+//      if (Simulator.mActionAbstraction && converged) {
+//        if (ret.global_terminal ||
+//            Terminate(Action, ret.last_observation)) { // truly an exit
+//          data->cache.push_back(ret);
+//          data_t::beliefpool[completion.belief_hash].add_sample(
+//              *state, Simulator); // terminal state
+//        }
+//      }
 
       return ret;
     }

@@ -10,7 +10,7 @@ INCLUDEPATH -= qt
 LIBS += -lboost_program_options
 CONFIG -= qt
 CONFIG += c++11
-QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra
+QMAKE_CXXFLAGS += -std=c++11 -Wall -Wextra -DNDEBUG
 
 CONFIG -= debug
 CONFIG += release

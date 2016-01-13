@@ -1,5 +1,6 @@
 #include "hierarchicalmcts.h"
 #include "coord.h"
+#include "prettyprint.h"
 
 using namespace std;
 
@@ -11,32 +12,31 @@ using namespace std;
 
 HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
                                    const PARAMS &params)
-    : MCTS(simulator, params), mRootTask(-1) {
+    : MCTS(simulator, params), mRootTask(-1, 0) {
   mSubTasks[mRootTask] = vector<macro_action_t>();  // root action
 
   for (int a = 0; a < Simulator.GetNumActions(); ++a) {
-    mSubTasks[a] = vector<macro_action_t>();  // primitive actions
+    mSubTasks[PrimitiveAction(a)] = vector<macro_action_t>();  // primitive actions
   }
 
   if (Simulator.mActionAbstraction) {
     assert(Simulator.GetNumObservations() > 0);
-    mGoals[mRootTask].insert(0);  // goal for root task
 
-    for (int o = 0; o < Simulator.GetNumObservations(); ++o) {
-      mSubTasks[MacroAction(o)] = vector<macro_action_t>();
-      mGoals[MacroAction(o)].insert(o);
+    for (int from = 0; from < Simulator.GetNumObservations(); ++from) {
+      for (int to = 0; to < Simulator.GetNumObservations(); ++to) {
+        if (from != to) {
+          mSubTasks[mRootTask].push_back(MacroAction(from, to));
+          mSubTasks[MacroAction(from, to)] = vector<macro_action_t>();
 
-      for (int a = 0; a < Simulator.GetNumActions(); ++a) {
-        mSubTasks[MacroAction(o)].push_back(a);
+          for (int a = 0; a < Simulator.GetNumActions(); ++a) {
+            mSubTasks[MacroAction(from, to)].push_back(PrimitiveAction(a));
+          }
+        }
       }
-    }
-
-    for (int o = 0; o < Simulator.GetNumObservations(); ++o) {
-      mSubTasks[mRootTask].push_back(MacroAction(o));
     }
   } else {
     for (int a = 0; a < Simulator.GetNumActions(); ++a) {
-      mSubTasks[mRootTask].push_back(a);
+      mSubTasks[mRootTask].push_back(PrimitiveAction(a));
     }
   }
 
@@ -66,7 +66,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
       Simulator.FreeState(state);
     }
     if (Params.Verbose >= 2) {
-      PRINT_VALUE(mApplicable);
+      PRINT_VALUE(mAvailableActions);
     }
   }
 
@@ -203,9 +203,8 @@ double HierarchicalMCTS::data_t::greater_prob(double x1, double x2, double y1,
 
 bool HierarchicalMCTS::Applicable(int last_observation, macro_action_t action) {
   if (last_observation >= 0 && !Primitive(action) && action != mRootTask) {
-    if (!mApplicable[last_observation][action]) {
-      return false;
-    }
+    return action.first == last_observation &&
+        mAvailableActions[last_observation].count(action);
   }
 
   return true;
@@ -224,13 +223,10 @@ HierarchicalMCTS::data_t *HierarchicalMCTS::Query(macro_action_t Action,
 
 HierarchicalMCTS::data_t *HierarchicalMCTS::Insert(macro_action_t Action,
                                                    size_t belief_hash) {
-  data_t *data = Query(Action, belief_hash);
-  if (!data) {
-    data = new data_t();
-    mTree[Action][belief_hash] = data;
-    TreeSize += 1;
-  }
-  return data;
+  assert(!Query(Action, belief_hash));
+  mTree[Action][belief_hash] = new data_t();
+  TreeSize += 1;
+  return mTree[Action][belief_hash];
 }
 
 void HierarchicalMCTS::Clear() {
@@ -267,17 +263,15 @@ int HierarchicalMCTS::SelectAction() {
 
       mSubTasks[mRootTask].clear();
       for (int a = 0; a < Simulator.GetNumActions(); ++a) {
-        mSubTasks[mRootTask].push_back(a);
-      }
-
-      for (auto it = mGoals.begin(); it != mGoals.end(); ++it) {
-        it->second.erase(0);
+        mSubTasks[mRootTask].push_back(PrimitiveAction(a));
       }
 
       while (mCallStack.size()) {
         mCallStack.pop();
       }
       mCallStack.push(mRootTask);
+
+      const_cast<SIMULATOR&>(Simulator).mActionAbstraction = false;
     }
     else {
       if (Params.Stack) {
@@ -306,7 +300,10 @@ int HierarchicalMCTS::SelectAction() {
         while (!Primitive(mCallStack.top())) {
           data_t *data = Query(mCallStack.top(), input.belief_hash);
           if (data) {
-            int subtask = GreedyUCB(mCallStack.top(), input.last_observation, *data, false);
+            macro_action_t subtask = GreedyUCB(mCallStack.top(), input.last_observation, *data, false);
+            if (Primitive(subtask)) {
+              break;
+            }
             mCallStack.push(subtask);
           }
           else {
@@ -317,14 +314,13 @@ int HierarchicalMCTS::SelectAction() {
     }
   }
 
-  if (Params.Verbose >= 2) {
-    cerr << "Executing task " << mCallStack.top() << endl;
-  }
-  int action = GreedyPrimitiveAction(mCallStack.top(), input);
-  return action;
+  macro_action_t action = GreedyPrimitiveAction(mCallStack.top(), input);
+  assert(Primitive(action));
+
+  return action.second;
 }
 
-int HierarchicalMCTS::RandomPrimitiveAction(macro_action_t Action,
+macro_action_t HierarchicalMCTS::RandomPrimitiveAction(macro_action_t Action,
                                             const input_t &input) {
   if (Primitive(Action)) {
     return Action;
@@ -339,7 +335,7 @@ int HierarchicalMCTS::RandomPrimitiveAction(macro_action_t Action,
   return RandomPrimitiveAction(action, input);
 }
 
-int HierarchicalMCTS::GreedyPrimitiveAction(macro_action_t Action,
+macro_action_t HierarchicalMCTS::GreedyPrimitiveAction(macro_action_t Action,
                                             const input_t &input) {
   if (Primitive(Action)) {
     return Action;
@@ -444,7 +440,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
 //      }
 //      mCacheRate.Add(0.0);
 
-      const int action = GreedyUCB(Action, input.last_observation, *data, true);
+      const macro_action_t action = GreedyUCB(Action, input.last_observation, *data, true);
       const result_t subtask = SearchTree(action, input, state,
                                           depth); // history and state will be updated
       int steps = subtask.steps;
@@ -477,11 +473,11 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
   }
 }
 
-void HierarchicalMCTS::UpdateConnection(int last_observation, int observation) {
+void HierarchicalMCTS::UpdateConnection(int from, int to) {
   if (Simulator.mActionAbstraction) {
-    if (last_observation >= 0) {
-      mApplicable[last_observation][MacroAction(observation)] = true;
-      mApplicable[observation][MacroAction(last_observation)] = true;
+    if (from >= 0 && to >= 0 && from != to) {
+      mAvailableActions[from].insert(MacroAction(from, to));
+      mAvailableActions[to].insert(MacroAction(to, from));
     }
   }
 }
@@ -523,7 +519,7 @@ HierarchicalMCTS::Simulate(macro_action_t action, const input_t &input, STATE *&
   int observation;
   double immediateReward;
   bool terminal =
-      Simulator.Step(*state, action, observation, immediateReward);
+      Simulator.Step(*state, action.second, observation, immediateReward);
   UpdateConnection(input.last_observation, observation);
 
   size_t belief_hash = 0;
@@ -576,7 +572,7 @@ HierarchicalMCTS::HierarchicalRollout(macro_action_t Action,
     return result_t(0.0, 0, false, input.belief_hash, input.last_observation);
   }
 
-  int action;
+  macro_action_t action;
   do {
     action = SimpleRNG::ins().Sample(mSubTasks[Action]);
   } while (Terminate(action, input.last_observation) ||
@@ -595,6 +591,7 @@ HierarchicalMCTS::HierarchicalRollout(macro_action_t Action,
       subtask.reward +
       pow(Simulator.GetDiscount(), steps) * completion.reward;
   steps += completion.steps;
+
   return result_t(totalReward, steps, subtask.global_terminal || completion.global_terminal,
                   completion.belief_hash, completion.last_observation);
 }
@@ -602,14 +599,15 @@ HierarchicalMCTS::HierarchicalRollout(macro_action_t Action,
 macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
                                            int last_observation, data_t &data,
                                            bool ucb) {
-  std::vector<int> besta;
+  std::vector<macro_action_t> besta;
   double bestq = -Infinity;
   int N = data.value.GetCount();
 
   for (uint i = 0; i < mSubTasks[Action].size(); ++i) {
-    int action = mSubTasks[Action][i];
+    macro_action_t action = mSubTasks[Action][i];
     if (Terminate(action, last_observation) ||
-        !Applicable(last_observation, action)) {
+        !Applicable(last_observation, action) ||
+        action.first == action.second) {
       continue;
     }
 
@@ -641,12 +639,14 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
  * @return
  */
 bool HierarchicalMCTS::Terminate(macro_action_t Action, int last_observation) {
-  return !Primitive(Action) && last_observation >= 0 &&
-         mGoals[Action].count(last_observation);
+  return Simulator.mActionAbstraction &&
+      !Primitive(Action) &&
+      last_observation >= 0 &&
+      Action.second == last_observation;
 }
 
 bool HierarchicalMCTS::Primitive(macro_action_t Action) {
-  return mSubTasks[Action].empty();
+  return Action.first == PRIMITIVE;
 }
 
 /**
@@ -654,6 +654,10 @@ bool HierarchicalMCTS::Primitive(macro_action_t Action) {
  * @param o
  * @return the macro action with o as the targeting observation
  */
-macro_action_t HierarchicalMCTS::MacroAction(int o) {
-  return Simulator.GetNumActions() + o;
+macro_action_t HierarchicalMCTS::MacroAction(int from, int to) {
+  return make_pair(from, to);
+}
+
+macro_action_t HierarchicalMCTS::PrimitiveAction(int action) {
+  return make_pair(PRIMITIVE, action);
 }

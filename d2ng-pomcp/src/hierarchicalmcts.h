@@ -10,7 +10,24 @@
 #include <algorithm>
 #include <stack>
 
-typedef int macro_action_t;
+typedef std::pair<int, int> macro_action_t;
+
+namespace std {
+
+template<typename a, typename b>
+struct hash< std::pair<a, b> > {
+private:
+  const hash<a> ah;
+  const hash<b> bh;
+public:
+  hash() : ah(), bh() {}
+  size_t operator()(const std::pair<a, b> &p) const {
+    size_t seed = ah(p.first);
+    return bh(p.second) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+  }
+};
+
+} // namespaces
 
 /**
  * @brief The HierarchicalMCTS class
@@ -158,17 +175,19 @@ public:
   macro_action_t GreedyUCB(macro_action_t Action, int last_observation,
                            data_t &data, bool ucb);
 
-  int GreedyPrimitiveAction(macro_action_t Action, const input_t &input);
+  macro_action_t GreedyPrimitiveAction(macro_action_t Action, const input_t &input);
 
-  int RandomPrimitiveAction(macro_action_t Action, const input_t &input);
+  macro_action_t RandomPrimitiveAction(macro_action_t Action, const input_t &input);
 
   bool Terminate(macro_action_t Action, int last_observation);
 
   bool Primitive(macro_action_t Action);
 
-  macro_action_t MacroAction(int o);
+  macro_action_t MacroAction(int from, int to);
 
-  void UpdateConnection(int last_observation, int observation);
+  macro_action_t PrimitiveAction(int action);
+
+  void UpdateConnection(int from, int to);
 
   bool Applicable(int last_observation, macro_action_t action);
 
@@ -181,9 +200,13 @@ public:
   static void UnitTest();
 
 private:
+  enum {
+    ROOT = -1,
+    PRIMITIVE = -2
+  };
+
   std::unordered_map<macro_action_t, std::vector<macro_action_t>> mSubTasks;
-  std::unordered_map<macro_action_t, std::unordered_set<int>> mGoals; // terminal observation for subtasks
-  std::unordered_map<int, std::unordered_map<macro_action_t, bool>> mApplicable;
+  std::unordered_map<int, std::unordered_set<macro_action_t>> mAvailableActions;
   const macro_action_t mRootTask; // root task
   std::stack<macro_action_t> mCallStack;
   std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t *>> mTree;

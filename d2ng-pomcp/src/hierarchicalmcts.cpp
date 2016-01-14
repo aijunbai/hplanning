@@ -91,15 +91,15 @@ HierarchicalMCTS::~HierarchicalMCTS() {
 //  data_t::beliefpool.clear();
 //}
 
-HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::ucb_bound(macro_action_t a,
-                                                              const MCTS *mcts) {
-  int N = value.GetCount();
-  int n = qvalues[a].GetCount();
-  double q = qvalues[a].GetValue();
-  double bound = mcts->FastUCB(N, n);
-
-  return bound_t(q - bound, q + bound);
-}
+//HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::ucb_bound(macro_action_t a,
+//                                                              const MCTS *mcts) {
+//  int N = value.GetCount();
+//  int n = qvalues[a].GetCount();
+//  double q = qvalues[a].GetValue();
+//  double bound = mcts->FastUCB(N, n);
+//
+//  return bound_t(q - bound, q + bound);
+//}
 
 /**
  * @brief HierarchicalMCTS::data_t::optimal_prob_at_least
@@ -109,64 +109,64 @@ HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::ucb_bound(macro_action_t a,
  * @param threshold
  * @return probability of a being optimal at least threshold
  */
-bool HierarchicalMCTS::data_t::optimal_prob_at_least(macro_action_t a,
-                                                     const MCTS *mcts, int N,
-                                                     double threshold) {
-  if (threshold <= 0.0) {
-    return true;
-  }
-
-  if (threshold >= 1.0) {
-    return false;
-  }
-
-  bound_t bounda = ucb_bound(a, mcts);
-  vector<bound_t> bounds;
-  for (auto &e : qvalues) {
-    if (e.first != a) {
-      bounds.push_back(ucb_bound(e.first, mcts));
-    }
-  }
-
-  if (qvalues.size() == 2) {
-    assert(bounds.size() == 1);
-    return greater_prob(bounds[0].lower, bounds[0].upper, bounda.lower,
-                        bounda.upper) >= threshold;
-  }
-
-  int n = 0;
-  for (int i = 0; i < N; ++i) {
-    if (double(n + N - i) / double(N) < threshold) {
-      return false;
-    }
-
-    if (double(n) / double(N) >= threshold) {
-      return true;
-    }
-
-    double q = bounda.sample();
-    bool optimal = true;
-    for (auto &e : bounds) {
-      double sample = e.sample();
-      if (sample > q) {
-        optimal = false;
-        break;
-      }
-    }
-    if (optimal) {
-      n += 1;
-    }
-  }
-
-  return double(n) / double(N) >= threshold;
-}
+//bool HierarchicalMCTS::data_t::optimal_prob_at_least(macro_action_t a,
+//                                                     const MCTS *mcts, int N,
+//                                                     double threshold) {
+//  if (threshold <= 0.0) {
+//    return true;
+//  }
+//
+//  if (threshold >= 1.0) {
+//    return false;
+//  }
+//
+//  bound_t bounda = ucb_bound(a, mcts);
+//  vector<bound_t> bounds;
+//  for (auto &e : qvalues) {
+//    if (e.first != a) {
+//      bounds.push_back(ucb_bound(e.first, mcts));
+//    }
+//  }
+//
+//  if (qvalues.size() == 2) {
+//    assert(bounds.size() == 1);
+//    return greater_prob(bounds[0].lower, bounds[0].upper, bounda.lower,
+//                        bounda.upper) >= threshold;
+//  }
+//
+//  int n = 0;
+//  for (int i = 0; i < N; ++i) {
+//    if (double(n + N - i) / double(N) < threshold) {
+//      return false;
+//    }
+//
+//    if (double(n) / double(N) >= threshold) {
+//      return true;
+//    }
+//
+//    double q = bounda.sample();
+//    bool optimal = true;
+//    for (auto &e : bounds) {
+//      double sample = e.sample();
+//      if (sample > q) {
+//        optimal = false;
+//        break;
+//      }
+//    }
+//    if (optimal) {
+//      n += 1;
+//    }
+//  }
+//
+//  return double(n) / double(N) >= threshold;
+//}
 
 void HierarchicalMCTS::UnitTest() {
-  assert(data_t::greater_prob(1, 2, 3, 4) == 1.0);
-  assert(data_t::greater_prob(1, 4, 3, 4) == 2.5 / 3.0);
-  assert(data_t::greater_prob(1, 5, 3, 4) == 2.5 / 4.0);
-  assert(data_t::greater_prob(3, 5, 3, 4) == 0.5 / 2.0);
-  assert(data_t::greater_prob(5, 6, 3, 4) == 0.0);
+//  assert(data_t::greater_prob(1, 2, 3, 4) == 1.0);
+//  assert(data_t::greater_prob(1, 4, 3, 4) == 2.5 / 3.0);
+//  assert(data_t::greater_prob(1, 5, 3, 4) == 2.5 / 4.0);
+//  assert(data_t::greater_prob(3, 5, 3, 4) == 0.5 / 2.0);
+//  assert(data_t::greater_prob(5, 6, 3, 4) == 0.0);
 }
 
 /**
@@ -177,32 +177,32 @@ void HierarchicalMCTS::UnitTest() {
  * @param y2: y \in [y1, y2]
  * @return probability that y >= x
  */
-double HierarchicalMCTS::data_t::greater_prob(double x1, double x2, double y1,
-                                              double y2) {
-  assert(x1 <= x2 && y1 <= y2);
-
-  if (y2 > x1) {
-    double area = 0.5 * Sqr(y2 - x1);
-
-    if (y2 > x2) {
-      area -= 0.5 * Sqr(y2 - x2);
-    }
-    if (y1 > x1) {
-      area -= 0.5 * Sqr(y1 - x1);
-    }
-    if (y1 > x2) {
-      area += 0.5 * Sqr(y1 - x2);
-    }
-
-    double prob = area / (x2 - x1) / (y2 - y1);
-    return MinMax(0.0, prob, 1.0);
-  } else {
-    return 0.0;
-  }
-}
+//double HierarchicalMCTS::data_t::greater_prob(double x1, double x2, double y1,
+//                                              double y2) {
+//  assert(x1 <= x2 && y1 <= y2);
+//
+//  if (y2 > x1) {
+//    double area = 0.5 * Sqr(y2 - x1);
+//
+//    if (y2 > x2) {
+//      area -= 0.5 * Sqr(y2 - x2);
+//    }
+//    if (y1 > x1) {
+//      area -= 0.5 * Sqr(y1 - x1);
+//    }
+//    if (y1 > x2) {
+//      area += 0.5 * Sqr(y1 - x2);
+//    }
+//
+//    double prob = area / (x2 - x1) / (y2 - y1);
+//    return MinMax(0.0, prob, 1.0);
+//  } else {
+//    return 0.0;
+//  }
+//}
 
 bool HierarchicalMCTS::Applicable(int last_observation, macro_action_t action) {
-  if (last_observation >= 0 && !Primitive(action) && action != mRootTask) {
+  if (last_observation >= 0 && !IsPrimitive(action) && action != mRootTask) {
     return action.first == last_observation &&
         mAvailableActions[last_observation].count(action);
   }
@@ -276,8 +276,8 @@ int HierarchicalMCTS::SelectAction() {
     else {
       if (Params.Stack) {
         while (mCallStack.size() &&
-               (Terminate(mCallStack.top(), input.last_observation) ||
-                Primitive(mCallStack.top()))) {
+               (IsPrimitive(mCallStack.top()) ||
+                   IsTerminated(mCallStack.top(), input.last_observation))) {
           mCallStack.pop();
         }
 
@@ -297,11 +297,11 @@ int HierarchicalMCTS::SelectAction() {
   if (Simulator.mActionAbstraction) {
     if (Params.Stack) {
       if (input.last_observation != -1) {
-        while (!Primitive(mCallStack.top())) {
+        while (!IsPrimitive(mCallStack.top())) {
           data_t *data = Query(mCallStack.top(), input.belief_hash);
           if (data) {
             macro_action_t subtask = GreedyUCB(mCallStack.top(), input.last_observation, *data, false);
-            if (Primitive(subtask)) {
+            if (IsPrimitive(subtask)) {
               break;
             }
             mCallStack.push(subtask);
@@ -315,21 +315,21 @@ int HierarchicalMCTS::SelectAction() {
   }
 
   macro_action_t action = GreedyPrimitiveAction(mCallStack.top(), input);
-  assert(Primitive(action));
+  assert(IsPrimitive(action));
 
   return action.second;
 }
 
 macro_action_t HierarchicalMCTS::RandomPrimitiveAction(macro_action_t Action,
                                             const input_t &input) {
-  if (Primitive(Action)) {
+  if (IsPrimitive(Action)) {
     return Action;
   }
 
   macro_action_t action;
   do {
     action = SimpleRNG::ins().Sample(mSubTasks[Action]);
-  } while (Terminate(action, input.last_observation) ||
+  } while (IsTerminated(action, input.last_observation) ||
            !Applicable(input.last_observation, action));
 
   return RandomPrimitiveAction(action, input);
@@ -337,7 +337,7 @@ macro_action_t HierarchicalMCTS::RandomPrimitiveAction(macro_action_t Action,
 
 macro_action_t HierarchicalMCTS::GreedyPrimitiveAction(macro_action_t Action,
                                             const input_t &input) {
-  if (Primitive(Action)) {
+  if (IsPrimitive(Action)) {
     return Action;
   }
 
@@ -398,13 +398,12 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
     cerr << "state={\n";
     Simulator.DisplayState(*state, cerr);
     cerr << "}" << endl;
-    PRINT_VALUE(Terminate(Action, input.last_observation));
   }
 
-  if (Primitive(Action)) {
+  if (IsPrimitive(Action)) {
     return Simulate(Action, input, state, depth); // simulate primitive Action
   } else {
-    if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
+    if (depth >= Params.MaxDepth || IsTerminated(Action, input.last_observation)) {
       return result_t(0.0, 0, false, input.belief_hash, input.last_observation);
     }
 
@@ -461,7 +460,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
 
 //      if (Simulator.mActionAbstraction && converged) {
 //        if (ret.global_terminal ||
-//            Terminate(Action, ret.last_observation)) { // truly an exit
+//            IsTerminated(Action, ret.last_observation)) { // truly an exit
 //          data->cache.push_back(ret);
 //          data_t::beliefpool[completion.belief_hash].add_sample(
 //              *state, Simulator); // terminal state
@@ -487,9 +486,9 @@ HierarchicalMCTS::result_t
 HierarchicalMCTS::PollingRollout(macro_action_t Action,
                                  const HierarchicalMCTS::input_t &input, STATE *&state,
                                  int depth) {
-  assert(!Primitive(Action));
+  assert(!IsPrimitive(Action));
 
-  if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
+  if (depth >= Params.MaxDepth || IsTerminated(Action, input.last_observation)) {
     return result_t(0.0, 0, false, input.belief_hash, input.last_observation);
   }
 
@@ -514,7 +513,7 @@ HierarchicalMCTS::PollingRollout(macro_action_t Action,
 HierarchicalMCTS::result_t
 HierarchicalMCTS::Simulate(macro_action_t action, const input_t &input, STATE *&state,
                            int depth) {
-  assert(Primitive(action));
+  assert(IsPrimitive(action));
 
   int observation;
   double immediateReward;
@@ -546,10 +545,9 @@ HierarchicalMCTS::Rollout(macro_action_t Action,
     cerr << "state={\n";
     Simulator.DisplayState(*state, cerr);
     cerr << "}" << endl;
-    PRINT_VALUE(Terminate(Action, input.last_observation));
   }
 
-  if (Primitive(Action)) {
+  if (IsPrimitive(Action)) {
     return Simulate(Action, input, state, depth);
   }
   else {
@@ -566,16 +564,16 @@ HierarchicalMCTS::result_t
 HierarchicalMCTS::HierarchicalRollout(macro_action_t Action,
                                       const HierarchicalMCTS::input_t &input, STATE *&state,
                                       int depth) {
-  assert(!Primitive(Action));
+  assert(!IsPrimitive(Action));
 
-  if (depth >= Params.MaxDepth || Terminate(Action, input.last_observation)) {
+  if (depth >= Params.MaxDepth || IsTerminated(Action, input.last_observation)) {
     return result_t(0.0, 0, false, input.belief_hash, input.last_observation);
   }
 
   macro_action_t action;
   do {
     action = SimpleRNG::ins().Sample(mSubTasks[Action]);
-  } while (Terminate(action, input.last_observation) ||
+  } while (IsTerminated(action, input.last_observation) ||
            !Applicable(input.last_observation, action));
 
   auto subtask = Rollout(action, input, state, depth); // history and state will be updated
@@ -605,7 +603,8 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
 
   for (uint i = 0; i < mSubTasks[Action].size(); ++i) {
     macro_action_t action = mSubTasks[Action][i];
-    if (Terminate(action, last_observation) ||
+
+    if (IsTerminated(action, last_observation) ||
         !Applicable(last_observation, action) ||
         action.first == action.second) {
       continue;
@@ -632,20 +631,20 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
 }
 
 /**
- * @brief HierarchicalMCTS::Terminate
+ * @brief HierarchicalMCTS::IsTerminated
  * @param Action is the target macro state
  * @param history
  * @param state
  * @return
  */
-bool HierarchicalMCTS::Terminate(macro_action_t Action, int last_observation) {
+bool HierarchicalMCTS::IsTerminated(macro_action_t Action, int last_observation) {
   return Simulator.mActionAbstraction &&
-      !Primitive(Action) &&
+      !IsPrimitive(Action) &&
       last_observation >= 0 &&
       Action.second == last_observation;
 }
 
-bool HierarchicalMCTS::Primitive(macro_action_t Action) {
+bool HierarchicalMCTS::IsPrimitive(macro_action_t Action) {
   return Action.first == PRIMITIVE;
 }
 

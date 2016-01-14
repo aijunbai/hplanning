@@ -35,12 +35,15 @@ void EXPERIMENT::Run() {
   int t = 0;
 
   STATE *state = Real.CreateStartState(); //真实的世界状态
-  if (SearchParams.Verbose >= 1)
-    Real.DisplayState(*state, cout);
 
   for (t = 0; t < ExpParams.NumSteps; t++) {
     int observation;
     double reward;
+
+    if (SearchParams.Verbose >= 1) {
+      cout << "\nStep " << t << " of " << ExpParams.NumSteps << endl;
+      Real.DisplayState(*state, cout);
+    }
 
     boost::timer timer_per_action;
     int action = mcts->SelectAction(); // 用 Monte Carlo 方法选择一个动作
@@ -58,10 +61,8 @@ void EXPERIMENT::Run() {
     Results.ExploredDepth.Add(mcts->TreeDepth);
 
     if (SearchParams.Verbose >= 1) {
-      cout << "\nStep " << t << " of " << ExpParams.NumSteps << endl;
       cout << "Action: #" << action << " ";
       Real.DisplayAction(action, cout);
-      Real.DisplayState(*state, cout);
       Real.DisplayObservation(*state, observation, cout);
       Real.DisplayReward(reward, cout);
     }

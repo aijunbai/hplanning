@@ -133,11 +133,11 @@ public:
     std::unordered_map<macro_action_t, STATISTIC> qvalues;
     std::vector<result_t> cache;
 
-    bound_t ucb_bound(macro_action_t a, const MCTS *mcts);
-
-    bool optimal_prob_at_least(macro_action_t a, const MCTS *mcts, int N, double threshold);
-
-    static double greater_prob(double x1, double x2, double y1, double y2);
+//    bound_t ucb_bound(macro_action_t a, const MCTS *mcts);
+//
+//    bool optimal_prob_at_least(macro_action_t a, const MCTS *mcts, int N, double threshold);
+//
+//    static double greater_prob(double x1, double x2, double y1, double y2);
 
 //    static void clear(const SIMULATOR &simulator);
 
@@ -179,9 +179,9 @@ public:
 
   macro_action_t RandomPrimitiveAction(macro_action_t Action, const input_t &input);
 
-  bool Terminate(macro_action_t Action, int last_observation);
+  bool IsTerminated(macro_action_t Action, int last_observation);
 
-  bool Primitive(macro_action_t Action);
+  bool IsPrimitive(macro_action_t Action);
 
   macro_action_t MacroAction(int from, int to);
 

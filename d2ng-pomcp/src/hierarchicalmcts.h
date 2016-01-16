@@ -129,9 +129,11 @@ public:
   };
 
   struct data_t {
-    STATISTIC value;
-    std::unordered_map<macro_action_t, STATISTIC> qvalues;
-    std::vector<result_t> cache;
+    struct {
+      STATISTIC value;
+      std::unordered_map<macro_action_t, STATISTIC> qvalues;
+    } V[2];
+//    std::vector<result_t> cache;
 
 //    bound_t ucb_bound(macro_action_t a, const MCTS *mcts);
 //
@@ -181,11 +183,17 @@ public:
 
   bool IsTerminated(macro_action_t Action, int last_observation);
 
+  bool IsGoal(macro_action_t Action, int last_observation);
+
   bool IsPrimitive(macro_action_t Action);
+
+  double LocalReward(macro_action_t Action, int last_observation, int depth);
 
   macro_action_t MacroAction(int from, int to);
 
   macro_action_t PrimitiveAction(int action);
+
+  double GetExplorationConstant(macro_action_t Action);
 
   void UpdateConnection(int from, int to);
 

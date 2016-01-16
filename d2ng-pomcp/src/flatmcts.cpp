@@ -148,7 +148,7 @@ int FlatMCTS::GreedyUCB(VNODE *vnode, bool ucb) const //argmax_a {Q[a]}
     n = qnode.UCB.Value.GetCount();
 
     if (ucb) {
-      q += FastUCB(N, n);
+      q += FastUCB(N, n, Simulator.GetRewardRange());
     }
 
     if (q >= bestq) {

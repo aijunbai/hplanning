@@ -16,8 +16,7 @@ EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
     : Real(real), Simulator(simulator), ExpParams(expParams),
       SearchParams(searchParams),
       OutputFile(outputFile.c_str(), fstream::out | fstream::app) {
-  SearchParams.ExplorationConstant = simulator.GetRewardRange();
-  MCTS::InitFastUCB(SearchParams.ExplorationConstant); //初始化 UCB 表格缓存
+  MCTS::InitFastUCB(); //初始化 UCB 表格缓存
 }
 
 void EXPERIMENT::Run() {

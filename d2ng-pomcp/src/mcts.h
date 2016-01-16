@@ -18,7 +18,6 @@ public:
     bool UseParticleFilter;
     int NumTransforms;
     int MaxAttempts;
-    double ExplorationConstant;
     bool ReuseTree;
     bool ThompsonSampling;
     double TimeOutPerAction;
@@ -42,14 +41,14 @@ public:
 
   const HISTORY &GetHistory() const { return History; }
 
-  static void InitFastUCB(double exploration);
+  static void InitFastUCB();
 
   // Fast lookup table for UCB
   static const int UCB_N = 1 << 14, UCB_n = 1 << 7;
   static double UCB[UCB_N][UCB_n];
   static bool InitialisedFastUCB;
 
-  double FastUCB(int N, int n) const;
+  double FastUCB(int N, int n, double exploration) const;
 
 protected:
   const SIMULATOR &Simulator;

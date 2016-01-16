@@ -16,7 +16,6 @@ MCTS::PARAMS::PARAMS()
       UseParticleFilter(false),
       NumTransforms(0),
       MaxAttempts(0),
-      ExplorationConstant(1.0),
       ReuseTree(false),
       ThompsonSampling(false),
       TimeOutPerAction(-1),
@@ -33,7 +32,7 @@ MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
 MCTS::~MCTS() {
 }
 
-void MCTS::InitFastUCB(double exploration) {
+void MCTS::InitFastUCB() {
   cout << "Initialising fast UCB table... ";
 
   for (int N = 0; N < UCB_N; ++N)
@@ -41,21 +40,17 @@ void MCTS::InitFastUCB(double exploration) {
       if (n == 0)
         UCB[N][n] = Infinity;
       else
-        UCB[N][n] = exploration * sqrt(log(N + 1) / n);
+        UCB[N][n] = sqrt(log(N + 1) / n);
 
   cout << "done" << endl;
   InitialisedFastUCB = true;
 }
 
-double MCTS::FastUCB(int N, int n) const {
+double MCTS::FastUCB(int N, int n, double exploration) const {
   if (InitialisedFastUCB && N < UCB_N && n < UCB_n)
-    return UCB[N][n];
+    return n == 0? Infinity: exploration * UCB[N][n];
 
-  if (n == 0)
-    return Infinity;
-  else {
-    return Params.ExplorationConstant * sqrt(log(N + 1) / n);
-  }
+  return n == 0? Infinity: exploration * sqrt(log(N + 1) / n);
 }
 
 

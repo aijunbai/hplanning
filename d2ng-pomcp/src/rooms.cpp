@@ -4,13 +4,13 @@ using namespace std;
 using namespace UTILS;
 
 ROOMS::ROOMS(const char *map_name, bool state_abstraction, bool action_abstraction)
-    : mGrid(0), mRooms(0), mMoreOutcomes(true) {
+    : mGrid(0), mRooms(0) {
   Parse(map_name);
 
   NumActions = 4;  //动作数
   NumObservations =
       state_abstraction ? mRooms : mGrid->GetXSize() * mGrid->GetYSize();
-  Discount = 0.95;
+  Discount = 0.96;
   RewardRange = 20.0;
   mName << "rooms_" << map_name << "_" << state_abstraction << "_" << action_abstraction;
 
@@ -90,22 +90,20 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
   ROOMS_STATE &rstate = safe_cast<ROOMS_STATE &>(state);
   reward = -1.0;
 
-  if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
-    action = SimpleRNG::ins().Random(NumActions);
-  }
-
   COORD pos = rstate.AgentPos + coord::Compass[action];
   if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {  // not wall
     rstate.AgentPos = pos;
-    if (mMoreOutcomes) {
+
+    if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
       if (SimpleRNG::ins().Bernoulli(0.5)) {
-        if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
-          action = SimpleRNG::ins().Random(NumActions);
-        }
-        pos = rstate.AgentPos + coord::Compass[action];
-        if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {
-          rstate.AgentPos = pos;
-        }
+        action = coord::Clockwise(action);
+      }
+      else {
+        action = coord::Anticlockwise(action);
+      }
+      pos = rstate.AgentPos + coord::Compass[action];
+      if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {  // not wall
+        rstate.AgentPos = pos;
       }
     }
   }

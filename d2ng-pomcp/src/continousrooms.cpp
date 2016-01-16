@@ -18,7 +18,7 @@ ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction,
   NumActions = 4; //动作数
   NumObservations =
       state_abstraction ? mRooms : -1 /*infinitely many observations*/;
-  Discount = 0.95;
+  Discount = 0.96;
   RewardRange = 20.0;
   mName << "continousrooms_" << map_name << "_" << state_abstraction << "_"
         << action_abstraction;

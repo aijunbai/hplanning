@@ -342,8 +342,8 @@ macro_action_t HierarchicalMCTS::GreedyPrimitiveAction(macro_action_t Action,
       stringstream ss;
       ss << "V(" << Action << ", ";
       ss << "history)";
-      data->V[1].value.Print(ss.str(), cerr);
-      for (auto ii = data->V[1].qvalues.begin(); ii != data->V[1].qvalues.end(); ++ii) {
+      data->V[Params.LocalReward].value.Print(ss.str(), cerr);
+      for (auto ii = data->V[Params.LocalReward].qvalues.begin(); ii != data->V[Params.LocalReward].qvalues.end(); ++ii) {
         stringstream ss;
         ss << "Q(" << Action << ", ";
         ss << "history, " << ii->first << ")";
@@ -450,11 +450,14 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
       data->V[0].qvalues[action].Add(totalReward);
 
       steps += completion.steps;
-      double localReward = pow(Simulator.GetDiscount(), steps) *
-          LocalReward(Action, completion.last_observation, steps);
 
-      data->V[1].value.Add(totalReward + localReward);
-      data->V[1].qvalues[action].Add(totalReward + localReward);
+      if (Params.LocalReward) {
+        double localReward = pow(Simulator.GetDiscount(), steps) *
+                             LocalReward(Action, completion.last_observation, steps);
+
+        data->V[1].value.Add(totalReward + localReward);
+        data->V[1].qvalues[action].Add(totalReward + localReward);
+      }
 
       const result_t ret(totalReward, steps, subtask.global_terminal || completion.global_terminal,
                          completion.belief_hash, completion.last_observation);
@@ -600,7 +603,7 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
                                            bool ucb) {
   std::vector<macro_action_t> besta;
   double bestq = -Infinity;
-  int N = data.V[1].value.GetCount();
+  int N = data.V[Params.LocalReward].value.GetCount();
 
   for (uint i = 0; i < mSubTasks[Action].size(); ++i) {
     macro_action_t action = mSubTasks[Action][i];
@@ -611,11 +614,11 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
       continue;
     }
 
-    int n = data.V[1].qvalues[action].GetCount();
-    double q = data.V[1].qvalues[action].GetValue();
+    int n = data.V[Params.LocalReward].qvalues[action].GetCount();
+    double q = data.V[Params.LocalReward].qvalues[action].GetValue();
 
     if (ucb) {
-      double exploration = Simulator.mActionAbstraction ? GetExplorationConstant(Action) : Simulator.GetRewardRange();
+      double exploration = GetExplorationConstant(Action);
       q += FastUCB(N, n, exploration);
       assert(n != 0 || q == Infinity);
     }
@@ -641,15 +644,22 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
  */
 bool HierarchicalMCTS::IsTerminated(macro_action_t Action, int last_observation) {
   if (Simulator.mActionAbstraction) {
-    if (Action == mRootTask) {
-      return !IsPrimitive(Action) &&
-             last_observation >= 0 &&
-             Action.second == last_observation;
+    if (Params.LocalReward) {
+      if (Action == mRootTask) {
+        return !IsPrimitive(Action) &&
+               last_observation >= 0 &&
+               Action.second == last_observation;
+      }
+      else {
+        return !IsPrimitive(Action) &&
+               last_observation >= 0 &&
+               Action.first != last_observation;
+      }
     }
     else {
       return !IsPrimitive(Action) &&
              last_observation >= 0 &&
-             Action.first != last_observation;
+             Action.second == last_observation;
     }
   }
 
@@ -667,7 +677,7 @@ bool HierarchicalMCTS::IsGoal(macro_action_t Action, int last_observation) {
 }
 
 double HierarchicalMCTS::LocalReward(macro_action_t Action, int last_observation, int depth) {
-  if (Simulator.mActionAbstraction) {
+  if (Simulator.mActionAbstraction && Params.LocalReward) {
     return (depth >= Params.MaxDepth || IsTerminated(Action, last_observation)) ?
            (depth < Params.MaxDepth && IsGoal(Action, last_observation) ?
             0.0 : -100.0) : 0.0;
@@ -695,11 +705,13 @@ macro_action_t HierarchicalMCTS::PrimitiveAction(int action) {
 
 double HierarchicalMCTS::GetExplorationConstant(macro_action_t Action)
 {
-  assert(!IsPrimitive(Action));
+  if (Simulator.mActionAbstraction && Params.LocalReward) {
+    if (Action == mRootTask || IsPrimitive(Action)) {
+      return Simulator.GetRewardRange();
+    }
 
-  if (Action == mRootTask || IsPrimitive(Action)) {
-    return Simulator.GetRewardRange();
+    return 30.0;
   }
 
-  return 30.0;
+  return Simulator.GetRewardRange();
 }

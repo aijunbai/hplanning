@@ -101,11 +101,12 @@ int main(int argc, char *argv[]) {
 //      "convergence threshold for hplanning")(
 //      "cacherate", value<double>(&searchParams.CacheRate),
 //      "cache rate for hplanning")
-      (
-      "polling", value<bool>(&searchParams.Polling),
-      "use polling rollout for hplanning")(
+      ("polling", value<bool>(&searchParams.Polling),
+       "use polling rollout for hplanning")(
       "stack", value<bool>(&searchParams.Stack),
-      "use call stack for hplanning");
+      "use call stack for hplanning")
+      ("localreward", value<bool>(&searchParams.LocalReward),
+       "use local reward functions for hplanning");
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);

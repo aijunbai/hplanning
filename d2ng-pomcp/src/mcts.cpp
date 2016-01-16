@@ -22,7 +22,8 @@ MCTS::PARAMS::PARAMS()
 //      Converged(1.0),
 //      CacheRate(0.0),
       Polling(true),
-      Stack(false) { }
+      Stack(true),
+      LocalReward(true){ }
 
 
 MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)

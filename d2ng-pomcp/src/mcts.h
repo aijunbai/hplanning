@@ -25,6 +25,7 @@ public:
 //    double CacheRate;
     bool Polling;
     bool Stack;
+    bool LocalReward;
   };
 
   MCTS(const SIMULATOR &simulator, const PARAMS &params);

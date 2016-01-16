@@ -21,10 +21,11 @@ MAXPOWER2=10
 SEEDING=0
 TIMEOUT=3600
 TIMEOUTPERACTION=-1
-#CONVERGED=1.0
-#CACHERATE=0.9
 POLLING=1
 STACK=1
+LOCALREWARD=1
+#CONVERGED=1.0
+#CACHERATE=0.9
 FAKE="false"
 
 OUTPUT="output-$$.txt"
@@ -32,7 +33,7 @@ LOG="log-$$.txt"
 
 make -j4
 
-while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:F" OPTION; do
+while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:l:F" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -50,6 +51,7 @@ while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:F" OPTION; do
 #       c) CACHERATE=$OPTARG ;;
         P) POLLING=$OPTARG ;;
         @) STACK=$OPTARG ;;
+        l) LOCALREWARD=$OPTARG ;;
         F) FAKE="true" ;;
         *) exit ;;
     esac
@@ -76,7 +78,8 @@ run ./d2ng-pomcp --outputfile $OUTPUT \
             --timeout $TIMEOUT \
             --timeoutperaction $TIMEOUTPERACTION \
             --polling $POLLING \
-            --stack $STACK
+            --stack $STACK \
+            --localreward $LOCALREWARD
 #           --converged $CONVERGED \
 #           --cacherate $CACHERATE \
 

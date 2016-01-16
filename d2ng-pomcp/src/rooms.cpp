@@ -10,7 +10,7 @@ ROOMS::ROOMS(const char *map_name, bool state_abstraction, bool action_abstracti
   NumActions = 4;  //动作数
   NumObservations =
       state_abstraction ? mRooms : mGrid->GetXSize() * mGrid->GetYSize();
-  Discount = 0.96;
+  Discount = 0.95;
   RewardRange = 20.0;
   mName << "rooms_" << map_name << "_" << state_abstraction << "_" << action_abstraction;
 

@@ -11,14 +11,14 @@ using namespace std;
 
 HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
                                    const PARAMS &params)
-    : MCTS(simulator, params), mRootTask(-1, 0) {
+    : MCTS(simulator, params), mRootTask(-1, 0), mActionAbstraction(simulator.mActionAbstraction) {
   mSubTasks[mRootTask] = vector<macro_action_t>();  // root action
 
   for (int a = 0; a < Simulator.GetNumActions(); ++a) {
     mSubTasks[PrimitiveAction(a)] = vector<macro_action_t>();  // primitive actions
   }
 
-  if (Simulator.mActionAbstraction) {
+  if (mActionAbstraction) {
     assert(Simulator.GetNumObservations() > 0);
 
     for (int from = 0; from < Simulator.GetNumObservations(); ++from) {
@@ -43,7 +43,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
     mRootSampling.AddSample(Simulator.CreateStartState());
   }
 
-  if (Simulator.mActionAbstraction) {
+  if (mActionAbstraction) {
     int iterations = 1000, max_depth = 1000;
 
     for (int i = 0; i < iterations; ++i) {
@@ -248,7 +248,7 @@ bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
 int HierarchicalMCTS::SelectAction() {
   input_t input(History.BeliefHash(), History.LastObservation());
 
-  if (Simulator.mActionAbstraction) {
+  if (mActionAbstraction) {
     if (input.last_observation == 0) {  // enter target macro state
       if (Params.Verbose >= 2) {
         cerr << "Cancelling action abstraction" << endl;
@@ -263,8 +263,7 @@ int HierarchicalMCTS::SelectAction() {
         mCallStack.pop();
       }
       mCallStack.push(mRootTask);
-
-      const_cast<SIMULATOR &>(Simulator).mActionAbstraction = false;
+      mActionAbstraction = false;
     }
     else {
       if (Params.Stack) {
@@ -287,7 +286,7 @@ int HierarchicalMCTS::SelectAction() {
 
   Search();
 
-  if (Simulator.mActionAbstraction) {
+  if (mActionAbstraction) {
     if (Params.Stack) {
       if (input.last_observation != -1) {
         while (!IsPrimitive(mCallStack.top())) {
@@ -408,7 +407,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
     } else {
 //      bool converged = false;
 //
-//      if (Simulator.mActionAbstraction &&
+//      if (mActionAbstraction &&
 //          data->value.GetCount() > int(data->qvalues.size()) &&
 //          Params.Converged < 1.0) {
 //        int greedy = GreedyUCB(Action, input.last_observation, *data, false);
@@ -462,7 +461,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
       const result_t ret(totalReward, steps, subtask.global_terminal || completion.global_terminal,
                          completion.belief_hash, completion.last_observation);
 
-//      if (Simulator.mActionAbstraction && converged) {
+//      if (mActionAbstraction && converged) {
 //        if (ret.global_terminal ||
 //            IsTerminated(Action, ret.last_observation)) { // truly an exit
 //          data->cache.push_back(ret);
@@ -477,7 +476,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
 }
 
 void HierarchicalMCTS::UpdateConnection(int from, int to) {
-  if (Simulator.mActionAbstraction) {
+  if (mActionAbstraction) {
     if (from >= 0 && to >= 0 && from != to) {
       mAvailableActions[from].insert(MacroAction(from, to));
       mAvailableActions[to].insert(MacroAction(to, from));
@@ -643,7 +642,7 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
  * @return
  */
 bool HierarchicalMCTS::IsTerminated(macro_action_t Action, int last_observation) {
-  if (Simulator.mActionAbstraction) {
+  if (mActionAbstraction) {
     if (Params.LocalReward) {
       if (Action == mRootTask) {
         return !IsPrimitive(Action) &&
@@ -667,7 +666,7 @@ bool HierarchicalMCTS::IsTerminated(macro_action_t Action, int last_observation)
 }
 
 bool HierarchicalMCTS::IsGoal(macro_action_t Action, int last_observation) {
-  if (Simulator.mActionAbstraction) {
+  if (mActionAbstraction) {
     return !IsPrimitive(Action) &&
            last_observation >= 0 &&
            Action.second == last_observation;
@@ -677,7 +676,7 @@ bool HierarchicalMCTS::IsGoal(macro_action_t Action, int last_observation) {
 }
 
 double HierarchicalMCTS::LocalReward(macro_action_t Action, int last_observation, int depth) {
-  if (Simulator.mActionAbstraction && Params.LocalReward) {
+  if (mActionAbstraction && Params.LocalReward) {
     return (depth >= Params.MaxDepth || IsTerminated(Action, last_observation)) ?
            (depth < Params.MaxDepth && IsGoal(Action, last_observation) ?
             0.0 : -100.0) : 0.0;
@@ -705,7 +704,7 @@ macro_action_t HierarchicalMCTS::PrimitiveAction(int action) {
 
 double HierarchicalMCTS::GetExplorationConstant(macro_action_t Action)
 {
-  if (Simulator.mActionAbstraction && Params.LocalReward) {
+  if (mActionAbstraction && Params.LocalReward) {
     if (Action == mRootTask || IsPrimitive(Action)) {
       return Simulator.GetRewardRange();
     }

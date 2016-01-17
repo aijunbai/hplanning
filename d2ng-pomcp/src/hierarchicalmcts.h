@@ -219,6 +219,7 @@ private:
   std::stack<macro_action_t> mCallStack;
   std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t *>> mTree;
   BELIEF_STATE mRootSampling;
+  bool mActionAbstraction;
 
 //  static STATISTIC mCacheRate;
 //  static STATISTIC mCacheDepth;

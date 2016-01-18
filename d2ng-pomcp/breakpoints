@@ -3,4 +3,5 @@
 #b hierarchicalmcts.cpp:259 if input.last_observation != -1
 #b HierarchicalMCTS::SearchImp
 #b ROOMS::Step
-b experiment.cpp:48 if t == 1
+#b experiment.cpp:48 if t == 0
+b mcts.cpp:77 if i >= 1000

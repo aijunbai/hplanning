@@ -291,14 +291,27 @@ int HierarchicalMCTS::SelectAction() {
       if (input.last_observation != -1) {
         while (!IsPrimitive(mCallStack.top())) {
           data_t *data = Query(mCallStack.top(), input.belief_hash);
+
           if (data) {
-            macro_action_t subtask = GreedyUCB(mCallStack.top(), input.last_observation, *data, false);
-            if (IsPrimitive(subtask)) {
-              break;
+            if (Params.Verbose >= 1) {
+              stringstream ss;
+              ss << "V(" << mCallStack.top() << ", ";
+              ss << "history)[" << Params.LocalReward << "]";
+              data->V[Params.LocalReward].value.Print(ss.str(), cerr);
+              for (auto ii = data->V[Params.LocalReward].qvalues.begin();
+                   ii != data->V[Params.LocalReward].qvalues.end(); ++ii) {
+                stringstream ss;
+                ss << "Q(" << mCallStack.top() << ", ";
+                ss << "history, " << ii->first << ")[" << Params.LocalReward << "]";
+                ii->second.Print(ss.str(), cerr);
+              }
             }
+
+            macro_action_t subtask = GreedyUCB(mCallStack.top(), input.last_observation, *data, false);
             mCallStack.push(subtask);
           }
           else {
+            assert(0);
             break;
           }
         }
@@ -340,12 +353,12 @@ macro_action_t HierarchicalMCTS::GreedyPrimitiveAction(macro_action_t Action,
     if (Params.Verbose >= 1) {
       stringstream ss;
       ss << "V(" << Action << ", ";
-      ss << "history)";
+      ss << "history)[" << Params.LocalReward << "]";
       data->V[Params.LocalReward].value.Print(ss.str(), cerr);
       for (auto ii = data->V[Params.LocalReward].qvalues.begin(); ii != data->V[Params.LocalReward].qvalues.end(); ++ii) {
         stringstream ss;
         ss << "Q(" << Action << ", ";
-        ss << "history, " << ii->first << ")";
+        ss << "history, " << ii->first << ")[" << Params.LocalReward << "]";
         ii->second.Print(ss.str(), cerr);
       }
     }

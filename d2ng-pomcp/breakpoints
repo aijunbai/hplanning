@@ -1,7 +1,6 @@
 #b hierarchicalmcts.cpp:453
-#b HierarchicalMCTS::SelectAction
+b HierarchicalMCTS::SelectAction
 #b hierarchicalmcts.cpp:259 if input.last_observation != -1
 #b HierarchicalMCTS::SearchImp
 #b ROOMS::Step
-b experiment.cpp:48 if t == 15
-#b ROOMS::Step
+#b experiment.cpp:48 if t == 7

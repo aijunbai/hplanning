@@ -85,7 +85,7 @@ public:
 
 class VNODE : public MEMORY_OBJECT {
  public:
-  void Initialise(size_t belief_hash);
+  void Initialise(/*size_t belief_hash*/);
 
   static VNODE *Create(HISTORY &history);
   static void Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore = 0);
@@ -131,7 +131,7 @@ class VNODE : public MEMORY_OBJECT {
  private:
   mutable std::unordered_map<int, QNODE> Children;
   BELIEF_STATE BeliefState;
-  size_t BeliefHash;
+//  size_t BeliefHash;
 
 public:
   struct {
@@ -142,9 +142,9 @@ public:
     STATISTIC Value;  // for uct
   } UCB;
 
-  size_t GetBeliefHash() const {
-    return BeliefHash;
-  }
+//  size_t GetBeliefHash() const {
+//    return BeliefHash;
+//  }
 };
 
 #endif  // NODE_H

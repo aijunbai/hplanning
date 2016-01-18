@@ -33,22 +33,19 @@ void QNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
 
 MEMORY_POOL<VNODE> VNODE::VNodePool;
 
-void VNODE::Initialise(size_t belief_hash) {
+void VNODE::Initialise(/*size_t belief_hash*/) {
   assert(BeliefState.Empty());
 
-  BeliefHash = belief_hash;
+//  BeliefHash = belief_hash;
   Children.clear();
   TS.CumulativeRewards.clear();
   UCB.Value.Initialise();
 }
 
 VNODE *VNODE::Create(HISTORY &history) {
-  size_t belief_hash = history.BeliefHash();
-
-
+//  size_t belief_hash = history.BeliefHash();
     VNODE *vnode = VNODE::VNodePool.Allocate();
-
-    vnode->Initialise(belief_hash);
+    vnode->Initialise(/*belief_hash*/);
     return vnode;
   }
 

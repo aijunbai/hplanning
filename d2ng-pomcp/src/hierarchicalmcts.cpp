@@ -246,7 +246,7 @@ bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
 }
 
 int HierarchicalMCTS::SelectAction() {
-  input_t input(History.BeliefHash(), History.LastObservation());
+  input_t input(0 /*History.BeliefHash()*/, History.LastObservation());
 
   if (mActionAbstraction) {
     if (input.last_observation == 0) {  // enter target macro state
@@ -381,7 +381,7 @@ void HierarchicalMCTS::SearchImp() {
   STATE *state = mRootSampling.CreateSample(Simulator);
   Simulator.Validate(*state);
 
-  input_t input(History.BeliefHash(), History.LastObservation());
+  input_t input(0 /*History.BeliefHash()*/, History.LastObservation());
   SearchTree(mCallStack.top(), input, state, 0);
 
   Simulator.FreeState(state);
@@ -543,8 +543,7 @@ HierarchicalMCTS::Simulate(macro_action_t action, const input_t &input, STATE *&
     boost::hash_combine(belief_hash, action);
     boost::hash_combine(belief_hash, observation);
   } else { // memory size = 1
-    boost::hash_combine(belief_hash,
-                        observation); // observation is the ground state
+    boost::hash_combine(belief_hash, observation); // observation is the ground state
     boost::hash_combine(belief_hash, depth);
   }
   return result_t(immediateReward, 1, terminal, belief_hash, observation);
@@ -722,7 +721,7 @@ double HierarchicalMCTS::GetExplorationConstant(macro_action_t Action)
       return Simulator.GetRewardRange();
     }
 
-    return 30.0;
+    return Simulator.GetRewardRange() * 1.5; 
   }
 
   return Simulator.GetRewardRange();

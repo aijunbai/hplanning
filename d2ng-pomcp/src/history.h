@@ -12,23 +12,23 @@
 class HISTORY {
  public:
   struct ENTRY {
-    ENTRY(): Action(-1), Observation(-1), BeliefHash(0) {}
+    ENTRY(): Action(-1), Observation(-1)/*, BeliefHash(0)*/ {}
     ENTRY(int action, int obs)
-      : Action(action), Observation(obs), BeliefHash(0) {}
+      : Action(action), Observation(obs)/*, BeliefHash(0)*/ {}
 
     int Action;
     int Observation;
-    size_t BeliefHash;  // hash value of the history up to current position (size dependant)
+//    size_t BeliefHash;  // hash value of the history up to current position (size dependant)
   };
 
-  bool operator==(const HISTORY &history) const {
-    assert(0);
-    return BeliefHash() == history.BeliefHash();
-  }
+//  bool operator==(const HISTORY &history) const {
+//    assert(0);
+//    return BeliefHash() == history.BeliefHash();
+//  }
 
   void Add(int action, int obs) {
     History.push_back(ENTRY(action, obs));
-    History.back().BeliefHash = belief_hash();
+//    History.back().BeliefHash = belief_hash();
   }
 
   int LastObservation() const {
@@ -38,12 +38,12 @@ class HISTORY {
     return -1;
   }
 
-  size_t BeliefHash() const {
-    if (History.size()) {
-      return History.back().BeliefHash;
-    }
-    return 0;
-  }
+//  size_t BeliefHash() const {
+//    if (History.size()) {
+//      return History.back().BeliefHash;
+//    }
+//    return 0;
+//  }
 
   void Pop() { History.pop_back(); }
 
@@ -81,19 +81,19 @@ class HISTORY {
     }
   }
 
+//private:
+//  size_t belief_hash() const {
+//    assert(Size() >= 1);
+//
+//    using boost::hash_combine;
+//
+//    std::size_t seed = Size() >= 2? History[Size() - 2].BeliefHash: 0;
+//    hash_combine(seed, boost::hash_value(History[Size() - 1].Observation));
+//    hash_combine(seed, boost::hash_value(History[Size() - 1].Action));
+//    return seed;
+//  }
+
 private:
-  size_t belief_hash() const {
-    assert(Size() >= 1);
-
-    using boost::hash_combine;
-
-    std::size_t seed = Size() >= 2? History[Size() - 2].BeliefHash: 0;
-      hash_combine(seed, boost::hash_value(History[Size() - 1].Observation));
-      hash_combine(seed, boost::hash_value(History[Size() - 1].Action));
-    return seed;
-  }
-
- private:
   std::vector<ENTRY> History;
 };
 

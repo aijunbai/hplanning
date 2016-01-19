@@ -42,7 +42,7 @@ void VNODE::Initialise(/*size_t belief_hash*/) {
   UCB.Value.Initialise();
 }
 
-VNODE *VNODE::Create(HISTORY &history) {
+VNODE *VNODE::Create(/*HISTORY &history*/) {
 //  size_t belief_hash = history.BeliefHash();
     VNODE *vnode = VNODE::VNodePool.Allocate();
     vnode->Initialise(/*belief_hash*/);

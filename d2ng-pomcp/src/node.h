@@ -87,7 +87,7 @@ class VNODE : public MEMORY_OBJECT {
  public:
   void Initialise(/*size_t belief_hash*/);
 
-  static VNODE *Create(HISTORY &history);
+  static VNODE *Create(/*HISTORY &history*/);
   static void Free(VNODE *root, const SIMULATOR &simulator, VNODE *ignore = 0);
   static void FreeAll();
 

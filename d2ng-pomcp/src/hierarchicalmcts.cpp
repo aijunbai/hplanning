@@ -689,9 +689,10 @@ bool HierarchicalMCTS::IsGoal(macro_action_t Action, int last_observation) {
 
 double HierarchicalMCTS::LocalReward(macro_action_t Action, int last_observation, int depth) {
   if (mActionAbstraction && Params.LocalReward) {
-    return (depth >= Params.MaxDepth || IsTerminated(Action, last_observation)) ?
-           (depth < Params.MaxDepth && IsGoal(Action, last_observation) ?
-            0.0 : -100.0) : 0.0;
+    if (depth >= Params.MaxDepth ||
+      (IsTerminated(Action, last_observation) && !IsGoal(Action, last_observation))) {
+      return -100.0;
+    }
   }
 
   return 0.0;
@@ -721,7 +722,7 @@ double HierarchicalMCTS::GetExplorationConstant(macro_action_t Action)
       return Simulator.GetRewardRange();
     }
 
-    return Simulator.GetRewardRange() * 1.5; 
+    return Simulator.GetRewardRange() * 1.5;
   }
 
   return Simulator.GetRewardRange();

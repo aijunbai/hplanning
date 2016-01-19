@@ -251,7 +251,7 @@ double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action, int depth) {
 }
 
 VNODE *FlatMCTS::ExpandNode(const STATE *state, HISTORY &history) {
-  VNODE *vnode = VNODE::Create(history);
+  VNODE *vnode = VNODE::Create(/*history*/);
   vnode->UCB.Value.Set(0, 0);
   Simulator.Prior(state, history, vnode);  //设置先验信息
   return vnode;

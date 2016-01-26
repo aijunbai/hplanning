@@ -18,7 +18,7 @@ ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction,
   NumActions = 4; //动作数
   NumObservations =
       state_abstraction ? mRooms : -1 /*infinitely many observations*/;
-  Discount = 0.95;
+  Discount = 0.98;
   RewardRange = 20.0;
   mName << "continousrooms_" << map_name << "_" << state_abstraction << "_"
         << action_abstraction;
@@ -122,15 +122,22 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation,
   ContinousROOMS_STATE &rstate = safe_cast<ContinousROOMS_STATE &>(state);
   reward = -1.0;
 
-  if (SimpleRNG::ins().Bernoulli(0.2)) { // fail
-    action = SimpleRNG::ins().Random(NumActions);
-  }
+  COORD pos = Position2Grid(rstate.AgentPos) + coord::Compass[action];
+  if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {  // not wall
+    rstate.AgentPos = Grid2Position(pos);
 
-  Vector pos = rstate.AgentPos +
-               Vector(coord::Compass[action].X, coord::Compass[action].Y);
-  if (IsValid(pos) &&
-      mGrid->operator()(Position2Grid(pos)) != 'x') { // not wall
-    rstate.AgentPos = pos;
+    if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
+      if (SimpleRNG::ins().Bernoulli(0.5)) {
+        action = coord::Clockwise(action);
+      }
+      else {
+        action = coord::Anticlockwise(action);
+      }
+      pos = pos + coord::Compass[action];
+      if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {  // not wall
+        rstate.AgentPos = Grid2Position(pos);
+      }
+    }
   }
 
   Vector center = Grid2Position(Position2Grid(rstate.AgentPos));

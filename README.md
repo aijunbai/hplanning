@@ -1,2 +1,2 @@
 # hplanning
-Markovian state and action abstraction for Monte-Carlo tree search
+Markovian state and action abstractions for Monte-Carlo tree search

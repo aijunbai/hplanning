@@ -5,12 +5,12 @@ set -o nounset
 PROBLEM="rocksample"
 PROBLEM="redundant_object_0"
 PROBLEM="redundant_object_1"
-PROBLEM="continousrooms_1_1"
-PROBLEM="continousrooms_0"
-PROBLEM="continousrooms_1_0"
 PROBLEM="rooms_0"
 PROBLEM="rooms_1_0"
 PROBLEM="rooms_1_1"
+PROBLEM="continousrooms_1_0"
+PROBLEM="continousrooms_0"
+PROBLEM="continousrooms_1_1"
 MAP="data/8_rooms.map"
 SIZE=7
 NUM=8

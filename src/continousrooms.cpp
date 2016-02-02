@@ -122,34 +122,28 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation,
   ContinousROOMS_STATE &rstate = safe_cast<ContinousROOMS_STATE &>(state);
   reward = -1.0;
 
-  COORD pos = Position2Grid(rstate.AgentPos) + coord::Compass[action];
-  if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {  // not wall
-    rstate.AgentPos = Grid2Position(pos);
-
-    if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
-      if (SimpleRNG::ins().Bernoulli(0.5)) {
-        action = coord::Clockwise(action);
-      }
-      else {
-        action = coord::Anticlockwise(action);
-      }
-      pos = pos + coord::Compass[action];
-      if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {  // not wall
-        rstate.AgentPos = Grid2Position(pos);
-      }
+  if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
+    if (SimpleRNG::ins().Bernoulli(0.5)) {
+      action = coord::Clockwise(action);
+    }
+    else {
+      action = coord::Anticlockwise(action);
     }
   }
 
-  Vector center = Grid2Position(Position2Grid(rstate.AgentPos));
-  do { // add noise
-    rstate.AgentPos =
-        rstate.AgentPos +
-        Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
-               SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
-    rstate.AgentPos.SetX(MinMax(center.X() - mSizePerGrid/2, rstate.AgentPos.X(), center.X() + mSizePerGrid/2));
-    rstate.AgentPos.SetY(MinMax(center.Y() - mSizePerGrid/2, rstate.AgentPos.Y(), center.Y() + mSizePerGrid/2));
-  } while (!IsValid(rstate.AgentPos) ||
-           mGrid->operator()(Position2Grid(rstate.AgentPos)) == 'x');
+  COORD dir = coord::Compass[action];
+  Vector pos = rstate.AgentPos + Vector(dir.X, dir.Y);
+
+  if (IsValid(pos) && mGrid->operator()(Position2Grid(pos)) != 'x') {
+    rstate.AgentPos = pos;
+    do { // add noise
+      Vector error = Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
+                            SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
+      pos = rstate.AgentPos + error;
+    } while (!IsValid(pos) ||
+             mGrid->operator()(Position2Grid(pos)) == 'x');
+    rstate.AgentPos = pos;
+  }
 
   observation = GetObservation(rstate);
 
@@ -189,9 +183,8 @@ void ContinousROOMS::GeneratePreferred(
 }
 
 int ContinousROOMS::GetObservation(const ContinousROOMS_STATE &rstate) const {
-  COORD agent_grid = Position2Grid(rstate.AgentPos);
   return mStateAbstraction
-             ? mGrid->operator()(agent_grid) - '0'    // room number
+             ? mGrid->operator()(Position2Grid(rstate.AgentPos)) - '0'    // room number
              : hash_value(rstate.AgentPos) % INT_MAX; // full position
 }
 

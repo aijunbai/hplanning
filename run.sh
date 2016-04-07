@@ -2,12 +2,12 @@
 
 set -o nounset
 
-PROBLEM="rocksample"
-PROBLEM="redundant_object_0"
-PROBLEM="redundant_object_1"
 PROBLEM="rooms_0"
 PROBLEM="rooms_1_0"
 PROBLEM="rooms_1_1"
+PROBLEM="rocksample"
+PROBLEM="redundant_object_0"
+PROBLEM="redundant_object_1"
 PROBLEM="continousrooms_1_0"
 PROBLEM="continousrooms_0"
 PROBLEM="continousrooms_1_1"
@@ -24,8 +24,6 @@ TIMEOUTPERACTION=-1
 POLLING=1
 STACK=0
 LOCALREWARD=1
-#CONVERGED=1.0
-#CACHERATE=0.9
 FAKE="false"
 
 OUTPUT="output-$$.txt"
@@ -47,8 +45,6 @@ while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:l:F" OPTION; do
         N) MINPOWER2=$OPTARG; MAXPOWER2=$OPTARG ;;
         h) TIMEOUT=`expr $OPTARG \* 3600` ;;
         a) TIMEOUTPERACTION=$OPTARG ;;
-#       C) CONVERGED=$OPTARG ;;
-#       c) CACHERATE=$OPTARG ;;
         P) POLLING=$OPTARG ;;
         @) STACK=$OPTARG ;;
         l) LOCALREWARD=$OPTARG ;;
@@ -80,6 +76,3 @@ run ./hplanning --outputfile $OUTPUT \
             --polling $POLLING \
             --stack $STACK \
             --localreward $LOCALREWARD
-#           --converged $CONVERGED \
-#           --cacherate $CACHERATE \
-

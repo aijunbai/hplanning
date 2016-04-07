@@ -133,17 +133,6 @@ public:
       STATISTIC value;
       std::unordered_map<macro_action_t, STATISTIC> qvalues;
     } V[2];
-//    std::vector<result_t> cache;
-
-//    bound_t ucb_bound(macro_action_t a, const MCTS *mcts);
-//
-//    bool optimal_prob_at_least(macro_action_t a, const MCTS *mcts, int N, double threshold);
-//
-//    static double greater_prob(double x1, double x2, double y1, double y2);
-
-//    static void clear(const SIMULATOR &simulator);
-
-//    static std::unordered_map<std::size_t, belief_t> beliefpool;
   };
 
 
@@ -220,10 +209,6 @@ private:
   std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t *>> mTree;
   BELIEF_STATE mRootSampling;
   bool mActionAbstraction;
-
-//  static STATISTIC mCacheRate;
-//  static STATISTIC mCacheDepth;
-//  static STATISTIC mCacheStep;
 };
 
 #endif // HIERARCHICALMCTS_H

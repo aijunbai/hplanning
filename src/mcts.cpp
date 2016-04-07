@@ -19,8 +19,6 @@ MCTS::PARAMS::PARAMS()
       ReuseTree(false),
       ThompsonSampling(false),
       TimeOutPerAction(-1),
-//      Converged(1.0),
-//      CacheRate(0.0),
       Polling(true),
       Stack(true),
       LocalReward(false){ }

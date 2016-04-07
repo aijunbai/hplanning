@@ -3,12 +3,6 @@
 
 using namespace std;
 
-//std::unordered_map<std::size_t, HierarchicalMCTS::belief_t>
-//    HierarchicalMCTS::data_t::beliefpool;
-//STATISTIC HierarchicalMCTS::mCacheRate;
-//STATISTIC HierarchicalMCTS::mCacheDepth;
-//STATISTIC HierarchicalMCTS::mCacheStep;
-
 HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
                                    const PARAMS &params)
     : MCTS(simulator, params), mRootTask(-1, 0), mActionAbstraction(simulator.mActionAbstraction) {
@@ -76,123 +70,9 @@ HierarchicalMCTS::~HierarchicalMCTS() {
   Clear();
 }
 
-//void HierarchicalMCTS::data_t::clear(const SIMULATOR &simulator) {
-//
-//  for (auto &d : data_t::beliefpool) {
-//    d.second.clear(simulator);
-//  }
-//  data_t::beliefpool.clear();
-//}
-
-//HierarchicalMCTS::bound_t HierarchicalMCTS::data_t::ucb_bound(macro_action_t a,
-//                                                              const MCTS *mcts) {
-//  int N = value.GetCount();
-//  int n = qvalues[a].GetCount();
-//  double q = qvalues[a].GetValue();
-//  double bound = mcts->FastUCB(N, n);
-//
-//  return bound_t(q - bound, q + bound);
-//}
-
-/**
- * @brief HierarchicalMCTS::data_t::optimal_prob_at_least
- * @param a
- * @param mcts
- * @param N
- * @param threshold
- * @return probability of a being optimal at least threshold
- */
-//bool HierarchicalMCTS::data_t::optimal_prob_at_least(macro_action_t a,
-//                                                     const MCTS *mcts, int N,
-//                                                     double threshold) {
-//  if (threshold <= 0.0) {
-//    return true;
-//  }
-//
-//  if (threshold >= 1.0) {
-//    return false;
-//  }
-//
-//  bound_t bounda = ucb_bound(a, mcts);
-//  vector<bound_t> bounds;
-//  for (auto &e : qvalues) {
-//    if (e.first != a) {
-//      bounds.push_back(ucb_bound(e.first, mcts));
-//    }
-//  }
-//
-//  if (qvalues.size() == 2) {
-//    assert(bounds.size() == 1);
-//    return greater_prob(bounds[0].lower, bounds[0].upper, bounda.lower,
-//                        bounda.upper) >= threshold;
-//  }
-//
-//  int n = 0;
-//  for (int i = 0; i < N; ++i) {
-//    if (double(n + N - i) / double(N) < threshold) {
-//      return false;
-//    }
-//
-//    if (double(n) / double(N) >= threshold) {
-//      return true;
-//    }
-//
-//    double q = bounda.sample();
-//    bool optimal = true;
-//    for (auto &e : bounds) {
-//      double sample = e.sample();
-//      if (sample > q) {
-//        optimal = false;
-//        break;
-//      }
-//    }
-//    if (optimal) {
-//      n += 1;
-//    }
-//  }
-//
-//  return double(n) / double(N) >= threshold;
-//}
-
 void HierarchicalMCTS::UnitTest() {
-//  assert(data_t::greater_prob(1, 2, 3, 4) == 1.0);
-//  assert(data_t::greater_prob(1, 4, 3, 4) == 2.5 / 3.0);
-//  assert(data_t::greater_prob(1, 5, 3, 4) == 2.5 / 4.0);
-//  assert(data_t::greater_prob(3, 5, 3, 4) == 0.5 / 2.0);
-//  assert(data_t::greater_prob(5, 6, 3, 4) == 0.0);
-}
 
-/**
- * @brief HierarchicalMCTS::data_t::greater_prob
- * @param x1: x \in [x1, x2]
- * @param x2: x \in [x1, x2]
- * @param y1: y \in [y1, y2]
- * @param y2: y \in [y1, y2]
- * @return probability that y >= x
- */
-//double HierarchicalMCTS::data_t::greater_prob(double x1, double x2, double y1,
-//                                              double y2) {
-//  assert(x1 <= x2 && y1 <= y2);
-//
-//  if (y2 > x1) {
-//    double area = 0.5 * Sqr(y2 - x1);
-//
-//    if (y2 > x2) {
-//      area -= 0.5 * Sqr(y2 - x2);
-//    }
-//    if (y1 > x1) {
-//      area -= 0.5 * Sqr(y1 - x1);
-//    }
-//    if (y1 > x2) {
-//      area += 0.5 * Sqr(y1 - x2);
-//    }
-//
-//    double prob = area / (x2 - x1) / (y2 - y1);
-//    return MinMax(0.0, prob, 1.0);
-//  } else {
-//    return 0.0;
-//  }
-//}
+}
 
 bool HierarchicalMCTS::Applicable(int last_observation, macro_action_t action) {
   if (last_observation >= 0 && !IsPrimitive(action) && action != mRootTask) {
@@ -418,32 +298,6 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
       Insert(Action, input.belief_hash);
       return Rollout(Action, input, state, depth);
     } else {
-//      bool converged = false;
-//
-//      if (mActionAbstraction &&
-//          data->value.GetCount() > int(data->qvalues.size()) &&
-//          Params.Converged < 1.0) {
-//        int greedy = GreedyUCB(Action, input.last_observation, *data, false);
-//
-//        if (data->optimal_prob_at_least(greedy, this, 33, Params.Converged)) {
-//          converged = true;
-//
-//          if (data->cache.size() &&
-//              SimpleRNG::ins().Bernoulli(Params.CacheRate)) {
-//            result_t cache =
-//                SimpleRNG::ins().Sample(data->cache); // cached result
-//            Simulator.FreeState(state);               // drop current state
-//            state = data_t::beliefpool[cache.belief_hash].sample(
-//                Simulator); // sample an exit state
-//            mCacheRate.Add(1.0);
-//            mCacheDepth.Add(depth);
-//            mCacheStep.Add(cache.steps);
-//            return cache;
-//          }
-//        }
-//      }
-//      mCacheRate.Add(0.0);
-
       const macro_action_t action = GreedyUCB(Action, input.last_observation, *data, true);
       const result_t subtask = SearchTree(action, input, state,
                                           depth); // history and state will be updated
@@ -473,16 +327,6 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
 
       const result_t ret(totalReward, steps, subtask.global_terminal || completion.global_terminal,
                          completion.belief_hash, completion.last_observation);
-
-//      if (mActionAbstraction && converged) {
-//        if (ret.global_terminal ||
-//            IsTerminated(Action, ret.last_observation)) { // truly an exit
-//          data->cache.push_back(ret);
-//          data_t::beliefpool[completion.belief_hash].add_sample(
-//              *state, Simulator); // terminal state
-//        }
-//      }
-
       return ret;
     }
   }

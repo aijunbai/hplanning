@@ -21,8 +21,6 @@ public:
     bool ReuseTree;
     bool ThompsonSampling;
     double TimeOutPerAction;
-//    double Converged;
-//    double CacheRate;
     bool Polling;
     bool Stack;
     bool LocalReward;

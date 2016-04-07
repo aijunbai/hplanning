@@ -94,19 +94,13 @@ int main(int argc, char *argv[]) {
       "thompsonsampling", value<bool>(&searchParams.ThompsonSampling),
       "use Thompson Sampling instead of UCB1")(
       "timeoutperaction", value<double>(&searchParams.TimeOutPerAction),
-      "timeout per action (seconds)")
-//      (
-//      "converged",
-//      value<double>(&searchParams.Converged),
-//      "convergence threshold for hplanning")(
-//      "cacherate", value<double>(&searchParams.CacheRate),
-//      "cache rate for hplanning")
-      ("polling", value<bool>(&searchParams.Polling),
-       "use polling rollout for hplanning")(
+      "timeout per action (seconds)")(
+      "polling", value<bool>(&searchParams.Polling),
+      "use polling rollout for hplanning")(
       "stack", value<bool>(&searchParams.Stack),
-      "use call stack for hplanning")
-      ("localreward", value<bool>(&searchParams.LocalReward),
-       "use local reward functions for hplanning");
+      "use call stack for hplanning")(
+      "localreward", value<bool>(&searchParams.LocalReward),
+      "use local reward functions for hplanning");
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);

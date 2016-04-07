@@ -31,6 +31,7 @@ class SIMULATOR {
     int RolloutLevel;  //标记使用何种方式 rollout
     int SmartTreeCount;
     double SmartTreeValue;
+    int mBranchingFactor; // used to spefify branching factor for rooms domain
   };
 
   SIMULATOR();

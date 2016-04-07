@@ -1,5 +1,4 @@
 #include "simulator.h"
-#include "distribution.h"
 
 using namespace std;
 using namespace UTILS;
@@ -8,7 +7,8 @@ SIMULATOR::KNOWLEDGE::KNOWLEDGE()
     : TreeLevel(LEGAL),
       RolloutLevel(LEGAL),
       SmartTreeCount(10),
-      SmartTreeValue(1.0) {}
+      SmartTreeValue(1.0),
+      mBranchingFactor(1) { }
 
 SIMULATOR::SIMULATOR()
     : NumActions(0),

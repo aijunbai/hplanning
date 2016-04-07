@@ -100,7 +100,9 @@ int main(int argc, char *argv[]) {
       "stack", value<bool>(&searchParams.Stack),
       "use call stack for hplanning")(
       "localreward", value<bool>(&searchParams.LocalReward),
-      "use local reward functions for hplanning");
+      "branching factor for rooms domains")(
+      "branchingfactor", value<int>(&knowledge.mBranchingFactor),
+      "spefify branching factor for rooms domains");
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);
@@ -194,13 +196,14 @@ int main(int argc, char *argv[]) {
     expParams.MinDoubles = 0;
     expParams.MaxDoubles = 0;
     searchParams.NumSimulations = 0;
-    searchParams.NumStartStates = pow(2, 10);
+    searchParams.NumStartStates = 1 << 10;
   }
 
   if (seeding) {
     SimpleRNG::ins().RandomSeed(getpid());
   }
 
+  real->SetKnowledge(knowledge);
   simulator->SetKnowledge(knowledge);
   EXPERIMENT experiment(*real, *simulator, outputfile, expParams, searchParams);
 

@@ -1,17 +1,11 @@
 #include "continousrooms.h"
-#include "utils.h"
-#include "distribution.h"
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <unordered_map>
 
 using namespace std;
 using namespace UTILS;
 
 ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction,
                                bool action_abstraction)
-    : mGrid(0), mRooms(0), mThreshold(0.5), mMotionUncertainty(0.2),
+    : mGrid(0), mRooms(0), mThreshold(0.5), mMotionUncertainty(0.25),
       mSizePerGrid(1.0) {
   Parse(map_name);
 
@@ -114,34 +108,38 @@ void ContinousROOMS::FreeState(STATE *state) const {
   mMemoryPool.Free(rstate);
 }
 
-bool ContinousROOMS::Step(STATE &state, int action, int &observation,
-                          double &reward) const {
+bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &reward) const {
   assert(action < NumActions);
   Validate(state);
 
   ContinousROOMS_STATE &rstate = safe_cast<ContinousROOMS_STATE &>(state);
   reward = -1.0;
 
-  if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
-    if (SimpleRNG::ins().Bernoulli(0.5)) {
-      action = coord::Clockwise(action);
-    }
-    else {
-      action = coord::Anticlockwise(action);
-    }
-  }
+  for (int i = 0; i < Knowledge.mBranchingFactor; ++i) {
+    Vector pos = rstate.AgentPos + Vector(coord::Compass[action].X, coord::Compass[action].Y);
+    if (IsValid(pos) && mGrid->operator()(Position2Grid(pos)) != 'x') {  // not wall
+      rstate.AgentPos = pos;
 
-  COORD dir = coord::Compass[action];
-  Vector pos = rstate.AgentPos + Vector(dir.X, dir.Y);
+      if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
+        if (SimpleRNG::ins().Bernoulli(0.5)) {
+          action = coord::Clockwise(action);
+        }
+        else {
+          action = coord::Anticlockwise(action);
+        }
 
-  if (IsValid(pos) && mGrid->operator()(Position2Grid(pos)) != 'x') {
-    rstate.AgentPos = pos;
+        pos = rstate.AgentPos + Vector(coord::Compass[action].X, coord::Compass[action].Y);
+        if (IsValid(pos) && mGrid->operator()(Position2Grid(pos)) != 'x') {  // not wall
+          rstate.AgentPos = pos;
+        }
+      }
+    }
+
     do { // add noise
       Vector error = Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
                             SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
       pos = rstate.AgentPos + error;
-    } while (!IsValid(pos) ||
-             mGrid->operator()(Position2Grid(pos)) == 'x');
+    } while (!IsValid(pos) || mGrid->operator()(Position2Grid(pos)) == 'x');
     rstate.AgentPos = pos;
   }
 
@@ -183,9 +181,9 @@ void ContinousROOMS::GeneratePreferred(
 }
 
 int ContinousROOMS::GetObservation(const ContinousROOMS_STATE &rstate) const {
-  return mStateAbstraction
-             ? mGrid->operator()(Position2Grid(rstate.AgentPos)) - '0'    // room number
-             : hash_value(rstate.AgentPos) % INT_MAX; // full position
+  return mStateAbstraction ?
+         mGrid->operator()(Position2Grid(rstate.AgentPos)) - '0' :    // room number
+         hash_value(rstate.AgentPos) % numeric_limits<int>::max(); // full position
 }
 
 void ContinousROOMS::DisplayBeliefs(const BELIEF_STATE &belief,

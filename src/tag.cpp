@@ -1,5 +1,4 @@
 #include "tag.h"
-#include "distribution.h"
 
 using namespace std;
 using namespace UTILS;
@@ -80,7 +79,7 @@ bool TAG::Step(STATE &state, int action, int &observation,
   return tagstate.NumAlive == 0;
 }
 
-inline int TAG::GetObservation(const TAG_STATE &tagstate, int action) const {
+int TAG::GetObservation(const TAG_STATE &tagstate, int action) const {
   int obs = GetIndex(tagstate.AgentPos);
   if (action < 4)
     for (int opp = 0; opp < NumOpponents; ++opp)
@@ -88,7 +87,7 @@ inline int TAG::GetObservation(const TAG_STATE &tagstate, int action) const {
   return obs;
 }
 
-inline bool TAG::Inside(const COORD &coord) const {
+bool TAG::Inside(const COORD &coord) const {
   if (coord.Y >= 2) {
     return coord.X >= 5 && coord.X < 8 && coord.Y < 5;
   } else {
@@ -96,7 +95,7 @@ inline bool TAG::Inside(const COORD &coord) const {
   }
 }
 
-inline COORD TAG::GetCoord(int index) const {
+COORD TAG::GetCoord(int index) const {
   assert(NumCells == 29);
   assert(index >= 0 && index < 29);
   if (index < 20) return COORD(index % 10, index / 10);
@@ -104,7 +103,7 @@ inline COORD TAG::GetCoord(int index) const {
   return COORD(index % 3 + 5, index / 3 + 2);
 }
 
-inline int TAG::GetIndex(const COORD &coord) const {
+int TAG::GetIndex(const COORD &coord) const {
   assert(coord.X >= 0 && coord.X < 10);
   assert(coord.Y >= 0 && coord.Y < 5);
   if (coord.Y < 2) return coord.Y * 10 + coord.X;
@@ -112,11 +111,11 @@ inline int TAG::GetIndex(const COORD &coord) const {
   return 20 + (coord.Y - 2) * 3 + coord.X - 5;
 }
 
-inline bool TAG::IsAlive(const TAG_STATE &tagstate, int opp) const {
+bool TAG::IsAlive(const TAG_STATE &tagstate, int opp) const {
   return tagstate.OpponentPos[opp].Valid();
 }
 
-inline bool TAG::IsCorner(const COORD &coord) const {
+bool TAG::IsCorner(const COORD &coord) const {
   if (!Inside(coord)) return false;
   if (coord.Y < 2)
     return coord.X == 0 || coord.X == 9;
@@ -124,7 +123,7 @@ inline bool TAG::IsCorner(const COORD &coord) const {
     return coord.Y == 4 && (coord.X == 5 || coord.X == 7);
 }
 
-inline COORD TAG::GetRandomCorner() const {
+COORD TAG::GetRandomCorner() const {
   int c = SimpleRNG::ins().Random(6);
   switch (c) {
     case 0:
@@ -140,6 +139,7 @@ inline COORD TAG::GetRandomCorner() const {
     case 5:
       return COORD(7, 4);
   }
+  return COORD(0, 0);
 }
 
 void TAG::MoveOpponent(TAG_STATE &tagstate, int opp) const {

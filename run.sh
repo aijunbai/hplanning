@@ -2,15 +2,16 @@
 
 set -o nounset
 
-PROBLEM="rooms_0"
-PROBLEM="rooms_1_0"
-PROBLEM="rooms_1_1"
 PROBLEM="rocksample"
 PROBLEM="redundant_object_0"
 PROBLEM="redundant_object_1"
+PROBLEM="rooms_1_0"
+PROBLEM="rooms_1_1"
+PROBLEM="rooms_0"
+PROBLEM="continousrooms_1_1"
 PROBLEM="continousrooms_1_0"
 PROBLEM="continousrooms_0"
-PROBLEM="continousrooms_1_1"
+
 MAP="data/8_rooms.map"
 SIZE=7
 NUM=8
@@ -21,9 +22,12 @@ MAXPOWER2=10
 SEEDING=0
 TIMEOUT=3600
 TIMEOUTPERACTION=-1
+
 POLLING=1
 STACK=0
 LOCALREWARD=1
+BRANCHINGFACTOR=1
+
 FAKE="false"
 
 OUTPUT="output-$$.txt"
@@ -31,7 +35,7 @@ LOG="log-$$.txt"
 
 make -j4
 
-while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:l:F" OPTION; do
+while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:l:b:F" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -48,6 +52,7 @@ while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:l:F" OPTION; do
         P) POLLING=$OPTARG ;;
         @) STACK=$OPTARG ;;
         l) LOCALREWARD=$OPTARG ;;
+        b) BRANCHINGFACTOR=$OPTARG ;;
         F) FAKE="true" ;;
         *) exit ;;
     esac
@@ -75,4 +80,5 @@ run ./hplanning --outputfile $OUTPUT \
             --timeoutperaction $TIMEOUTPERACTION \
             --polling $POLLING \
             --stack $STACK \
-            --localreward $LOCALREWARD
+            --localreward $LOCALREWARD \
+            --branchingfactor $BRANCHINGFACTOR

@@ -5,9 +5,9 @@ set -o nounset
 PROBLEM="rocksample"
 PROBLEM="redundant_object_0"
 PROBLEM="redundant_object_1"
+PROBLEM="rooms_0"
 PROBLEM="rooms_1_0"
 PROBLEM="rooms_1_1"
-PROBLEM="rooms_0"
 PROBLEM="continousrooms_1_1"
 PROBLEM="continousrooms_1_0"
 PROBLEM="continousrooms_0"
@@ -27,6 +27,7 @@ POLLING=1
 STACK=0
 LOCALREWARD=1
 BRANCHINGFACTOR=1
+USEHPLANNING=1
 
 FAKE="false"
 
@@ -35,7 +36,7 @@ LOG="log-$$.txt"
 
 make -j4
 
-while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:l:b:F" OPTION; do
+while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:l:b:u:F" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -53,6 +54,7 @@ while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:l:b:F" OPTION; do
         @) STACK=$OPTARG ;;
         l) LOCALREWARD=$OPTARG ;;
         b) BRANCHINGFACTOR=$OPTARG ;;
+        u) USEHPLANNING=$OPTARG ;;
         F) FAKE="true" ;;
         *) exit ;;
     esac
@@ -81,4 +83,5 @@ run ./hplanning --outputfile $OUTPUT \
             --polling $POLLING \
             --stack $STACK \
             --localreward $LOCALREWARD \
-            --branchingfactor $BRANCHINGFACTOR
+            --branchingfactor $BRANCHINGFACTOR \
+            --usehplanning $USEHPLANNING

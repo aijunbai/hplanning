@@ -7,6 +7,9 @@
 #include "dot_graph.h"
 #include "mcts.h"
 
+/**
+ * POMCP and DNG-POMCP
+ */
 class FlatMCTS : public MCTS {
 public:
   FlatMCTS(const SIMULATOR &simulator, const PARAMS &params);

@@ -42,7 +42,7 @@ void disableBufferedIO(void) {
   setvbuf(stderr, NULL, _IONBF, 0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
   MCTS::PARAMS searchParams;
   EXPERIMENT::PARAMS expParams;
   SIMULATOR::KNOWLEDGE knowledge;
@@ -102,7 +102,10 @@ int main(int argc, char *argv[]) {
       "localreward", value<bool>(&searchParams.LocalReward),
       "branching factor for rooms domains")(
       "branchingfactor", value<int>(&knowledge.mBranchingFactor),
-      "spefify branching factor for rooms domains");
+      "spefify branching factor for rooms domains")(
+      "usehplanning", value<bool>(&searchParams.UseHplanning),
+      "use hplanning when possible")
+      ;
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);

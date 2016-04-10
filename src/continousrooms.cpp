@@ -5,7 +5,7 @@ using namespace UTILS;
 
 ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction,
                                bool action_abstraction)
-    : mGrid(0), mRooms(0), mThreshold(0.5), mMotionUncertainty(0.25),
+    : mGrid(0), mRooms(0), mThreshold(0.25), mMotionUncertainty(0.25),
       mSizePerGrid(1.0) {
   Parse(map_name);
 
@@ -139,7 +139,8 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
       Vector error = Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
                             SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
       pos = rstate.AgentPos + error;
-    } while (!IsValid(pos) || mGrid->operator()(Position2Grid(pos)) == 'x');
+    } while (!IsValid(pos) || mGrid->operator()(Position2Grid(pos)) == 'x' ||
+        Position2Grid(pos) != Position2Grid(rstate.AgentPos));
     rstate.AgentPos = pos;
   }
 
@@ -237,6 +238,7 @@ void ContinousROOMS::DisplayState(const STATE &state,
     }
   }
   ostr << "AgentPos=" << rstate.AgentPos << endl;
+  ostr << "GoalDist=" << rstate.AgentPos.Dist(mGoalPos) << endl;
 }
 
 void ContinousROOMS::DisplayObservation(const STATE &, int observation,

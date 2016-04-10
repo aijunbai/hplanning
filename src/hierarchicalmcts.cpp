@@ -5,7 +5,9 @@ using namespace std;
 
 HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
                                    const PARAMS &params)
-    : MCTS(simulator, params), mRootTask(-1, 0), mActionAbstraction(simulator.mActionAbstraction) {
+    : MCTS(simulator, params),
+      mRootTask(-1, 0),
+      mActionAbstraction(simulator.mActionAbstraction) {
   mSubTasks[mRootTask] = vector<macro_action_t>();  // root action
 
   for (int a = 0; a < Simulator.GetNumActions(); ++a) {
@@ -261,7 +263,7 @@ void HierarchicalMCTS::SearchImp() {
   STATE *state = mRootSampling.CreateSample(Simulator);
   Simulator.Validate(*state);
 
-  input_t input(0 /*History.BeliefHash()*/, History.LastObservation());
+  input_t input(0, History.LastObservation());
   SearchTree(mCallStack.top(), input, state, 0);
 
   Simulator.FreeState(state);
@@ -386,6 +388,7 @@ HierarchicalMCTS::Simulate(macro_action_t action, const input_t &input, STATE *&
     belief_hash = input.belief_hash;
     boost::hash_combine(belief_hash, action);
     boost::hash_combine(belief_hash, observation);
+    boost::hash_combine(belief_hash, depth);
   } else { // memory size = 1
     boost::hash_combine(belief_hash, observation); // observation is the ground state
     boost::hash_combine(belief_hash, depth);

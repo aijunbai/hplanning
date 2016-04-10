@@ -21,7 +21,8 @@ MCTS::PARAMS::PARAMS()
       TimeOutPerAction(-1),
       Polling(true),
       Stack(true),
-      LocalReward(false){ }
+      LocalReward(false),
+      UseHplanning(true) { }
 
 
 MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)

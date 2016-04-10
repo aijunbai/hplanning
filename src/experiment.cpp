@@ -22,9 +22,9 @@ EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
 void EXPERIMENT::Run() {
   boost::timer timer;
   MCTS *mcts =
-      Real.mHierarchicalPlanning
-      ? safe_cast<MCTS *>(new HierarchicalMCTS(Simulator, SearchParams))
-      : safe_cast<MCTS *>(new FlatMCTS(Simulator, SearchParams));
+      Real.mHierarchicalPlanning && SearchParams.UseHplanning?
+      safe_cast<MCTS *>(new HierarchicalMCTS(Simulator, SearchParams)):
+      safe_cast<MCTS *>(new FlatMCTS(Simulator, SearchParams));
 
   double undiscountedReturn = 0.0;
   double discountedReturn = 0.0;

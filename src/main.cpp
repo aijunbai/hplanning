@@ -103,9 +103,9 @@ int main(int argc, const char *argv[]) {
       "branching factor for rooms domains")(
       "branchingfactor", value<int>(&knowledge.mBranchingFactor),
       "spefify branching factor for rooms domains")(
-      "usehplanning", value<bool>(&searchParams.UseHplanning),
+      "useactionabstraction", value<bool>(&searchParams.UseActionAbstraction),
       "use hplanning when possible")(
-      "useflatplanning", value<bool>(&searchParams.UseFlatplanning),
+      "useflatplanning", value<bool>(&searchParams.UseFlatPlanning),
       "use flatplanning when possible")
       ;
 

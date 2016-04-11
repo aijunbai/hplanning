@@ -319,8 +319,11 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
       steps += completion.steps;
 
       if (Params.LocalReward) {
-        double localReward = pow(Simulator.GetDiscount(), steps) *
-                             LocalReward(Action, completion.last_observation, steps);
+        double localReward = 0.0;
+        if (mActionAbstraction) {
+          localReward = pow(Simulator.GetDiscount(), steps) *
+                        LocalReward(Action, completion.last_observation, steps);
+        }
 
         data->V[1].value.Add(totalReward + localReward);
         data->V[1].qvalues[action].Add(totalReward + localReward);

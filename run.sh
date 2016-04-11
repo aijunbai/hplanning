@@ -7,8 +7,8 @@ PROBLEM="redundant_object_0"
 PROBLEM="redundant_object_1"
 PROBLEM="continousrooms_0"
 PROBLEM="continousrooms_1"
-PROBLEM="rooms_1"
 PROBLEM="rooms_0"
+PROBLEM="rooms_1"
 
 MAP="data/8_rooms.map"
 SIZE=7
@@ -25,8 +25,8 @@ POLLING=1
 STACK=0
 LOCALREWARD=1
 BRANCHINGFACTOR=1
-USEHPLANNING=1
 USEFLATPLANNING=0
+USEACTIONABSTRACTION=0
 
 FAKE="false"
 
@@ -53,7 +53,7 @@ while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:l:b:u:U:F" OPTION; do
         @) STACK=$OPTARG ;;
         l) LOCALREWARD=$OPTARG ;;
         b) BRANCHINGFACTOR=$OPTARG ;;
-        u) USEHPLANNING=$OPTARG ;;
+        u) USEACTIONABSTRACTION=$OPTARG ;;
         U) USEFLATPLANNING=$OPTARG ;;
         F) FAKE="true" ;;
         *) exit ;;
@@ -84,5 +84,5 @@ run ./hplanning --outputfile $OUTPUT \
             --stack $STACK \
             --localreward $LOCALREWARD \
             --branchingfactor $BRANCHINGFACTOR \
-            --usehplanning $USEHPLANNING \
-            --useflatplanning $USEFLATPLANNING
+            --useflatplanning $USEFLATPLANNING \
+            --useactionabstraction $USEACTIONABSTRACTION 

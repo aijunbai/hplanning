@@ -24,8 +24,8 @@ public:
     bool Polling;
     bool Stack;
     bool LocalReward;
-    bool UseHplanning;
-    bool UseFlatplanning;
+    bool UseActionAbstraction;
+    bool UseFlatPlanning;
   };
 
   MCTS(const SIMULATOR &simulator, const PARAMS &params);

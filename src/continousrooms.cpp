@@ -3,24 +3,26 @@
 using namespace std;
 using namespace UTILS;
 
-ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction,
-                               bool action_abstraction)
+ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction)
     : mGrid(0), mRooms(0), mThreshold(0.25), mMotionUncertainty(0.25),
       mSizePerGrid(1.0) {
   Parse(map_name);
 
   NumActions = 4; //动作数
-  NumObservations =
-      state_abstraction ? mRooms : -1 /*infinitely many observations*/;
+  NumObservations = state_abstraction ? mRooms : numeric_limits<int>::max();
   Discount = 0.98;
   RewardRange = 20.0;
-  mName << "continousrooms_" << map_name << "_" << state_abstraction << "_"
-        << action_abstraction;
+
+  if (state_abstraction) {
+    mName << "continousrooms @ " << map_name << " w/ state abstraction";
+  }
+  else {
+    mName << "continousrooms @ " << map_name << " wo/ state abstraction";
+  }
 
   mHierarchicalPlanning = true;
   mFullyObservable = true;
   mStateAbstraction = state_abstraction;
-  mActionAbstraction = action_abstraction;
 }
 
 ContinousROOMS::~ContinousROOMS() { delete mGrid; }
@@ -94,7 +96,8 @@ void ContinousROOMS::Validate(const STATE &state) const {
 
 bool ContinousROOMS::IsValid(const Vector &pos) const {
   return mGrid->Inside(Position2Grid(pos)) && pos.X() >= 0.0 &&
-         pos.Y() <= mFieldLength && pos.Y() >= 0.0 && pos.Y() <= mFieldWidth;
+         pos.Y() <= mFieldLength && pos.Y() >= 0.0 && pos.Y() <= mFieldWidth &&
+         mGrid->operator()(Position2Grid(pos)) != 'x';
 }
 
 STATE *ContinousROOMS::CreateStartState() const {
@@ -136,11 +139,9 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
     }
 
     do { // add noise
-      Vector error = Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
-                            SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
-      pos = rstate.AgentPos + error;
-    } while (!IsValid(pos) || mGrid->operator()(Position2Grid(pos)) == 'x' ||
-        Position2Grid(pos) != Position2Grid(rstate.AgentPos));
+      pos = rstate.AgentPos + Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
+                                     SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
+    } while (Position2Grid(pos) != Position2Grid(rstate.AgentPos));
     rstate.AgentPos = pos;
   }
 
@@ -184,7 +185,7 @@ void ContinousROOMS::GeneratePreferred(
 int ContinousROOMS::GetObservation(const ContinousROOMS_STATE &rstate) const {
   return mStateAbstraction ?
          mGrid->operator()(Position2Grid(rstate.AgentPos)) - '0' :    // room number
-         hash_value(rstate.AgentPos) % numeric_limits<int>::max(); // full position
+         hash_value(rstate.AgentPos) % NumObservations; // full position
 }
 
 void ContinousROOMS::DisplayBeliefs(const BELIEF_STATE &belief,

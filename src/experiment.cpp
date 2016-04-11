@@ -21,10 +21,22 @@ EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
 
 void EXPERIMENT::Run() {
   boost::timer timer;
-  MCTS *mcts =
-      Real.mHierarchicalPlanning && SearchParams.UseHplanning?
-      safe_cast<MCTS *>(new HierarchicalMCTS(Simulator, SearchParams)):
-      safe_cast<MCTS *>(new FlatMCTS(Simulator, SearchParams));
+  MCTS *mcts = 0;
+
+  if (SearchParams.UseFlatplanning) {
+    mcts = new FlatMCTS(Simulator, SearchParams);
+    cerr << "using flatplanning" << endl;
+  }
+  else {
+    if (SearchParams.UseHplanning && Simulator.mStateAbstraction) {
+      mcts = new HierarchicalMCTS(Simulator, SearchParams, true);
+      cerr << "using hplanning w/ action abstraction" << endl;
+    }
+    else {
+      mcts = new HierarchicalMCTS(Simulator, SearchParams, false);
+      cerr << "using hplanning wo/ action abstraction" << endl;
+    }
+  }
 
   double undiscountedReturn = 0.0;
   double discountedReturn = 0.0;

@@ -22,7 +22,8 @@ MCTS::PARAMS::PARAMS()
       Polling(true),
       Stack(true),
       LocalReward(false),
-      UseHplanning(true) { }
+      UseHplanning(true),
+      UseFlatplanning(false) { }
 
 
 MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)

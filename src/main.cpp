@@ -104,7 +104,9 @@ int main(int argc, const char *argv[]) {
       "branchingfactor", value<int>(&knowledge.mBranchingFactor),
       "spefify branching factor for rooms domains")(
       "usehplanning", value<bool>(&searchParams.UseHplanning),
-      "use hplanning when possible")
+      "use hplanning when possible")(
+      "useflatplanning", value<bool>(&searchParams.UseFlatplanning),
+      "use flatplanning when possible")
       ;
 
   variables_map vm;
@@ -167,23 +169,17 @@ int main(int argc, const char *argv[]) {
     real = new TAG(number);
     simulator = new TAG(number);
   } else if (problem == "rooms_0") {
-    real = new ROOMS(map.c_str(), false, false);
-    simulator = new ROOMS(map.c_str(), false, false);
-  } else if (problem == "rooms_1_0") {
-    real = new ROOMS(map.c_str(), true, false);
-    simulator = new ROOMS(map.c_str(), true, false);
-  } else if (problem == "rooms_1_1") {
-    real = new ROOMS(map.c_str(), true, true);
-    simulator = new ROOMS(map.c_str(), true, true);
+    real = new ROOMS(map.c_str(), false);
+    simulator = new ROOMS(map.c_str(), false);
+  } else if (problem == "rooms_1") {
+    real = new ROOMS(map.c_str(), true);
+    simulator = new ROOMS(map.c_str(), true);
   } else if (problem == "continousrooms_0") {
-    real = new ContinousROOMS(map.c_str(), false, false);
-    simulator = new ContinousROOMS(map.c_str(), false, false);
-  } else if (problem == "continousrooms_1_0") {
-    real = new ContinousROOMS(map.c_str(), true, false);
-    simulator = new ContinousROOMS(map.c_str(), true, false);
-  } else if (problem == "continousrooms_1_1") {
-    real = new ContinousROOMS(map.c_str(), true, true);
-    simulator = new ContinousROOMS(map.c_str(), true, true);
+    real = new ContinousROOMS(map.c_str(), false);
+    simulator = new ContinousROOMS(map.c_str(), false);
+  } else if (problem == "continousrooms_1") {
+    real = new ContinousROOMS(map.c_str(), true);
+    simulator = new ContinousROOMS(map.c_str(), true);
   } else if (problem == "redundant_object_0") {
     real = new REDUNDANT_OBJECT(size, false);
     simulator = new REDUNDANT_OBJECT(size, false);
@@ -210,8 +206,7 @@ int main(int argc, const char *argv[]) {
   simulator->SetKnowledge(knowledge);
   EXPERIMENT experiment(*real, *simulator, outputfile, expParams, searchParams);
 
-  cout << "Running experiment for problem " << simulator->Name() << "..."
-  << endl;
+  cout << "Running experiment for problem " << simulator->Name() << "..." << endl;
   experiment.DiscountedReturn();
 
   delete real;

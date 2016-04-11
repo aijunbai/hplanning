@@ -17,7 +17,6 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
   mHierarchicalPlanning = true;
   mFullyObservable = true;
   mStateAbstraction = state_abstraction;
-  mActionAbstraction = false;
 }
 
 REDUNDANT_OBJECT::~REDUNDANT_OBJECT() { }

@@ -136,9 +136,8 @@ public:
   };
 
 
-
 public:
-  HierarchicalMCTS(const SIMULATOR &simulator, const PARAMS &params);
+  HierarchicalMCTS(const SIMULATOR &simulator, const PARAMS &params, bool action_abstraction);
 
   virtual ~HierarchicalMCTS();
 

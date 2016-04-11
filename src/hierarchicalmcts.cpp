@@ -4,10 +4,10 @@
 using namespace std;
 
 HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
-                                   const PARAMS &params)
+                                   const PARAMS &params, bool action_abstraction)
     : MCTS(simulator, params),
       mRootTask(-1, 0),
-      mActionAbstraction(simulator.mActionAbstraction) {
+      mActionAbstraction(action_abstraction) {
   mSubTasks[mRootTask] = vector<macro_action_t>();  // root action
 
   for (int a = 0; a < Simulator.GetNumActions(); ++a) {
@@ -112,7 +112,6 @@ void HierarchicalMCTS::Clear() {
   }
   mTree.clear();
   mRootSampling.Free(Simulator);
-//  data_t::clear(Simulator);
 }
 
 bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {

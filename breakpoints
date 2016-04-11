@@ -1,9 +1,7 @@
-#hierarchicalmcts.cpp:453
 #HierarchicalMCTS::SelectAction
-#hierarchicalmcts.cpp:259 if input.last_observation != -1
 HierarchicalMCTS::SearchTree
 #ROOMS::Step
-#experiment.cpp:48 if t == 0
-#mcts.cpp:77 if i >= 1000
 #ContinousROOMS::Step
+#ContinousROOMS::GetObservation
+#FlatMCTS::SearchImp
 #ContinousROOMS::GetObservation

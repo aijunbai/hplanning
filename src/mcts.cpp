@@ -22,8 +22,8 @@ MCTS::PARAMS::PARAMS()
       Polling(true),
       Stack(true),
       LocalReward(false),
-      UseActionAbstraction(true),
-      UseFlatPlanning(false) { }
+      ActionAbstraction(true),
+      Hplanning(false) { }
 
 
 MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)

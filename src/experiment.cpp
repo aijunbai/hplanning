@@ -23,12 +23,8 @@ void EXPERIMENT::Run() {
   boost::timer timer;
   MCTS *mcts = 0;
 
-  if (SearchParams.UseFlatPlanning) {
-    mcts = new FlatMCTS(Simulator, SearchParams);
-    cerr << "using flatplanning" << endl;
-  }
-  else {
-    if (SearchParams.UseActionAbstraction && Simulator.mStateAbstraction) {
+  if (SearchParams.Hplanning) {
+    if (SearchParams.ActionAbstraction) {
       mcts = new HierarchicalMCTS(Simulator, SearchParams, true);
       cerr << "using hplanning w/ action abstraction" << endl;
     }
@@ -36,6 +32,10 @@ void EXPERIMENT::Run() {
       mcts = new HierarchicalMCTS(Simulator, SearchParams, false);
       cerr << "using hplanning wo/ action abstraction" << endl;
     }
+  }
+  else {
+    mcts = new FlatMCTS(Simulator, SearchParams);
+    cerr << "using flatplanning" << endl;
   }
 
   double undiscountedReturn = 0.0;

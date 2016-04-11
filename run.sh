@@ -25,8 +25,8 @@ POLLING=1
 STACK=0
 LOCALREWARD=1
 BRANCHINGFACTOR=1
-USEFLATPLANNING=0
-USEACTIONABSTRACTION=0
+HPLANNING=0
+ACTIONABSTRACTION=0
 
 FAKE="false"
 
@@ -35,7 +35,7 @@ LOG="log-$$.txt"
 
 make -j4
 
-while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:l:b:u:U:F" OPTION; do
+while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:F" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -47,14 +47,14 @@ while getopts "p:s:n:R:v:L:H:S:P:N:h:a:m:@:l:b:u:U:F" OPTION; do
         H) MAXPOWER2=$OPTARG ;;
         S) SEEDING=$OPTARG ;;
         N) MINPOWER2=$OPTARG; MAXPOWER2=$OPTARG ;;
-        h) TIMEOUT=`expr $OPTARG \* 3600` ;;
+        t) TIMEOUT=`expr $OPTARG \* 3600` ;;
         a) TIMEOUTPERACTION=$OPTARG ;;
         P) POLLING=$OPTARG ;;
-        @) STACK=$OPTARG ;;
+        z) STACK=$OPTARG ;;
         l) LOCALREWARD=$OPTARG ;;
         b) BRANCHINGFACTOR=$OPTARG ;;
-        u) USEACTIONABSTRACTION=$OPTARG ;;
-        U) USEFLATPLANNING=$OPTARG ;;
+        h) HPLANNING=$OPTARG ;;
+        A) ACTIONABSTRACTION=$OPTARG ;;
         F) FAKE="true" ;;
         *) exit ;;
     esac
@@ -84,5 +84,5 @@ run ./hplanning --outputfile $OUTPUT \
             --stack $STACK \
             --localreward $LOCALREWARD \
             --branchingfactor $BRANCHINGFACTOR \
-            --useflatplanning $USEFLATPLANNING \
-            --useactionabstraction $USEACTIONABSTRACTION 
+            --hplanning $HPLANNING \
+            --actionabstraction $ACTIONABSTRACTION 

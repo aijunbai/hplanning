@@ -103,10 +103,10 @@ int main(int argc, const char *argv[]) {
       "branching factor for rooms domains")(
       "branchingfactor", value<int>(&knowledge.mBranchingFactor),
       "spefify branching factor for rooms domains")(
-      "useactionabstraction", value<bool>(&searchParams.UseActionAbstraction),
+      "hplanning", value<bool>(&searchParams.Hplanning),
       "use hplanning when possible")(
-      "useflatplanning", value<bool>(&searchParams.UseFlatPlanning),
-      "use flatplanning when possible")
+      "actionabstraction", value<bool>(&searchParams.ActionAbstraction),
+      "use hplanning w/ action abstraction when possible")
       ;
 
   variables_map vm;

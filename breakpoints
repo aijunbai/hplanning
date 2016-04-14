@@ -1,7 +1,7 @@
 #HierarchicalMCTS::SelectAction
-HierarchicalMCTS::SearchTree
-#ROOMS::Step
-#ContinousROOMS::Step
+#HierarchicalMCTS::SearchTree
+ROOMS::Step
+ContinousROOMS::Step
 #ContinousROOMS::GetObservation
 #FlatMCTS::SearchImp
 #ContinousROOMS::GetObservation

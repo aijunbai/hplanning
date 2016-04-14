@@ -119,23 +119,13 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
   reward = -1.0;
 
   for (int i = 0; i < Knowledge.mBranchingFactor; ++i) {
+    if (SimpleRNG::ins().Bernoulli(0.25)) {  // fail
+      action = SimpleRNG::ins().GetRandInt() % 8;
+    }
+
     Vector pos = rstate.AgentPos + Vector(coord::Compass[action].X, coord::Compass[action].Y);
     if (IsValid(pos) && mGrid->operator()(Position2Grid(pos)) != 'x') {  // not wall
       rstate.AgentPos = pos;
-
-      if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
-        if (SimpleRNG::ins().Bernoulli(0.5)) {
-          action = coord::Clockwise(action);
-        }
-        else {
-          action = coord::Anticlockwise(action);
-        }
-
-        pos = rstate.AgentPos + Vector(coord::Compass[action].X, coord::Compass[action].Y);
-        if (IsValid(pos) && mGrid->operator()(Position2Grid(pos)) != 'x') {  // not wall
-          rstate.AgentPos = pos;
-        }
-      }
     }
 
     do { // add noise
@@ -144,6 +134,33 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
     } while (Position2Grid(pos) != Position2Grid(rstate.AgentPos));
     rstate.AgentPos = pos;
   }
+
+//  for (int i = 0; i < Knowledge.mBranchingFactor; ++i) {
+//    Vector pos = rstate.AgentPos + Vector(coord::Compass[action].X, coord::Compass[action].Y);
+//    if (IsValid(pos) && mGrid->operator()(Position2Grid(pos)) != 'x') {  // not wall
+//      rstate.AgentPos = pos;
+//
+//      if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
+//        if (SimpleRNG::ins().Bernoulli(0.5)) {
+//          action = coord::Clockwise(action);
+//        }
+//        else {
+//          action = coord::Anticlockwise(action);
+//        }
+//
+//        pos = rstate.AgentPos + Vector(coord::Compass[action].X, coord::Compass[action].Y);
+//        if (IsValid(pos) && mGrid->operator()(Position2Grid(pos)) != 'x') {  // not wall
+//          rstate.AgentPos = pos;
+//        }
+//      }
+//    }
+//
+//    do { // add noise
+//      pos = rstate.AgentPos + Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
+//                                     SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
+//    } while (Position2Grid(pos) != Position2Grid(rstate.AgentPos));
+//    rstate.AgentPos = pos;
+//  }
 
   observation = GetObservation(rstate);
 

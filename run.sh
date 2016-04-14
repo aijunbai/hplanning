@@ -5,10 +5,10 @@ set -o nounset
 PROBLEM="rocksample"
 PROBLEM="redundant_object_0"
 PROBLEM="redundant_object_1"
-PROBLEM="continousrooms_0"
-PROBLEM="continousrooms_1"
 PROBLEM="rooms_0"
 PROBLEM="rooms_1"
+PROBLEM="continousrooms_0"
+PROBLEM="continousrooms_1"
 
 MAP="data/8_rooms.map"
 SIZE=7
@@ -23,10 +23,10 @@ TIMEOUTPERACTION=-1
 
 POLLING=1
 STACK=0
-LOCALREWARD=1
+LOCALREWARD=0
 BRANCHINGFACTOR=1
-HPLANNING=0
-ACTIONABSTRACTION=0
+HPLANNING=1
+ACTIONABSTRACTION=1
 
 FAKE="false"
 

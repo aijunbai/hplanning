@@ -210,7 +210,7 @@ void ContinousROOMS::GeneratePreferred(
 int ContinousROOMS::GetObservation(const ContinousROOMS_STATE &rstate) const {
   return mStateAbstraction ?
          mGrid->operator()(Position2Grid(rstate.AgentPos)) : // room number
-         hash_value(rstate.AgentPos); // full position
+         abs(hash_value(rstate.AgentPos) % GetNumObservations()); // full position
 }
 
 void ContinousROOMS::DisplayBeliefs(const BELIEF_STATE &belief,

@@ -5,8 +5,8 @@ set -o nounset
 PROBLEM="rocksample"
 PROBLEM="redundant_object_0"
 PROBLEM="redundant_object_1"
-PROBLEM="continousrooms_0"
 PROBLEM="continousrooms_1"
+PROBLEM="continousrooms_0"
 PROBLEM="rooms_0"
 PROBLEM="rooms_1"
 

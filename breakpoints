@@ -4,10 +4,10 @@
 #ContinousROOMS::Step
 #ContinousROOMS::GetObservation
 #FlatMCTS::SearchImp
-#HierarchicalMCTS::SearchImp
+HierarchicalMCTS::SearchImp
 #ContinousROOMS::GetObservation
 #HierarchicalMCTS::AddAbstractAction
 #HierarchicalMCTS::GetPrimitiveAction
 #HierarchicalMCTS::SelectAction
 #HierarchicalMCTS::PollingRollout
-HierarchicalMCTS::RandomSubtask
+#HierarchicalMCTS::RandomSubtask

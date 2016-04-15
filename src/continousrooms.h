@@ -55,6 +55,8 @@ class ContinousROOMS : public SIMULATOR {
     return GetObservation(rstate);
   }
 
+  int SuggestAction(STATE &state, STATE &exit) const;
+
  protected:
   bool IsValid(const Vector &pos) const;
   void Parse(const char *file_name);

@@ -6,5 +6,8 @@
 #FlatMCTS::SearchImp
 #HierarchicalMCTS::SearchImp
 #ContinousROOMS::GetObservation
-HierarchicalMCTS::AddAbstractAction
+#HierarchicalMCTS::AddAbstractAction
+#HierarchicalMCTS::GetPrimitiveAction
+#HierarchicalMCTS::SelectAction
 #HierarchicalMCTS::PollingRollout
+HierarchicalMCTS::RandomSubtask

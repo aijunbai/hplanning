@@ -87,6 +87,14 @@ void ROOMS::FreeState(STATE *state) const {
   mMemoryPool.Free(rstate);
 }
 
+int ROOMS::SuggestAction(STATE &state, STATE &exit) const
+{
+  ROOMS_STATE &rstate = safe_cast<ROOMS_STATE &>(state);
+  ROOMS_STATE &rexit = safe_cast<ROOMS_STATE &>(exit);
+
+  return coord::MoveTo(rstate.AgentPos, rexit.AgentPos);
+}
+
 bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) const {
   assert(action < NumActions);
   Validate(state);

@@ -111,6 +111,14 @@ void ContinousROOMS::FreeState(STATE *state) const {
   mMemoryPool.Free(rstate);
 }
 
+int ContinousROOMS::SuggestAction(STATE &state, STATE &exit) const
+{
+  ContinousROOMS_STATE &rstate = safe_cast<ContinousROOMS_STATE &>(state);
+  ContinousROOMS_STATE &rexit = safe_cast<ContinousROOMS_STATE &>(exit);
+
+  return coord::MoveTo(Position2Grid(rstate.AgentPos), Position2Grid(rexit.AgentPos));
+}
+
 bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &reward) const {
   assert(action < NumActions);
   Validate(state);

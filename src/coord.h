@@ -5,8 +5,10 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <ostream>
+#include <vector>
 #include <math.h>
 #include <boost/functional/hash.hpp>
+#include "distribution.h"
 
 struct COORD {
   int X, Y;
@@ -280,6 +282,35 @@ inline int DirectionalDistance(const COORD &lhs, const COORD &rhs,
       assert(false);
       return 0;
   }
+}
+
+inline int MoveTo(const COORD &pos, const COORD &target)
+{
+  if (pos == target) {
+    return SimpleRNG::ins().Random(4);
+  }
+
+  int dx = target.X - pos.X;
+  int dy = target.Y - pos.Y;
+
+  std::vector<int> actions;
+
+  if (dx > 0) {
+    actions.push_back(1);
+  }
+  else if (dx < 0) {
+    actions.push_back(3);
+  }
+
+  if (dy > 0) {
+    actions.push_back(0);
+  }
+  else if (dy < 0) {
+    actions.push_back(2);
+  }
+
+  assert(actions.size());
+  return SimpleRNG::ins().Sample(actions);
 }
 };
 

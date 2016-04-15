@@ -132,6 +132,11 @@ int main(int argc, const char *argv[]) {
     SimpleRNG::ins().RandomSeed(getpid());
   }
 
+  if (knowledge.RolloutLevel > 0) {
+    knowledge.RolloutLevel = SIMULATOR::KNOWLEDGE::SMART;
+    searchParams.Polling = false; // use smart hierarchical rollout
+  }
+
   SIMULATOR *real = 0;      //真实环境
   SIMULATOR *simulator = 0; //模拟器
 

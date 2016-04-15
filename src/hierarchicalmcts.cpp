@@ -31,7 +31,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
         double reward;
         int action = SimpleRNG::ins().Random(Simulator.GetNumActions());
         terminal = Simulator.Step(*state, action, observation, reward);
-        AddAbstractAction(history.LastObservation(), observation);
+        AddAbstractAction(history.LastObservation(), observation, state);
         history.Add(action, observation);
       }
 
@@ -47,6 +47,10 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
 
 HierarchicalMCTS::~HierarchicalMCTS() {
   Clear();
+
+  for (auto &e : mExits) {
+    Simulator.FreeState(e.second);
+  }
 }
 
 void HierarchicalMCTS::UnitTest() {
@@ -92,7 +96,7 @@ void HierarchicalMCTS::Clear() {
 }
 
 bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
-  AddAbstractAction(History.LastObservation(), observation);
+  AddAbstractAction(History.LastObservation(), observation, &state);
   History.Add(action, observation);
 
   // Delete old tree and create new root
@@ -107,7 +111,7 @@ int HierarchicalMCTS::SelectAction() {
   input_t input(0, History.LastObservation());
 
   if (mActionAbstraction) {
-    if (input.last_observation == 0) {  // enter target macro state
+    if (input.last_observation == '0') {  // enter target macro state XXX
       if (Params.Verbose >= 2) {
         cerr << "Cancelling action abstraction" << endl;
       }
@@ -177,29 +181,85 @@ int HierarchicalMCTS::SelectAction() {
     }
   }
 
-  macro_action_t action = GreedyPrimitiveAction(mCallStack.top(), input);
+  STATE *state = mRootSampling.CreateSample(Simulator);
+  macro_action_t action = GreedyPrimitiveAction(mCallStack.top(), input, *state);
+  Simulator.FreeState(state);
   assert(IsPrimitive(action));
 
   return action.second;
 }
 
-macro_action_t HierarchicalMCTS::RandomPrimitiveAction(macro_action_t Action,
-                                                       const input_t &input) {
+macro_action_t HierarchicalMCTS::InformativePrimitiveAction(
+    macro_action_t Action,
+    const input_t &input, STATE &state)
+{
+  if (IsPrimitive(Action)) {
+    return Action;
+  }
+
+  if (Action != mRootTask) {
+    STATE *exit = mExits[Action];
+    assert(exit);
+
+    if (exit) {
+      return PrimitiveAction(Simulator.SuggestAction(state, *exit));
+    }
+  }
+
+  macro_action_t action = RandomSubtask(Action, input);
+  return InformativePrimitiveAction(action, input, state);
+}
+
+macro_action_t HierarchicalMCTS::GetPrimitiveAction(
+    macro_action_t Action,
+    const input_t &input, STATE &state)
+{
+  if (Simulator.Knowledge.RolloutLevel >= SIMULATOR::KNOWLEDGE::SMART) {
+    return InformativePrimitiveAction(Action, input, state);
+  }
+  else {
+    return RandomPrimitiveAction(Action, input);
+  }
+}
+
+macro_action_t HierarchicalMCTS::RandomSubtask(macro_action_t Action, const input_t &input)
+{
+  assert(!IsPrimitive(Action));
+
   if (IsPrimitive(Action)) {
     return Action;
   }
 
   macro_action_t action;
   do {
-    action = *next(begin(mSubTasks[Action]), SimpleRNG::ins().Random(mSubTasks[Action].size()));
+    if (Action != mRootTask || !mActionAbstraction) {
+      action = *next(begin(mSubTasks[Action]),
+                     SimpleRNG::ins().Random(mSubTasks[Action].size()));
+    }
+    else {
+      action = *next(begin(mAvailableActions[input.last_observation]),
+                     SimpleRNG::ins().Random(mAvailableActions[input.last_observation].size()));
+    }
   } while (IsTerminated(action, input.last_observation) ||
            !Applicable(input.last_observation, action));
 
+  return action;
+}
+
+macro_action_t HierarchicalMCTS::RandomPrimitiveAction(
+    macro_action_t Action, const input_t &input)
+{
+  if (IsPrimitive(Action)) {
+    return Action;
+  }
+
+  macro_action_t action = RandomSubtask(Action, input);
   return RandomPrimitiveAction(action, input);
 }
 
-macro_action_t HierarchicalMCTS::GreedyPrimitiveAction(macro_action_t Action,
-                                                       const input_t &input) {
+macro_action_t HierarchicalMCTS::GreedyPrimitiveAction(
+    macro_action_t Action,
+    const input_t &input, STATE &state) {
   if (IsPrimitive(Action)) {
     return Action;
   }
@@ -222,14 +282,14 @@ macro_action_t HierarchicalMCTS::GreedyPrimitiveAction(macro_action_t Action,
     }
 
     action = GreedyUCB(Action, input.last_observation, *data, false);
-    return GreedyPrimitiveAction(action, input);
+    return GreedyPrimitiveAction(action, input, state);
   } else {
     if (Params.Verbose >= 1) {
       cerr << "Random Selecting V(" << Action << ", ";
       cerr << "history)" << endl;
     }
 
-    return RandomPrimitiveAction(Action, input);
+    return GetPrimitiveAction(Action, input, state);
   }
 }
 
@@ -317,7 +377,7 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
   }
 }
 
-void HierarchicalMCTS::AddAbstractAction(int from, int to) {
+void HierarchicalMCTS::AddAbstractAction(int from, int to, STATE *state) {
   if (mActionAbstraction) {
     if (from >= 0 && to >= 0 && from != to) {
       macro_action_t Actions[2] = {MacroAction(from, to), MacroAction(to, from)};
@@ -328,13 +388,13 @@ void HierarchicalMCTS::AddAbstractAction(int from, int to) {
           for (int a = 0; a < Simulator.GetNumActions(); ++a) {
             mSubTasks[Action].insert(PrimitiveAction(a));
           }
+          mAvailableActions[Action.first].insert(Action);
+          mExits[Action] = Simulator.Copy(*state);
         }
-        mAvailableActions[Action.first].insert(Action);
       }
     }
   }
 }
-
 
 HierarchicalMCTS::result_t
 HierarchicalMCTS::PollingRollout(macro_action_t Action,
@@ -348,7 +408,7 @@ HierarchicalMCTS::PollingRollout(macro_action_t Action,
     return result_t(0.0, 0, false, input.belief_hash, input.last_observation);
   }
 
-  macro_action_t action = RandomPrimitiveAction(Action, input);
+  macro_action_t action = GetPrimitiveAction(Action, input, *state);
   result_t atomic = Simulate(action, input, state, depth);
   assert(atomic.steps == 1);
 
@@ -375,7 +435,7 @@ HierarchicalMCTS::Simulate(macro_action_t action, const input_t &input, STATE *&
   double immediateReward;
   bool terminal =
       Simulator.Step(*state, action.second, observation, immediateReward);
-  AddAbstractAction(input.last_observation, observation);
+  AddAbstractAction(input.last_observation, observation, state);
 
   size_t belief_hash = 0;
   if (Simulator.mStateAbstraction) { // whole history
@@ -426,12 +486,7 @@ HierarchicalMCTS::HierarchicalRollout(macro_action_t Action,
     return result_t(0.0, 0, false, input.belief_hash, input.last_observation);
   }
 
-  macro_action_t action;
-  do {
-    action = *next(begin(mSubTasks[Action]), SimpleRNG::ins().Random(mSubTasks[Action].size()));
-  } while (IsTerminated(action, input.last_observation) ||
-           !Applicable(input.last_observation, action));
-
+  macro_action_t action = RandomSubtask(Action, input);
   auto subtask = Rollout(action, input, state, depth); // history and state will be updated
   int steps = subtask.steps;
   result_t completion(0.0, 0, false, subtask.belief_hash,

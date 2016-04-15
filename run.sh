@@ -10,11 +10,11 @@ PROBLEM="continousrooms_1"
 PROBLEM="rooms_0"
 PROBLEM="rooms_1"
 
+MAP="data/32_rooms.map"
 MAP="data/10_rooms.map"
 MAP="data/16_rooms.map"
-MAP="data/32_rooms.map"
-MAP="data/8_rooms.map"
 MAP="data/4_rooms.map"
+MAP="data/8_rooms.map"
 SIZE=7
 NUM=8
 RUNS=1
@@ -25,12 +25,13 @@ SEEDING=0
 TIMEOUT=3600
 TIMEOUTPERACTION=-1
 
+HPLANNING=1
+ACTIONABSTRACTION=1
 POLLING=1
 STACK=0
 LOCALREWARD=0
+ROLLOUTKNOWLEDGE=0
 BRANCHINGFACTOR=1
-HPLANNING=1
-ACTIONABSTRACTION=1
 
 FAKE="false"
 
@@ -39,7 +40,7 @@ LOG="log-$$.txt"
 
 make -j4
 
-while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:F" OPTION; do
+while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:k:F" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -59,6 +60,7 @@ while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:F" OPTION; do
         b) BRANCHINGFACTOR=$OPTARG ;;
         h) HPLANNING=$OPTARG ;;
         A) ACTIONABSTRACTION=$OPTARG ;;
+        k) ROLLOUTKNOWLEDGE=$OPTARG ;;
         F) FAKE="true" ;;
         *) exit ;;
     esac
@@ -89,4 +91,5 @@ run ./hplanning --outputfile $OUTPUT \
             --localreward $LOCALREWARD \
             --branchingfactor $BRANCHINGFACTOR \
             --hplanning $HPLANNING \
-            --actionabstraction $ACTIONABSTRACTION 
+            --actionabstraction $ACTIONABSTRACTION \
+            --rolloutknowledge $ROLLOUTKNOWLEDGE

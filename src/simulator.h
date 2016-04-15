@@ -102,7 +102,12 @@ class SIMULATOR {
   double GetHorizon(double accuracy, int undiscountedHorizon = 100) const;
   double GetRewardRange() const { return RewardRange; }
 
- protected:
+  virtual int SuggestAction(STATE &, STATE &) const {
+    assert(0);
+    return 0;
+  }
+
+ public:
   int NumActions, NumObservations;
   double Discount, RewardRange;
   KNOWLEDGE Knowledge;

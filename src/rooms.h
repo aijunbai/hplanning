@@ -55,6 +55,8 @@ class ROOMS : public SIMULATOR {
     return GetObservation(rstate);
   }
 
+  virtual int SuggestAction(STATE &state, STATE &exit) const;
+
  protected:
   void Parse(const char *file_name);
   int GetObservation(const ROOMS_STATE &state) const;

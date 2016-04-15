@@ -88,45 +88,45 @@ public:
     }
   };
 
-  struct belief_t {
-    belief_t() : size(0) { }
-
-    int size = 0;
-    std::unordered_map<std::size_t, std::pair<STATE *, int>> samples;
-
-    void add_sample(const STATE &state, const SIMULATOR &simulator) {
-      size += 1;
-      std::size_t hash = state.hash();
-      if (samples.count(state.hash())) {
-        samples[hash].second += 1;
-      } else {
-        STATE *sample = simulator.Copy(state);
-        samples[hash] = std::make_pair(sample, 1);
-      }
-    }
-
-    void clear(const SIMULATOR &simulator) {
-      for (auto &e : samples) {
-        simulator.FreeState(e.second.first);
-      }
-    }
-
-    STATE *sample(const SIMULATOR &simulator) {
-      int i = SimpleRNG::ins().Random(size);
-
-      for (auto &e : samples) {
-        if (i < e.second.second) {
-          STATE *sample = simulator.Copy(*e.second.first);
-          return sample;
-        } else {
-          i -= e.second.second;
-        }
-      }
-
-      assert(0);
-      return 0;
-    }
-  };
+//  struct belief_t {
+//    belief_t() : size(0) { }
+//
+//    int size = 0;
+//    std::unordered_map<std::size_t, std::pair<STATE *, int>> samples;
+//
+//    void add_sample(const STATE &state, const SIMULATOR &simulator) {
+//      size += 1;
+//      std::size_t hash = state.hash();
+//      if (samples.count(state.hash())) {
+//        samples[hash].second += 1;
+//      } else {
+//        STATE *sample = simulator.Copy(state);
+//        samples[hash] = std::make_pair(sample, 1);
+//      }
+//    }
+//
+//    void clear(const SIMULATOR &simulator) {
+//      for (auto &e : samples) {
+//        simulator.FreeState(e.second.first);
+//      }
+//    }
+//
+//    STATE *sample(const SIMULATOR &simulator) {
+//      int i = SimpleRNG::ins().Random(size);
+//
+//      for (auto &e : samples) {
+//        if (i < e.second.second) {
+//          STATE *sample = simulator.Copy(*e.second.first);
+//          return sample;
+//        } else {
+//          i -= e.second.second;
+//        }
+//      }
+//
+//      assert(0);
+//      return 0;
+//    }
+//  };
 
   struct data_t {
     struct {
@@ -166,9 +166,11 @@ public:
   macro_action_t GreedyUCB(macro_action_t Action, int last_observation,
                            data_t &data, bool ucb);
 
-  macro_action_t GreedyPrimitiveAction(macro_action_t Action, const input_t &input);
-
+  macro_action_t GreedyPrimitiveAction(macro_action_t Action, const input_t &input, STATE &state);
   macro_action_t RandomPrimitiveAction(macro_action_t Action, const input_t &input);
+  macro_action_t InformativePrimitiveAction(macro_action_t Action, const input_t &input, STATE &state);
+  macro_action_t GetPrimitiveAction(macro_action_t Action, const input_t &input, STATE &state);
+  macro_action_t RandomSubtask(macro_action_t Action, const input_t &input);
 
   bool IsTerminated(macro_action_t Action, int last_observation);
 
@@ -184,7 +186,7 @@ public:
 
   double GetExplorationConstant(macro_action_t Action);
 
-  void AddAbstractAction(int from, int to);
+  void AddAbstractAction(int from, int to, STATE *state);
 
   bool Applicable(int last_observation, macro_action_t action);
 
@@ -203,6 +205,7 @@ private:
   };
 
   std::unordered_map<macro_action_t, std::unordered_set<macro_action_t>> mSubTasks;
+  std::unordered_map<macro_action_t, STATE*> mExits;
   std::unordered_map<int, std::unordered_set<macro_action_t>> mAvailableActions;
   const macro_action_t mRootTask; // root task
   std::stack<macro_action_t> mCallStack;

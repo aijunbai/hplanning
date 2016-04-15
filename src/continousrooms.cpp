@@ -119,7 +119,7 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
   reward = -1.0;
 
   for (int i = 0; i < Knowledge.mBranchingFactor; ++i) {
-    if (SimpleRNG::ins().Bernoulli(0.25)) {  // fail
+    if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
       action = SimpleRNG::ins().Random(8);
     }
 

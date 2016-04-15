@@ -12,7 +12,7 @@
  */
 class FlatMCTS : public MCTS {
 public:
-  FlatMCTS(const SIMULATOR &simulator, const PARAMS &params);
+  FlatMCTS(const SIMULATOR &simulator, const PARAMS &params, int first_observation);
 
   virtual ~FlatMCTS();
 

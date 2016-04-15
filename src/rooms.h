@@ -50,6 +50,11 @@ class ROOMS : public SIMULATOR {
                                   std::ostream &ostr) const;
   virtual void DisplayAction(int action, std::ostream &ostr) const;
 
+  virtual int AbstractionFunction(const STATE &state) const {
+    const ROOMS_STATE &rstate = safe_cast<const ROOMS_STATE &>(state);
+    return GetObservation(rstate);
+  }
+
  protected:
   void Parse(const char *file_name);
   int GetObservation(const ROOMS_STATE &state) const;

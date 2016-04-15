@@ -137,7 +137,8 @@ public:
 
 
 public:
-  HierarchicalMCTS(const SIMULATOR &simulator, const PARAMS &params, bool action_abstraction);
+  HierarchicalMCTS(const SIMULATOR &simulator, const PARAMS &params,
+                   bool action_abstraction, int first_observation, STATE *ground_state);
 
   virtual ~HierarchicalMCTS();
 
@@ -183,7 +184,7 @@ public:
 
   double GetExplorationConstant(macro_action_t Action);
 
-  void UpdateConnection(int from, int to);
+  void AddAbstractAction(int from, int to);
 
   bool Applicable(int last_observation, macro_action_t action);
 
@@ -201,7 +202,7 @@ private:
     PRIMITIVE = -2
   };
 
-  std::unordered_map<macro_action_t, std::vector<macro_action_t>> mSubTasks;
+  std::unordered_map<macro_action_t, std::unordered_set<macro_action_t>> mSubTasks;
   std::unordered_map<int, std::unordered_set<macro_action_t>> mAvailableActions;
   const macro_action_t mRootTask; // root task
   std::stack<macro_action_t> mCallStack;

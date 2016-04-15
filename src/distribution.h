@@ -23,7 +23,7 @@ class SimpleRNG {
  public:
   static SimpleRNG &ins();
 
-  int GetRandInt();
+  int GetRand();
 
   // A uniform random sample from the open interval (0, 1)
   double GetUniform(double low = 0.0, double high = 1.0);
@@ -67,9 +67,9 @@ class SimpleRNG {
 
   void RandomSeed(int seed);
 
-  int Random(int max) { return GetRandInt() % max; }
+  int Random(int max) { return GetRand() % max; }
 
-  int Random(int min, int max) { return GetRandInt() % (max - min) + min; }
+  int Random(int min, int max) { return GetRand() % (max - min) + min; }
 
   double RandomDouble(double min, double max) { return GetUniform(min, max); }
 

@@ -120,7 +120,7 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
 
   for (int i = 0; i < Knowledge.mBranchingFactor; ++i) {
     if (SimpleRNG::ins().Bernoulli(0.25)) {  // fail
-      action = SimpleRNG::ins().GetRandInt() % 8;
+      action = SimpleRNG::ins().Random(8);
     }
 
     Vector pos = rstate.AgentPos + Vector(coord::Compass[action].X, coord::Compass[action].Y);
@@ -201,8 +201,8 @@ void ContinousROOMS::GeneratePreferred(
 
 int ContinousROOMS::GetObservation(const ContinousROOMS_STATE &rstate) const {
   return mStateAbstraction ?
-         mGrid->operator()(Position2Grid(rstate.AgentPos)) - '0' :    // room number
-         hash_value(rstate.AgentPos) % NumObservations; // full position
+         mGrid->operator()(Position2Grid(rstate.AgentPos)) : // room number
+         hash_value(rstate.AgentPos); // full position
 }
 
 void ContinousROOMS::DisplayBeliefs(const BELIEF_STATE &belief,
@@ -263,7 +263,7 @@ void ContinousROOMS::DisplayObservation(const STATE &, int observation,
                                         std::ostream &ostr) const {
   if (mStateAbstraction)
     ostr << "Observation: "
-         << "Room " << char(observation + '0') << endl;
+    << "Room " << char(observation) << endl;
   else
     ostr << "Observation: "
          << "Hash(AgentPosition) " << observation << endl;

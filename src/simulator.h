@@ -52,6 +52,14 @@ class SIMULATOR {
   // Create new state and copy argument (must be same type)
   virtual STATE *Copy(const STATE &state) const = 0;
 
+  /**
+   * used in rooms and continous rooms domains
+   */
+  virtual int AbstractionFunction(const STATE &) const {
+    assert(0);
+    return -1;
+  }
+
   // Sanity check
   virtual void Validate(const STATE &state) const;
 

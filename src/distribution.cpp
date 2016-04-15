@@ -26,7 +26,7 @@ void SimpleRNG::RandomSeed(int seed) {
   srand(seed);
 }
 
-int SimpleRNG::GetRandInt() { return rand(); }
+int SimpleRNG::GetRand() { return rand(); }
 
 double SimpleRNG::GetUniform(double low, double high) {
   return drand48() * (high - low) + low;

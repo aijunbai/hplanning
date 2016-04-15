@@ -1,7 +1,10 @@
 #HierarchicalMCTS::SelectAction
 #HierarchicalMCTS::SearchTree
-ROOMS::Step
-ContinousROOMS::Step
+#ROOMS::Step
+#ContinousROOMS::Step
 #ContinousROOMS::GetObservation
 #FlatMCTS::SearchImp
+#HierarchicalMCTS::SearchImp
 #ContinousROOMS::GetObservation
+HierarchicalMCTS::AddAbstractAction
+#HierarchicalMCTS::PollingRollout

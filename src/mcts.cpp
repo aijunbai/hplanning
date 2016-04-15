@@ -26,8 +26,9 @@ MCTS::PARAMS::PARAMS()
       Hplanning(false) { }
 
 
-MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params)
-    : Simulator(simulator), Params(params), TreeDepth(0), TreeSize(0) {
+MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params, int first_observation)
+    : Simulator(simulator), History(first_observation),
+      Params(params), TreeDepth(0), TreeSize(0) {
 }
 
 MCTS::~MCTS() {
@@ -74,6 +75,7 @@ void MCTS::Search() {
   } else {
     for (int i = 0; i < Params.NumSimulations; i++)  //总共仿真（迭代）次数
     {
+      //cerr << "i: " << i << endl;
       SearchImp();
     }
   }

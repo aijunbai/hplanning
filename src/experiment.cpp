@@ -23,18 +23,21 @@ void EXPERIMENT::Run() {
   boost::timer timer;
   MCTS *mcts = 0;
 
+  STATE *state = Real.CreateStartState(); //真实的世界状态
+  int first_observation = Real.AbstractionFunction(*state);
+
   if (SearchParams.Hplanning) {
     if (SearchParams.ActionAbstraction) {
-      mcts = new HierarchicalMCTS(Simulator, SearchParams, true);
+      mcts = new HierarchicalMCTS(Simulator, SearchParams, true, first_observation, state);
       cerr << "using hplanning w/ action abstraction" << endl;
     }
     else {
-      mcts = new HierarchicalMCTS(Simulator, SearchParams, false);
+      mcts = new HierarchicalMCTS(Simulator, SearchParams, false, first_observation, state);
       cerr << "using hplanning wo/ action abstraction" << endl;
     }
   }
   else {
-    mcts = new FlatMCTS(Simulator, SearchParams);
+    mcts = new FlatMCTS(Simulator, SearchParams, first_observation);
     cerr << "using flatplanning" << endl;
   }
 
@@ -44,8 +47,6 @@ void EXPERIMENT::Run() {
   bool terminal = false;
   bool outOfParticles = false;
   int t = 0;
-
-  STATE *state = Real.CreateStartState(); //真实的世界状态
 
   for (t = 0; t < ExpParams.NumSteps; t++) {
     int observation;

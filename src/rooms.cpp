@@ -8,8 +8,7 @@ ROOMS::ROOMS(const char *map_name, bool state_abstraction)
   Parse(map_name);
 
   NumActions = 4;  //动作数
-  NumObservations =
-      state_abstraction ? mRooms : mGrid->GetXSize() * mGrid->GetYSize();
+  NumObservations = state_abstraction ? mRooms : mGrid->GetXSize() * mGrid->GetYSize();
   Discount = 0.98;
   RewardRange = 20.0;
 
@@ -97,7 +96,7 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
 
   for (int i = 0; i < Knowledge.mBranchingFactor; ++i) {
     if (SimpleRNG::ins().Bernoulli(0.25)) {  // fail
-      action = SimpleRNG::ins().GetRandInt() % 8;
+      action = SimpleRNG::ins().Random(8);
     }
 
     COORD pos = rstate.AgentPos + coord::Compass[action];
@@ -162,8 +161,8 @@ void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &,  //手工策�
 }
 
 int ROOMS::GetObservation(const ROOMS_STATE &rstate) const {
-  return mStateAbstraction ? mGrid->operator()(rstate.AgentPos) - '0'  // room number
-                           : mGrid->Index(rstate.AgentPos);  // full position
+  return mStateAbstraction ? mGrid->operator()(rstate.AgentPos) : // room number
+         mGrid->Index(rstate.AgentPos); // full position
 }
 
 void ROOMS::DisplayBeliefs(const BELIEF_STATE &belief, std::ostream &ostr) const {
@@ -218,7 +217,7 @@ void ROOMS::DisplayObservation(const STATE &, int observation,
                                std::ostream &ostr) const {
   if (mStateAbstraction)
     ostr << "Observation: "
-    << "Room " << char(observation + '0') << endl;
+    << "Room " << char(observation) << endl;
   else
     ostr << "Observation: "
     << "Coord " << mGrid->Coord(observation) << endl;

@@ -50,6 +50,11 @@ class ContinousROOMS : public SIMULATOR {
                                   std::ostream &ostr) const;
   virtual void DisplayAction(int action, std::ostream &ostr) const;
 
+  virtual int AbstractionFunction(const STATE &state) const {
+    const ContinousROOMS_STATE &rstate = safe_cast<const ContinousROOMS_STATE &>(state);
+    return GetObservation(rstate);
+  }
+
  protected:
   bool IsValid(const Vector &pos) const;
   void Parse(const char *file_name);

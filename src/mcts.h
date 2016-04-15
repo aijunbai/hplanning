@@ -28,7 +28,7 @@ public:
     bool Hplanning;
   };
 
-  MCTS(const SIMULATOR &simulator, const PARAMS &params);
+  MCTS(const SIMULATOR &simulator, const PARAMS &params, int first_observation);
 
   virtual ~MCTS();
 

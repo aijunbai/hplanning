@@ -20,6 +20,10 @@ class HISTORY {
     int Observation;
   };
 
+  HISTORY(int first_observation) {
+    Add(0, first_observation);
+  }
+
   void Add(int action, int obs) {
     History.push_back(ENTRY(action, obs));
   }

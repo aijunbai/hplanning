@@ -4,8 +4,8 @@
 using namespace std;
 using namespace UTILS;
 
-FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params)
-    : MCTS(simulator, params) {
+FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params, int first_observation)
+    : MCTS(simulator, params, first_observation) {
   STATE *state = Simulator.CreateStartState();  //可能的开始状态
 
   Root = ExpandNode(state, History);  //生成根节点并初始化
@@ -200,7 +200,6 @@ double FlatMCTS::SimulateQ(STATE &state, QNODE &qnode, int action, int depth) {
     qnode.Update(observation, immediateReward, 1);  //记录一次转移
   }
 
-  assert(observation >= 0 && observation < Simulator.GetNumObservations());
   History.Add(action, observation);
 
   if (Params.Verbose >= 3) {
@@ -456,7 +455,7 @@ STATE *FlatMCTS::CreateTransform() const {
 }
 
 void FlatMCTS::DisplayValue(int depth, ostream &ostr) const {
-  HISTORY history;
+  HISTORY history(0);
   ostr << "MCTS Values:" << endl;
 
   std::vector<double> qvalues(Simulator.GetNumActions());
@@ -483,10 +482,10 @@ void FlatMCTS::UnitTest() {
 void FlatMCTS::UnitTestGreedy() {
   TEST_SIMULATOR testSimulator(5, 5, 0);
   PARAMS params;
-  FlatMCTS mcts(testSimulator, params);
+  FlatMCTS mcts(testSimulator, params, 0);
   int numAct = testSimulator.GetNumActions();
 
-  HISTORY History;
+  HISTORY History(0);
   VNODE *vnode = mcts.ExpandNode(testSimulator.CreateStartState(), History);
   vnode->UCB.Value.Set(1, 0);
   vnode->Child(0).UCB.Value.Set(1, 1/*, 2, 1*/);
@@ -500,9 +499,9 @@ void FlatMCTS::UnitTestGreedy() {
 void FlatMCTS::UnitTestUCB() {
   TEST_SIMULATOR testSimulator(5, 5, 0);
   PARAMS params;
-  FlatMCTS mcts(testSimulator, params);
+  FlatMCTS mcts(testSimulator, params, 0);
   int numAct = testSimulator.GetNumActions();
-  HISTORY History;
+  HISTORY History(0);
 
   // With equal value, action with lowest count is selected
   VNODE *vnode1 = mcts.ExpandNode(testSimulator.CreateStartState(), History);
@@ -550,7 +549,7 @@ void FlatMCTS::UnitTestRollout() {
   PARAMS params;
   params.NumSimulations = 1000;
   params.MaxDepth = 10;
-  FlatMCTS mcts(testSimulator, params);
+  FlatMCTS mcts(testSimulator, params, 0);
   double totalReward = 0.0;
   for (int n = 0; n < mcts.Params.NumSimulations; ++n) {
     STATE *state = testSimulator.CreateStartState();
@@ -566,7 +565,7 @@ void FlatMCTS::UnitTestSearch(int depth) {
   PARAMS params;
   params.MaxDepth = depth + 1;
   params.NumSimulations = pow(10, depth + 1);
-  FlatMCTS mcts(testSimulator, params);
+  FlatMCTS mcts(testSimulator, params, 0);
   mcts.Search();
   double rootValue = mcts.Root->UCB.Value.GetValue();
   double optimalValue = testSimulator.OptimalValue();

@@ -4,57 +4,34 @@
 using namespace std;
 
 HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
-                                   const PARAMS &params, bool action_abstraction)
-    : MCTS(simulator, params),
+                                   const PARAMS &params, bool action_abstraction,
+                                   int first_observation, STATE *ground_state)
+    : MCTS(simulator, params, first_observation),
       mRootTask(-1, 0),
       mActionAbstraction(action_abstraction) {
-  mSubTasks[mRootTask] = vector<macro_action_t>();  // root action
-
-  for (int a = 0; a < Simulator.GetNumActions(); ++a) {
-    mSubTasks[PrimitiveAction(a)] = vector<macro_action_t>();  // primitive actions
-  }
-
-  if (mActionAbstraction) {
-    assert(Simulator.GetNumObservations() > 0);
-
-    for (int from = 0; from < Simulator.GetNumObservations(); ++from) {
-      for (int to = 0; to < Simulator.GetNumObservations(); ++to) {
-        if (from != to) {
-          mSubTasks[mRootTask].push_back(MacroAction(from, to));
-          mSubTasks[MacroAction(from, to)] = vector<macro_action_t>();
-
-          for (int a = 0; a < Simulator.GetNumActions(); ++a) {
-            mSubTasks[MacroAction(from, to)].push_back(PrimitiveAction(a));
-          }
-        }
-      }
-    }
-  } else {
+  if (!mActionAbstraction) {
     for (int a = 0; a < Simulator.GetNumActions(); ++a) {
-      mSubTasks[mRootTask].push_back(PrimitiveAction(a));
+      mSubTasks[mRootTask].insert(PrimitiveAction(a));
     }
   }
 
-  for (int i = 0; i < Params.NumStartStates; i++) {
-    mRootSampling.AddSample(Simulator.CreateStartState());
-  }
+  mRootSampling.AddSample(Simulator.Copy(*ground_state));
 
   if (mActionAbstraction) {
     int iterations = 1000, max_depth = 1000;
 
     for (int i = 0; i < iterations; ++i) {
-      HISTORY history;
+      HISTORY history(first_observation);
       STATE *state = mRootSampling.CreateSample(Simulator);
       Simulator.Validate(*state);
       bool terminal = false;
-      int step = 0;
 
-      for (; !terminal && step < max_depth; ++step) {
+      for (int step = 0; !terminal && step < max_depth; ++step) {
         int observation;
         double reward;
         int action = SimpleRNG::ins().Random(Simulator.GetNumActions());
         terminal = Simulator.Step(*state, action, observation, reward);
-        UpdateConnection(history.LastObservation(), observation);
+        AddAbstractAction(history.LastObservation(), observation);
         history.Add(action, observation);
       }
 
@@ -115,7 +92,7 @@ void HierarchicalMCTS::Clear() {
 }
 
 bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
-  UpdateConnection(History.LastObservation(), observation);
+  AddAbstractAction(History.LastObservation(), observation);
   History.Add(action, observation);
 
   // Delete old tree and create new root
@@ -127,7 +104,7 @@ bool HierarchicalMCTS::Update(int action, int observation, STATE &state) {
 }
 
 int HierarchicalMCTS::SelectAction() {
-  input_t input(0 /*History.BeliefHash()*/, History.LastObservation());
+  input_t input(0, History.LastObservation());
 
   if (mActionAbstraction) {
     if (input.last_observation == 0) {  // enter target macro state
@@ -137,7 +114,7 @@ int HierarchicalMCTS::SelectAction() {
 
       mSubTasks[mRootTask].clear();
       for (int a = 0; a < Simulator.GetNumActions(); ++a) {
-        mSubTasks[mRootTask].push_back(PrimitiveAction(a));
+        mSubTasks[mRootTask].insert(PrimitiveAction(a));
       }
 
       while (mCallStack.size()) {
@@ -214,7 +191,7 @@ macro_action_t HierarchicalMCTS::RandomPrimitiveAction(macro_action_t Action,
 
   macro_action_t action;
   do {
-    action = SimpleRNG::ins().Sample(mSubTasks[Action]);
+    action = *next(begin(mSubTasks[Action]), SimpleRNG::ins().Random(mSubTasks[Action].size()));
   } while (IsTerminated(action, input.last_observation) ||
            !Applicable(input.last_observation, action));
 
@@ -257,6 +234,7 @@ macro_action_t HierarchicalMCTS::GreedyPrimitiveAction(macro_action_t Action,
 }
 
 void HierarchicalMCTS::SearchImp() {
+  assert(mRootSampling.GetNumSamples() == 1);
   int historyDepth = History.Size();
 
   STATE *state = mRootSampling.CreateSample(Simulator);
@@ -275,6 +253,9 @@ HierarchicalMCTS::result_t
 HierarchicalMCTS::SearchTree(macro_action_t Action,
                              const HierarchicalMCTS::input_t &input,
                              STATE *&state, int depth) {
+  //cerr << "Action: " << Action << endl;
+  //cerr << "depth: " << depth << endl;
+
   TreeDepth = max(TreeDepth, depth);
 
   if (Params.Verbose >= 3) {
@@ -336,11 +317,20 @@ HierarchicalMCTS::SearchTree(macro_action_t Action,
   }
 }
 
-void HierarchicalMCTS::UpdateConnection(int from, int to) {
+void HierarchicalMCTS::AddAbstractAction(int from, int to) {
   if (mActionAbstraction) {
     if (from >= 0 && to >= 0 && from != to) {
-      mAvailableActions[from].insert(MacroAction(from, to));
-      mAvailableActions[to].insert(MacroAction(to, from));
+      macro_action_t Actions[2] = {MacroAction(from, to), MacroAction(to, from)};
+
+      for (auto Action: Actions) {
+        if (mSubTasks[mRootTask].count(Action) == 0) {
+          mSubTasks[mRootTask].insert(Action);
+          for (int a = 0; a < Simulator.GetNumActions(); ++a) {
+            mSubTasks[Action].insert(PrimitiveAction(a));
+          }
+        }
+        mAvailableActions[Action.first].insert(Action);
+      }
     }
   }
 }
@@ -350,6 +340,8 @@ HierarchicalMCTS::result_t
 HierarchicalMCTS::PollingRollout(macro_action_t Action,
                                  const HierarchicalMCTS::input_t &input, STATE *&state,
                                  int depth) {
+  //cerr << "Rollout Action: " << Action << endl;
+  //cerr << "Rollout depth: " << depth << endl;
   assert(!IsPrimitive(Action));
 
   if (depth >= Params.MaxDepth || IsTerminated(Action, input.last_observation)) {
@@ -383,7 +375,7 @@ HierarchicalMCTS::Simulate(macro_action_t action, const input_t &input, STATE *&
   double immediateReward;
   bool terminal =
       Simulator.Step(*state, action.second, observation, immediateReward);
-  UpdateConnection(input.last_observation, observation);
+  AddAbstractAction(input.last_observation, observation);
 
   size_t belief_hash = 0;
   if (Simulator.mStateAbstraction) { // whole history
@@ -436,7 +428,7 @@ HierarchicalMCTS::HierarchicalRollout(macro_action_t Action,
 
   macro_action_t action;
   do {
-    action = SimpleRNG::ins().Sample(mSubTasks[Action]);
+    action = *next(begin(mSubTasks[Action]), SimpleRNG::ins().Random(mSubTasks[Action].size()));
   } while (IsTerminated(action, input.last_observation) ||
            !Applicable(input.last_observation, action));
 
@@ -465,9 +457,7 @@ macro_action_t HierarchicalMCTS::GreedyUCB(macro_action_t Action,
   double bestq = -Infinity;
   int N = data.V[Params.LocalReward].value.GetCount();
 
-  for (uint i = 0; i < mSubTasks[Action].size(); ++i) {
-    macro_action_t action = mSubTasks[Action][i];
-
+  for (macro_action_t action : mSubTasks[Action]) {
     if (IsTerminated(action, last_observation) ||
         !Applicable(last_observation, action) ||
         action.first == action.second) {

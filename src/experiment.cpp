@@ -6,16 +6,16 @@
 using namespace std;
 
 EXPERIMENT::PARAMS::PARAMS()
-    : NumRuns(1000), NumSteps(100000), TimeOut(3600), MinDoubles(0),
-      MaxDoubles(20), TransformDoubles(-4), TransformAttempts(1000),
-      Accuracy(0.001), UndiscountedHorizon(1000) { }
+  : NumRuns(1000), NumSteps(100000), TimeOut(3600), MinDoubles(0),
+    MaxDoubles(20), TransformDoubles(-4), TransformAttempts(1000),
+    Accuracy(0.001), UndiscountedHorizon(1000) { }
 
 EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
                        const string &outputFile, EXPERIMENT::PARAMS &expParams,
                        MCTS::PARAMS &searchParams)
-    : Real(real), Simulator(simulator), ExpParams(expParams),
-      SearchParams(searchParams),
-      OutputFile(outputFile.c_str(), fstream::out | fstream::app) {
+  : Real(real), Simulator(simulator), ExpParams(expParams),
+    SearchParams(searchParams),
+    OutputFile(outputFile.c_str(), fstream::out | fstream::app) {
   MCTS::InitFastUCB(); //初始化 UCB 表格缓存
 }
 
@@ -62,8 +62,8 @@ void EXPERIMENT::Run() {
     Results.TimePerAction.Add(timer_per_action.elapsed());
 
     terminal = Real.Step(
-        *state, action, observation,
-        reward); //根据 state 和 action 转移到下一个状态，获得实际观察和回报
+          *state, action, observation,
+          reward); //根据 state 和 action 转移到下一个状态，获得实际观察和回报
     Results.Reward.Add(reward);
     undiscountedReturn += reward;
     discountedReturn += reward * discount;
@@ -85,7 +85,7 @@ void EXPERIMENT::Run() {
     }
 
     outOfParticles = !mcts->Update(
-        action, observation, *state); //更新历史信息，得到新的 Root 节点，设置好初始信念状态
+          action, observation, *state); //更新历史信息，得到新的 Root 节点，设置好初始信念状态
     if (outOfParticles) {
       assert(!Real.mHierarchicalPlanning);
       break; // Out of particles, finishing episode with SelectRandom
@@ -93,7 +93,7 @@ void EXPERIMENT::Run() {
 
     if (timer.elapsed() > ExpParams.TimeOut) {
       cout << "Timed out after " << t << " steps in " << Results.Time.GetTotal()
-      << "seconds" << endl;
+           << "seconds" << endl;
       break;
     }
   }
@@ -138,9 +138,9 @@ void EXPERIMENT::Run() {
 
   cout << "\n#End of experiment:" << endl;
   cout << "#Discounted return = " << discountedReturn
-  << ", average = " << Results.DiscountedReturn.GetMean() << endl;
+       << ", average = " << Results.DiscountedReturn.GetMean() << endl;
   cout << "#Undiscounted return = " << undiscountedReturn
-  << ", average = " << Results.UndiscountedReturn.GetMean() << endl;
+       << ", average = " << Results.UndiscountedReturn.GetMean() << endl;
 
   delete mcts;
 }
@@ -149,14 +149,14 @@ void EXPERIMENT::MultiRun() {
   for (int n = 0; n < ExpParams.NumRuns; n++) //实验次数
   {
     cout << "Starting run " << n + 1 << " with " << SearchParams.NumSimulations
-    << " simulations... " << endl;
+         << " simulations... " << endl;
 
     Run();
     assert(VNODE::GetNumAllocated() == 0);
 
     if (Results.Time.GetTotal() > ExpParams.TimeOut) {
       cout << "Timed out after " << n << " runs in " << Results.Time.GetTotal()
-      << "seconds" << endl;
+           << "seconds" << endl;
       break;
     }
   }
@@ -165,15 +165,15 @@ void EXPERIMENT::MultiRun() {
 void EXPERIMENT::DiscountedReturn() {
   cout << "Main runs" << endl;
   OutputFile << "#Simulations\tRuns\tUndiscountedReturn\tUndiscountedError\t"
-      "DiscountedReturn\tDiscountedError\t"
-      "Time\tTimePerAction\tExploredNodes\tExploredNodesError\t"
-      "ExploredDepth\tExploredDepthError\n";
+                "DiscountedReturn\tDiscountedError\t"
+                "Time\tTimePerAction\tExploredNodes\tExploredNodesError\t"
+                "ExploredDepth\tExploredDepthError\n";
 
   SearchParams.MaxDepth = Simulator.GetHorizon(
-      ExpParams.Accuracy,
-      ExpParams.UndiscountedHorizon); //搜索过程中的最大深度
+        ExpParams.Accuracy,
+        ExpParams.UndiscountedHorizon); //搜索过程中的最大深度
   ExpParams.NumSteps = Real.GetHorizon(
-      ExpParams.Accuracy, ExpParams.UndiscountedHorizon); //实验的最大步长
+        ExpParams.Accuracy, ExpParams.UndiscountedHorizon); //实验的最大步长
 
   for (int i = ExpParams.MinDoubles; i <= ExpParams.MaxDoubles; i++) {
     SearchParams.NumSimulations = 1 << i; //迭代次数 iterations
@@ -184,7 +184,7 @@ void EXPERIMENT::DiscountedReturn() {
 
     if (i + ExpParams.TransformDoubles >= 0)
       SearchParams.NumTransforms = 1
-                                   << (i + ExpParams.TransformDoubles); // 1/16
+          << (i + ExpParams.TransformDoubles); // 1/16
     else
       SearchParams.NumTransforms = 1;
     SearchParams.MaxAttempts =
@@ -194,28 +194,28 @@ void EXPERIMENT::DiscountedReturn() {
     MultiRun();
 
     cout << "#Simulations = " << SearchParams.NumSimulations << endl
-    << "#Runs = " << Results.Time.GetCount() << endl
-    << "#Undiscounted return = " << Results.UndiscountedReturn.GetMean()
-    << " +- " << Results.UndiscountedReturn.GetStdErr() << endl
-    << "#Discounted return = " << Results.DiscountedReturn.GetMean()
-    << " +- " << Results.DiscountedReturn.GetStdErr() << endl
-    << "#Time = " << Results.Time.GetMean() << endl
-    << "#TimePerAction = " << Results.TimePerAction.GetMean() << endl
-    << "#ExploredNodes = " << Results.ExploredNodes.GetMean() << " +- "
-    << Results.ExploredNodes.GetStdErr() << endl
-    << "#ExploredDepth = " << Results.ExploredDepth.GetMean() << " +- "
-    << Results.ExploredDepth.GetStdErr() << endl;
+         << "#Runs = " << Results.Time.GetCount() << endl
+         << "#Undiscounted return = " << Results.UndiscountedReturn.GetMean()
+         << " +- " << Results.UndiscountedReturn.GetStdErr() << endl
+         << "#Discounted return = " << Results.DiscountedReturn.GetMean()
+         << " +- " << Results.DiscountedReturn.GetStdErr() << endl
+         << "#Time = " << Results.Time.GetMean() << endl
+         << "#TimePerAction = " << Results.TimePerAction.GetMean() << endl
+         << "#ExploredNodes = " << Results.ExploredNodes.GetMean() << " +- "
+         << Results.ExploredNodes.GetStdErr() << endl
+         << "#ExploredDepth = " << Results.ExploredDepth.GetMean() << " +- "
+         << Results.ExploredDepth.GetStdErr() << endl;
 
     OutputFile << SearchParams.NumSimulations << "\t" << Results.Time.GetCount()
-    << "\t" << Results.UndiscountedReturn.GetMean() << "\t"
-    << Results.UndiscountedReturn.GetStdErr() << "\t"
-    << Results.DiscountedReturn.GetMean() << "\t"
-    << Results.DiscountedReturn.GetStdErr() << "\t"
-    << Results.Time.GetMean() << "\t"
-    << Results.TimePerAction.GetMean() << "\t"
-    << Results.ExploredNodes.GetMean() << "\t"
-    << Results.ExploredNodes.GetStdErr() << "\t"
-    << Results.ExploredDepth.GetMean() << "\t"
-    << Results.ExploredDepth.GetStdErr() << "\t" << endl;
+               << "\t" << Results.UndiscountedReturn.GetMean() << "\t"
+               << Results.UndiscountedReturn.GetStdErr() << "\t"
+               << Results.DiscountedReturn.GetMean() << "\t"
+               << Results.DiscountedReturn.GetStdErr() << "\t"
+               << Results.Time.GetMean() << "\t"
+               << Results.TimePerAction.GetMean() << "\t"
+               << Results.ExploredNodes.GetMean() << "\t"
+               << Results.ExploredNodes.GetStdErr() << "\t"
+               << Results.ExploredDepth.GetMean() << "\t"
+               << Results.ExploredDepth.GetStdErr() << "\t" << endl;
   }
 }

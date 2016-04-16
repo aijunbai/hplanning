@@ -296,17 +296,17 @@ inline int MoveTo(const COORD &pos, const COORD &target)
   std::vector<int> actions;
 
   if (dx > 0) {
-    actions.push_back(1);
+    actions.push_back(E_EAST);
   }
   else if (dx < 0) {
-    actions.push_back(3);
+    actions.push_back(E_WEST);
   }
 
   if (dy > 0) {
-    actions.push_back(0);
+    actions.push_back(E_NORTH);
   }
   else if (dy < 0) {
-    actions.push_back(2);
+    actions.push_back(E_SOUTH);
   }
 
   assert(actions.size());

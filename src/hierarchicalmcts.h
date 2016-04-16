@@ -179,7 +179,7 @@ private:
     PRIMITIVE = -2
   };
 
-  std::unordered_map<option_t, std::unordered_set<option_t>> mSubTasks;
+  std::unordered_map<option_t, std::unordered_set<option_t>> mTaskGraph;
   std::unordered_map<option_t, STATE*> mExits;
   std::unordered_map<int, std::unordered_set<option_t>> mAvailableOptions;
   std::unordered_multiset<int> mVisited; // visited abstract states

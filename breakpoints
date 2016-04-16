@@ -15,4 +15,7 @@
 #FlatMCTS::DisplayValue
 #HierarchicalMCTS::SmartPrimitiveAction
 #HierarchicalMCTS::GetPrimitiveAction
-HierarchicalMCTS::GetSubtask
+#HierarchicalMCTS::GetSubtask
+#EXPERIMENT::Run
+experiment.cpp:61 if t == 226
+experiment.cpp:61 if t == 229

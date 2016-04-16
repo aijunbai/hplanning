@@ -23,7 +23,7 @@ void QNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
     ostr << "qvalue=" << *qvalue << ", " << endl;
   }
 
-  if (history.Size() >= maxDepth) return;
+  if (history.Size() > maxDepth) return;
 
   for (auto it = Children.begin(); it != Children.end(); ++it) {
     history.Back().Observation = it->first;
@@ -73,7 +73,7 @@ void VNODE::SetPrior(int actions, int count, double value, bool applicable) {
 
 void VNODE::DisplayValue(HISTORY &history, int maxDepth, ostream &ostr,
                          const std::vector<double> *qvalues) const {
-  if (history.Size() >= maxDepth) return;
+  if (history.Size() > maxDepth) return;
 
   for (auto it = Children.begin(); it != Children.end(); ++it) {
     int action = it->first;

@@ -1,13 +1,15 @@
-#HierarchicalMCTS::SelectAction
-#HierarchicalMCTS::SearchTree
 #ROOMS::Step
 #ContinousROOMS::Step
 #ContinousROOMS::GetObservation
 #FlatMCTS::SearchImp
-HierarchicalMCTS::SearchImp
+#HierarchicalMCTS::SearchImp
+HierarchicalMCTS::SearchTree if input.ending_observation == '0'
+HierarchicalMCTS::Simulate
+#HierarchicalMCTS::SelectAction
 #ContinousROOMS::GetObservation
 #HierarchicalMCTS::AddAbstractAction
 #HierarchicalMCTS::GetPrimitiveAction
 #HierarchicalMCTS::SelectAction
 #HierarchicalMCTS::PollingRollout
 #HierarchicalMCTS::RandomSubtask
+#FlatMCTS::DisplayValue

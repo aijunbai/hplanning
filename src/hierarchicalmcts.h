@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <stack>
 
-typedef std::pair<int, int> macro_action_t;
+typedef std::pair<int, int> option_t; // from -> to
 
 namespace std {
 
@@ -37,22 +37,22 @@ public:
 class HierarchicalMCTS : public MCTS {
 public:
   struct input_t {
-    input_t(std::size_t b, int o) : belief_hash(b), last_observation(o) { }
+    input_t(std::size_t b, int o) : belief_hash(b), ending_observation(o) { }
 
     std::size_t belief_hash;
-    int last_observation;
+    int ending_observation;
   };
 
   struct result_t {
     result_t(double r, int s, bool t, std::size_t b, int o)
         : reward(r), steps(s), global_terminal(t), belief_hash(b),
-          last_observation(o) { }
+          ending_observation(o) { }
 
     double reward;
     int steps;
     bool global_terminal; // global terminal state
     std::size_t belief_hash;
-    int last_observation;
+    int ending_observation;
 
     friend std::ostream &operator<<(std::ostream &os, const result_t &o) {
       return os << "{"
@@ -60,7 +60,7 @@ public:
              << "steps=" << o.steps << ", "
              << "terminal=" << o.global_terminal << ", "
              << "belief_hash=" << o.belief_hash << ", "
-             << "last_observation=" << o.last_observation << "}";
+             << "last_observation=" << o.ending_observation << "}";
     }
   };
 
@@ -88,50 +88,10 @@ public:
     }
   };
 
-//  struct belief_t {
-//    belief_t() : size(0) { }
-//
-//    int size = 0;
-//    std::unordered_map<std::size_t, std::pair<STATE *, int>> samples;
-//
-//    void add_sample(const STATE &state, const SIMULATOR &simulator) {
-//      size += 1;
-//      std::size_t hash = state.hash();
-//      if (samples.count(state.hash())) {
-//        samples[hash].second += 1;
-//      } else {
-//        STATE *sample = simulator.Copy(state);
-//        samples[hash] = std::make_pair(sample, 1);
-//      }
-//    }
-//
-//    void clear(const SIMULATOR &simulator) {
-//      for (auto &e : samples) {
-//        simulator.FreeState(e.second.first);
-//      }
-//    }
-//
-//    STATE *sample(const SIMULATOR &simulator) {
-//      int i = SimpleRNG::ins().Random(size);
-//
-//      for (auto &e : samples) {
-//        if (i < e.second.second) {
-//          STATE *sample = simulator.Copy(*e.second.first);
-//          return sample;
-//        } else {
-//          i -= e.second.second;
-//        }
-//      }
-//
-//      assert(0);
-//      return 0;
-//    }
-//  };
-
   struct data_t {
     struct {
       STATISTIC value;
-      std::unordered_map<macro_action_t, STATISTIC> qvalues;
+      std::unordered_map<option_t, STATISTIC> qvalues;
     } V[2];
   };
 
@@ -148,51 +108,51 @@ public:
 
   virtual bool Update(int action, int observation, STATE &state);
 
-  result_t SearchTree(macro_action_t Action, const input_t &input,
+  result_t SearchTree(option_t Action, const input_t &input,
                       STATE *&state, int depth);
 
-  result_t Simulate(macro_action_t action, const input_t &input, STATE *&state,
+  result_t Simulate(option_t action, const input_t &input, STATE *&state,
                     int depth);
 
-  result_t Rollout(macro_action_t Action, const input_t &input, STATE *&state,
+  result_t Rollout(option_t Action, const input_t &input, STATE *&state,
                    int depth);
 
-  result_t PollingRollout(macro_action_t Action, const input_t &input, STATE *&state,
+  result_t PollingRollout(option_t Action, const input_t &input, STATE *&state,
                           int depth);
 
-  result_t HierarchicalRollout(macro_action_t Action, const input_t &input, STATE *&state,
+  result_t HierarchicalRollout(option_t Action, const input_t &input, STATE *&state,
                                int depth);
 
-  macro_action_t GreedyUCB(macro_action_t Action, int last_observation,
+  option_t GreedyUCB(option_t Action, int last_observation,
                            data_t &data, bool ucb);
 
-  macro_action_t GreedyPrimitiveAction(macro_action_t Action, const input_t &input, STATE &state);
-  macro_action_t RandomPrimitiveAction(macro_action_t Action, const input_t &input);
-  macro_action_t InformativePrimitiveAction(macro_action_t Action, const input_t &input, STATE &state);
-  macro_action_t GetPrimitiveAction(macro_action_t Action, const input_t &input, STATE &state);
-  macro_action_t RandomSubtask(macro_action_t Action, const input_t &input);
+  option_t GreedyPrimitiveAction(option_t Action, const input_t &input, STATE &state);
+  option_t RandomPrimitiveAction(option_t Action, const input_t &input);
+  option_t InformativePrimitiveAction(option_t Action, const input_t &input, STATE &state);
+  option_t GetPrimitiveAction(option_t Action, const input_t &input, STATE &state);
+  option_t RandomSubtask(option_t Action, const input_t &input);
 
-  bool IsTerminated(macro_action_t Action, int last_observation);
+  bool IsTerminated(option_t Action, int last_observation);
 
-  bool IsGoal(macro_action_t Action, int last_observation);
+  bool IsGoal(option_t Action, int last_observation);
 
-  bool IsPrimitive(macro_action_t Action);
+  bool IsPrimitive(option_t Action);
 
-  double LocalReward(macro_action_t Action, int last_observation, int depth);
+  double LocalReward(option_t Action, int last_observation, int depth);
 
-  macro_action_t MacroAction(int from, int to);
+  option_t Option(int from, int to);
 
-  macro_action_t PrimitiveAction(int action);
+  option_t PrimitiveAction(int action);
 
-  double GetExplorationConstant(macro_action_t Action);
+  double GetExplorationConstant(option_t Action);
 
-  void AddAbstractAction(int from, int to, STATE *state);
+  void AddOption(int from, int to, STATE *state);
 
-  bool Applicable(int last_observation, macro_action_t action);
+  bool Applicable(int last_observation, option_t action);
 
-  data_t *Query(macro_action_t Action, size_t belief_hash);
+  data_t *Query(option_t Action, size_t belief_hash);
 
-  data_t *Insert(macro_action_t Action, size_t belief_hash);
+  data_t *Insert(option_t Action, size_t belief_hash);
 
   void Clear();
 
@@ -204,13 +164,13 @@ private:
     PRIMITIVE = -2
   };
 
-  std::unordered_map<macro_action_t, std::unordered_set<macro_action_t>> mSubTasks;
-  std::unordered_map<macro_action_t, STATE*> mExits;
-  std::unordered_map<int, std::unordered_set<macro_action_t>> mAvailableActions;
-  const macro_action_t mRootTask; // root task
-  std::stack<macro_action_t> mCallStack;
-  std::unordered_map<macro_action_t, std::unordered_map<size_t, data_t *>> mTree;
-  BELIEF_STATE mRootSampling;
+  std::unordered_map<option_t, std::unordered_set<option_t>> mSubTasks;
+  std::unordered_map<option_t, STATE*> mExits;
+  std::unordered_map<int, std::unordered_set<option_t>> mAvailableOptions;
+  const option_t mRootTask; // root task
+  std::stack<option_t> mCallStack;
+  std::unordered_map<option_t, std::unordered_map<size_t, data_t *>> mTree;
+  BELIEF_STATE mBelief;
   bool mActionAbstraction;
 };
 

@@ -28,7 +28,7 @@ class HISTORY {
     History.push_back(ENTRY(action, obs));
   }
 
-  int LastObservation() const {
+  int EndingObservation() const {
     if (History.size()) {
       return History.back().Observation;
     }
@@ -64,7 +64,7 @@ class HISTORY {
   }
 
   void Display(std::ostream &ostr) const {
-    for (uint t = 0; t < History.size(); ++t) {
+    for (uint t = 1; t < History.size(); ++t) {
       ostr << "a=" << History[t].Action << ", ";
       if (History[t].Observation >= 0)
         ostr << "o=" << History[t].Observation << ", ";

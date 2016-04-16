@@ -128,32 +128,29 @@ public:
 
   option_t GreedyPrimitiveAction(option_t option, const input_t &input, STATE &state);
   option_t RandomPrimitiveAction(option_t option, const input_t &input);
-  option_t InformativePrimitiveAction(option_t option, const input_t &input, STATE &state);
+  option_t SmartPrimitiveAction(option_t option, const input_t &input, STATE &state);
   option_t GetPrimitiveAction(option_t option, const input_t &input, STATE &state);
+
   option_t RandomSubtask(option_t option, const input_t &input);
+  option_t SmartSubtask(option_t option, const input_t &input, STATE &state);
+  option_t GetSubtask(option_t option, const input_t &input, STATE &state);
+
+  option_t RandomOption(const input_t &input);
 
   bool IsTerminated(option_t option, int last_observation);
-
   bool IsGoal(option_t option, int last_observation);
-
   bool IsPrimitive(option_t option);
 
   double LocalReward(option_t option, int last_observation, int depth);
 
   option_t Option(int from, int to);
-
   option_t PrimitiveAction(int action);
 
   double GetExplorationConstant(option_t option);
-
   void AddOption(int from, int to, STATE *state);
-
   bool Applicable(int last_observation, option_t action);
-
   data_t *Query(option_t option, size_t belief_hash);
-
   data_t *Insert(option_t option, size_t belief_hash);
-
   void Clear();
 
   void Visit(option_t option, int observation) {

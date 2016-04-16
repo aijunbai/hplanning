@@ -3,13 +3,16 @@
 #ContinousROOMS::GetObservation
 #FlatMCTS::SearchImp
 #HierarchicalMCTS::SearchImp
-HierarchicalMCTS::SearchTree if input.ending_observation == '0'
-HierarchicalMCTS::Simulate
+#HierarchicalMCTS::SearchTree if input.ending_observation == '0'
+#HierarchicalMCTS::Simulate
+#HierarchicalMCTS::GreedyUCB
 #HierarchicalMCTS::SelectAction
 #ContinousROOMS::GetObservation
 #HierarchicalMCTS::AddAbstractAction
 #HierarchicalMCTS::GetPrimitiveAction
 #HierarchicalMCTS::SelectAction
 #HierarchicalMCTS::PollingRollout
-#HierarchicalMCTS::RandomSubtask
 #FlatMCTS::DisplayValue
+#HierarchicalMCTS::SmartPrimitiveAction
+#HierarchicalMCTS::GetPrimitiveAction
+HierarchicalMCTS::GetSubtask

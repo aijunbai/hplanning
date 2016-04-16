@@ -66,23 +66,23 @@ bool HierarchicalMCTS::Applicable(int last_observation, option_t action) {
   return true;
 }
 
-HierarchicalMCTS::data_t *HierarchicalMCTS::Query(option_t Action,
+HierarchicalMCTS::data_t *HierarchicalMCTS::Query(option_t option,
                                                   size_t belief_hash) {
-  if (mTree.count(Action)) {
-    if (mTree[Action].count(belief_hash)) {
-      return mTree[Action][belief_hash];
+  if (mTree.count(option)) {
+    if (mTree[option].count(belief_hash)) {
+      return mTree[option][belief_hash];
     }
   }
 
   return 0;
 }
 
-HierarchicalMCTS::data_t *HierarchicalMCTS::Insert(option_t Action,
+HierarchicalMCTS::data_t *HierarchicalMCTS::Insert(option_t option,
                                                    size_t belief_hash) {
-  assert(!Query(Action, belief_hash));
-  mTree[Action][belief_hash] = new data_t();
+  assert(!Query(option, belief_hash));
+  mTree[option][belief_hash] = new data_t();
   TreeSize += 1;
-  return mTree[Action][belief_hash];
+  return mTree[option][belief_hash];
 }
 
 void HierarchicalMCTS::Clear() {
@@ -191,51 +191,54 @@ int HierarchicalMCTS::SelectAction() {
 }
 
 option_t HierarchicalMCTS::InformativePrimitiveAction(
-    option_t Action,
+    option_t option,
     const input_t &input, STATE &state)
 {
-  if (IsPrimitive(Action)) {
-    return Action;
+  if (IsPrimitive(option)) {
+    return option;
   }
 
-  if (Action != mRootTask) {
-    STATE *exit = mExits[Action];
+  if (option != mRootTask) {
+    STATE *exit = mExits[option];
     assert(exit);
 
     if (exit) {
       return PrimitiveAction(Simulator.SuggestAction(state, *exit));
     }
+    else {
+      return RandomPrimitiveAction(option, input);
+    }
   }
 
-  option_t action = RandomSubtask(Action, input);
+  option_t action = RandomSubtask(option, input);
   return InformativePrimitiveAction(action, input, state);
 }
 
 option_t HierarchicalMCTS::GetPrimitiveAction(
-    option_t Action,
+    option_t option,
     const input_t &input, STATE &state)
 {
   if (Simulator.Knowledge.RolloutLevel >= SIMULATOR::KNOWLEDGE::SMART) {
-    return InformativePrimitiveAction(Action, input, state);
+    return InformativePrimitiveAction(option, input, state);
   }
   else {
-    return RandomPrimitiveAction(Action, input);
+    return RandomPrimitiveAction(option, input);
   }
 }
 
-option_t HierarchicalMCTS::RandomSubtask(option_t Action, const input_t &input)
+option_t HierarchicalMCTS::RandomSubtask(option_t option, const input_t &input)
 {
-  assert(!IsPrimitive(Action));
+  assert(!IsPrimitive(option));
 
-  if (IsPrimitive(Action)) {
-    return Action;
+  if (IsPrimitive(option)) {
+    return option;
   }
 
   option_t action;
   do {
-    if (Action != mRootTask || !mActionAbstraction) {
-      action = *next(begin(mSubTasks[Action]),
-                     SimpleRNG::ins().Random(mSubTasks[Action].size()));
+    if (option != mRootTask || !mActionAbstraction) {
+      action = *next(begin(mSubTasks[option]),
+                     SimpleRNG::ins().Random(mSubTasks[option].size()));
     }
     else {
       action = *next(begin(mAvailableOptions[input.ending_observation]),
@@ -248,49 +251,49 @@ option_t HierarchicalMCTS::RandomSubtask(option_t Action, const input_t &input)
 }
 
 option_t HierarchicalMCTS::RandomPrimitiveAction(
-    option_t Action, const input_t &input)
+    option_t option, const input_t &input)
 {
-  if (IsPrimitive(Action)) {
-    return Action;
+  if (IsPrimitive(option)) {
+    return option;
   }
 
-  option_t action = RandomSubtask(Action, input);
+  option_t action = RandomSubtask(option, input);
   return RandomPrimitiveAction(action, input);
 }
 
 option_t HierarchicalMCTS::GreedyPrimitiveAction(
-    option_t Action,
+    option_t option,
     const input_t &input, STATE &state) {
-  if (IsPrimitive(Action)) {
-    return Action;
+  if (IsPrimitive(option)) {
+    return option;
   }
 
-  data_t *data = Query(Action, input.belief_hash);
+  data_t *data = Query(option, input.belief_hash);
   option_t action;
 
   if (data) {
     if (Params.Verbose >= 1) {
       stringstream ss;
-      ss << "V(" << Action << ", ";
+      ss << "V(" << option << ", ";
       ss << "history)[" << Params.LocalReward << "]";
       data->V[Params.LocalReward].value.Print(ss.str(), cerr);
       for (auto ii = data->V[Params.LocalReward].qvalues.begin(); ii != data->V[Params.LocalReward].qvalues.end(); ++ii) {
         stringstream ss;
-        ss << "Q(" << Action << ", ";
+        ss << "Q(" << option << ", ";
         ss << "history, " << ii->first << ")[" << Params.LocalReward << "]";
         ii->second.Print(ss.str(), cerr);
       }
     }
 
-    action = GreedyUCB(Action, input.ending_observation, *data, false);
+    action = GreedyUCB(option, input.ending_observation, *data, false);
     return GreedyPrimitiveAction(action, input, state);
   } else {
     if (Params.Verbose >= 1) {
-      cerr << "Random Selecting V(" << Action << ", ";
+      cerr << "Random Selecting V(" << option << ", ";
       cerr << "history)" << endl;
     }
 
-    return GetPrimitiveAction(Action, input, state);
+    return GetPrimitiveAction(option, input, state);
   }
 }
 
@@ -312,7 +315,7 @@ void HierarchicalMCTS::SearchImp() {
 
 HierarchicalMCTS::result_t
 HierarchicalMCTS::SearchTree(
-    option_t Action,
+    option_t option,
     const HierarchicalMCTS::input_t &input,
     STATE *&state, int depth)
 {
@@ -320,33 +323,34 @@ HierarchicalMCTS::SearchTree(
 
   if (Params.Verbose >= 3) {
     cerr << "SearchTree" << endl;
-    PRINT_VALUE(Action);
+    PRINT_VALUE(option);
     PRINT_VALUE(depth);
     cerr << "state={\n";
     Simulator.DisplayState(*state, cerr);
     cerr << "}" << endl;
   }
 
-  if (IsPrimitive(Action)) {
-    return Simulate(Action, input, state, depth); // simulate primitive Action
+  if (IsPrimitive(option)) {
+    return Simulate(option, input, state, depth); // simulate primitive option
   } else {
-    if (depth >= Params.MaxDepth || IsTerminated(Action, input.ending_observation)) {
+    if (depth >= Params.MaxDepth || IsTerminated(option, input.ending_observation)) {
       return result_t(0.0, 0, false, input.belief_hash, input.ending_observation);
     }
 
-    data_t *data = Query(Action, input.belief_hash);
+    data_t *data = Query(option, input.belief_hash);
 
     if (!data) {
-      Insert(Action, input.belief_hash);
-      return Rollout(Action, input, state, depth);
+      Insert(option, input.belief_hash);
+      return Rollout(option, input, state, depth);
     } else {
-      const option_t action = GreedyUCB(Action, input.ending_observation, *data, true);
+      Visit(option, input.ending_observation);
+      const option_t action = GreedyUCB(option, input.ending_observation, *data, true);
       const result_t subtask = SearchTree(action, input, state, depth);
       int steps = subtask.steps;
       result_t completion(0.0, 0, false, subtask.belief_hash, subtask.ending_observation);
       if (!subtask.global_terminal) {
         input_t input(subtask.belief_hash, subtask.ending_observation);
-        completion = SearchTree(Action, input, state, depth + steps);
+        completion = SearchTree(option, input, state, depth + steps);
       }
       double totalReward =
           subtask.reward +
@@ -361,16 +365,16 @@ HierarchicalMCTS::SearchTree(
         double localReward = 0.0;
         if (mActionAbstraction) {
           localReward = pow(Simulator.GetDiscount(), steps) *
-                        LocalReward(Action, completion.ending_observation, steps);
+                        LocalReward(option, completion.ending_observation, steps);
         }
 
         data->V[1].value.Add(totalReward + localReward);
         data->V[1].qvalues[action].Add(totalReward + localReward);
       }
 
-      const result_t ret(totalReward, steps, subtask.global_terminal || completion.global_terminal,
+      Unvisit(option, input.ending_observation);
+      return result_t(totalReward, steps, subtask.global_terminal || completion.global_terminal,
                          completion.belief_hash, completion.ending_observation);
-      return ret;
     }
   }
 }
@@ -395,32 +399,35 @@ void HierarchicalMCTS::AddOption(int from, int to, STATE *state) {
 }
 
 HierarchicalMCTS::result_t
-HierarchicalMCTS::PollingRollout(option_t Action,
+HierarchicalMCTS::PollingRollout(option_t option,
                                  const HierarchicalMCTS::input_t &input, STATE *&state,
                                  int depth) {
-  assert(!IsPrimitive(Action));
-
-  if (depth >= Params.MaxDepth || IsTerminated(Action, input.ending_observation)) {
-    return result_t(0.0, 0, false, input.belief_hash, input.ending_observation);
+  if (IsPrimitive(option)) {
+    return Simulate(option, input, state, depth);
   }
+  else {
+    if (depth >= Params.MaxDepth || IsTerminated(option, input.ending_observation)) {
+      return result_t(0.0, 0, false, input.belief_hash, input.ending_observation);
+    }
 
-  option_t action = GetPrimitiveAction(Action, input, *state);
-  result_t atomic = Simulate(action, input, state, depth);
-  assert(atomic.steps == 1);
+    option_t action = GetPrimitiveAction(option, input, *state);
+    result_t atomic = Simulate(action, input, state, depth);
+    assert(atomic.steps == 1);
 
-  if (!atomic.global_terminal) {
-    input_t input(atomic.belief_hash, atomic.ending_observation);
-    result_t completion = Rollout(Action, input, state, depth + 1);
-    double totalReward = atomic.reward + Simulator.GetDiscount() * completion.reward;
+    if (!atomic.global_terminal) {
+      input_t input(atomic.belief_hash, atomic.ending_observation);
+      result_t completion = PollingRollout(option, input, state, depth + 1);
+      double totalReward = atomic.reward + Simulator.GetDiscount() * completion.reward;
 
-    return result_t(totalReward,
-                    atomic.steps + completion.steps,
-                    completion.global_terminal,
-                    completion.belief_hash,
-                    completion.ending_observation);
+      return result_t(totalReward,
+                      atomic.steps + completion.steps,
+                      completion.global_terminal,
+                      completion.belief_hash,
+                      completion.ending_observation);
+    }
+
+    return atomic;
   }
-
-  return atomic;
 }
 
 HierarchicalMCTS::result_t
@@ -448,79 +455,86 @@ HierarchicalMCTS::Simulate(option_t action, const input_t &input, STATE *&state,
 }
 
 HierarchicalMCTS::result_t
-HierarchicalMCTS::Rollout(option_t Action,
+HierarchicalMCTS::Rollout(option_t option,
                           const HierarchicalMCTS::input_t &input, STATE *&state,
                           int depth) {
   if (Params.Verbose >= 3) {
     cerr << "Rollout" << endl;
-    PRINT_VALUE(Action);
+    PRINT_VALUE(option);
     PRINT_VALUE(depth);
     cerr << "state={\n";
     Simulator.DisplayState(*state, cerr);
     cerr << "}" << endl;
   }
 
-  if (IsPrimitive(Action)) {
-    return Simulate(Action, input, state, depth);
+  if (Params.Polling) {
+    return PollingRollout(option, input, state, depth);
   }
   else {
-    if (Params.Polling) {
-      return PollingRollout(Action, input, state, depth);
-    }
-    else {
-      return HierarchicalRollout(Action, input, state, depth);
-    }
+    return HierarchicalRollout(option, input, state, depth);
   }
 }
 
 HierarchicalMCTS::result_t
-HierarchicalMCTS::HierarchicalRollout(option_t Action,
+HierarchicalMCTS::HierarchicalRollout(option_t option,
                                       const HierarchicalMCTS::input_t &input, STATE *&state,
                                       int depth) {
-  assert(!IsPrimitive(Action));
-
-  if (depth >= Params.MaxDepth || IsTerminated(Action, input.ending_observation)) {
-    return result_t(0.0, 0, false, input.belief_hash, input.ending_observation);
+  if (IsPrimitive(option)) {
+    return Simulate(option, input, state, depth);
   }
+  else {
+    if (depth >= Params.MaxDepth || IsTerminated(option, input.ending_observation)) {
+      return result_t(0.0, 0, false, input.belief_hash, input.ending_observation);
+    }
 
-  option_t action = RandomSubtask(Action, input);
-  auto subtask = Rollout(action, input, state, depth); // history and state will be updated
-  int steps = subtask.steps;
-  result_t completion(0.0, 0, false, subtask.belief_hash,
-                      subtask.ending_observation);
-  if (!subtask.global_terminal) {
-    input_t input(subtask.belief_hash, subtask.ending_observation);
-    completion = Rollout(Action, input, state, depth + steps);
+    Visit(option, input.ending_observation);
+
+    option_t action = RandomSubtask(option, input);
+    auto subtask = HierarchicalRollout(action, input, state, depth); // history and state will be updated
+    int steps = subtask.steps;
+    result_t completion(0.0, 0, false, subtask.belief_hash,
+                        subtask.ending_observation);
+    if (!subtask.global_terminal) {
+      input_t input(subtask.belief_hash, subtask.ending_observation);
+      completion = HierarchicalRollout(option, input, state, depth + steps);
+    }
+
+    double totalReward =
+        subtask.reward +
+        pow(Simulator.GetDiscount(), steps) * completion.reward;
+    steps += completion.steps;
+
+    Unvisit(option, input.ending_observation);
+    return result_t(totalReward, steps, subtask.global_terminal || completion.global_terminal,
+                    completion.belief_hash, completion.ending_observation);
   }
-
-  double totalReward =
-      subtask.reward +
-      pow(Simulator.GetDiscount(), steps) * completion.reward;
-  steps += completion.steps;
-
-  return result_t(totalReward, steps, subtask.global_terminal || completion.global_terminal,
-                  completion.belief_hash, completion.ending_observation);
 }
 
-option_t HierarchicalMCTS::GreedyUCB(option_t Action,
+option_t HierarchicalMCTS::GreedyUCB(option_t option,
                                      int last_observation, data_t &data,
                                      bool ucb) {
   std::vector<option_t> besta;
   double bestq = -Infinity;
   int N = data.V[Params.LocalReward].value.GetCount();
 
-  for (option_t action : mSubTasks[Action]) {
+  for (option_t action : mSubTasks[option]) {
     if (IsTerminated(action, last_observation) ||
         !Applicable(last_observation, action) ||
         action.first == action.second) {
       continue;
     }
 
+    if (Params.VisitedHeuristic && option == mRootTask && mActionAbstraction) {
+      if (mVisited.count(action.second)) {
+        continue;
+      }
+    }
+
     int n = data.V[Params.LocalReward].qvalues[action].GetCount();
     double q = data.V[Params.LocalReward].qvalues[action].GetValue();
 
     if (ucb) {
-      double exploration = GetExplorationConstant(Action);
+      double exploration = GetExplorationConstant(option);
       q += FastUCB(N, n, exploration);
       assert(n != 0 || q == Infinity);
     }
@@ -533,55 +547,60 @@ option_t HierarchicalMCTS::GreedyUCB(option_t Action,
     }
   }
 
+  if (besta.empty()) {
+    PRINT_VALUE(option);
+    PRINT_VALUE(mVisited);
+    PRINT_VALUE(last_observation);
+  }
+
   assert(!besta.empty());
   return SimpleRNG::ins().Sample(besta);
 }
 
 /**
  * @brief HierarchicalMCTS::IsTerminated
- * @param Action is the target macro state
  * @param history
  * @param state
  * @return
  */
-bool HierarchicalMCTS::IsTerminated(option_t Action, int last_observation) {
+bool HierarchicalMCTS::IsTerminated(option_t option, int last_observation) {
   if (mActionAbstraction) {
     if (Params.LocalReward) {
-      if (Action == mRootTask) {
-        return !IsPrimitive(Action) &&
+      if (option == mRootTask) {
+        return !IsPrimitive(option) &&
                last_observation >= 0 &&
-               Action.second == last_observation;
+               option.second == last_observation;
       }
       else {
-        return !IsPrimitive(Action) &&
+        return !IsPrimitive(option) &&
                last_observation >= 0 &&
-               Action.first != last_observation;
+               option.first != last_observation;
       }
     }
     else {
-      return !IsPrimitive(Action) &&
+      return !IsPrimitive(option) &&
              last_observation >= 0 &&
-             Action.second == last_observation;
+             option.second == last_observation;
     }
   }
 
   return false;
 }
 
-bool HierarchicalMCTS::IsGoal(option_t Action, int last_observation) {
+bool HierarchicalMCTS::IsGoal(option_t option, int last_observation) {
   if (mActionAbstraction) {
-    return !IsPrimitive(Action) &&
+    return !IsPrimitive(option) &&
            last_observation >= 0 &&
-           Action.second == last_observation;
+           option.second == last_observation;
   }
 
   return false;
 }
 
-double HierarchicalMCTS::LocalReward(option_t Action, int last_observation, int depth) {
+double HierarchicalMCTS::LocalReward(option_t option, int last_observation, int depth) {
   if (mActionAbstraction && Params.LocalReward) {
     if (depth >= Params.MaxDepth ||
-      (IsTerminated(Action, last_observation) && !IsGoal(Action, last_observation))) {
+      (IsTerminated(option, last_observation) && !IsGoal(option, last_observation))) {
       return -100.0;
     }
   }
@@ -589,8 +608,8 @@ double HierarchicalMCTS::LocalReward(option_t Action, int last_observation, int 
   return 0.0;
 }
 
-bool HierarchicalMCTS::IsPrimitive(option_t Action) {
-  return Action.first == PRIMITIVE;
+bool HierarchicalMCTS::IsPrimitive(option_t option) {
+  return option.first == PRIMITIVE;
 }
 
 /**
@@ -606,10 +625,10 @@ option_t HierarchicalMCTS::PrimitiveAction(int action) {
   return make_pair(PRIMITIVE, action);
 }
 
-double HierarchicalMCTS::GetExplorationConstant(option_t Action)
+double HierarchicalMCTS::GetExplorationConstant(option_t option)
 {
   if (mActionAbstraction && Params.LocalReward) {
-    if (Action == mRootTask || IsPrimitive(Action)) {
+    if (option == mRootTask || IsPrimitive(option)) {
       return Simulator.GetRewardRange();
     }
 

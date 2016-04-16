@@ -52,62 +52,63 @@ int main(int argc, const char *argv[]) {
 
   options_description desc("Allowed options");
   desc.add_options()("help", "produce help message")("test", "run unit tests")(
-      "problem", value<string>(&problem), "problem to run")(
-      "map", value<string>(&map), "map to use for (continus) rooms domain")(
-      "outputfile", value<string>(&outputfile)->default_value("output.txt"),
-      "summary output file")("size", value<int>(&size),
-                             "size of problem (problem specific)")(
-      "number", value<int>(&number),
-      "number of elements in problem (problem specific)")(
-      "timeout", value<double>(&expParams.TimeOut), "timeout (seconds)")(
-      "mindoubles", value<int>(&expParams.MinDoubles),
-      "minimum power of two simulations")("maxdoubles",
-                                          value<int>(&expParams.MaxDoubles),
-                                          "maximum power of two simulations")(
-      "runs", value<int>(&expParams.NumRuns),
-      "number of runs")("accuracy", value<double>(&expParams.Accuracy),
-                        "accuracy level used to determine horizon")(
-      "horizon", value<int>(&expParams.UndiscountedHorizon),
-      "horizon to use when not discounting")(
-      "num steps", value<int>(&expParams.NumSteps),
-      "number of steps to run when using average reward")(
-      "verbose", value<int>(&searchParams.Verbose), "verbosity level")(
-      "usetransforms", value<bool>(&searchParams.UseTransforms),
-      "Use transforms")("useparticlefilter",
-                        value<bool>(&searchParams.UseParticleFilter),
-                        "Use particle fileter")(
-      "transformdoubles", value<int>(&expParams.TransformDoubles),
-      "Relative power of two for transforms compared to simulations")(
-      "transformattempts", value<int>(&expParams.TransformAttempts),
-      "Number of attempts for each transform")(
-      "treeknowledge", value<int>(&knowledge.TreeLevel),
-      "Knowledge level in tree (0=Pure, 1=Legal, 2=Smart)")(
-      "rolloutknowledge", value<int>(&knowledge.RolloutLevel),
-      "Knowledge level in rollouts (0=Pure, 1=Legal, 2=Smart)")(
-      "smarttreecount", value<int>(&knowledge.SmartTreeCount),
-      "Prior count for preferred actions during smart tree search")(
-      "smarttreevalue", value<double>(&knowledge.SmartTreeValue),
-      "Prior value for preferred actions during smart tree search")(
-      "reusetree", value<bool>(&searchParams.ReuseTree),
-      "Reuse tree generated during previous search")(
-      "seeding", value<bool>(&seeding), "Use pid as random seed")(
-      "thompsonsampling", value<bool>(&searchParams.ThompsonSampling),
-      "use Thompson Sampling instead of UCB1")(
-      "timeoutperaction", value<double>(&searchParams.TimeOutPerAction),
-      "timeout per action (seconds)")(
-      "polling", value<bool>(&searchParams.Polling),
-      "use polling rollout for hplanning")(
-      "stack", value<bool>(&searchParams.Stack),
-      "use call stack for hplanning")(
-      "localreward", value<bool>(&searchParams.LocalReward),
-      "branching factor for rooms domains")(
-      "branchingfactor", value<int>(&knowledge.mBranchingFactor),
-      "spefify branching factor for rooms domains")(
-      "hplanning", value<bool>(&searchParams.Hplanning),
-      "use hplanning when possible")(
-      "actionabstraction", value<bool>(&searchParams.ActionAbstraction),
-      "use hplanning w/ action abstraction when possible")
-      ;
+        "problem", value<string>(&problem), "problem to run")(
+        "map", value<string>(&map), "map to use for (continus) rooms domain")(
+        "outputfile", value<string>(&outputfile)->default_value("output.txt"),
+        "summary output file")("size", value<int>(&size),
+                               "size of problem (problem specific)")(
+        "number", value<int>(&number),
+        "number of elements in problem (problem specific)")(
+        "timeout", value<double>(&expParams.TimeOut), "timeout (seconds)")(
+        "mindoubles", value<int>(&expParams.MinDoubles),
+        "minimum power of two simulations")("maxdoubles",
+                                            value<int>(&expParams.MaxDoubles),
+                                            "maximum power of two simulations")(
+        "runs", value<int>(&expParams.NumRuns),
+        "number of runs")("accuracy", value<double>(&expParams.Accuracy),
+                          "accuracy level used to determine horizon")(
+        "horizon", value<int>(&expParams.UndiscountedHorizon),
+        "horizon to use when not discounting")(
+        "num steps", value<int>(&expParams.NumSteps),
+        "number of steps to run when using average reward")(
+        "verbose", value<int>(&searchParams.Verbose), "verbosity level")(
+        "usetransforms", value<bool>(&searchParams.UseTransforms),
+        "Use transforms")("useparticlefilter",
+                          value<bool>(&searchParams.UseParticleFilter),
+                          "Use particle fileter")(
+        "transformdoubles", value<int>(&expParams.TransformDoubles),
+        "Relative power of two for transforms compared to simulations")(
+        "transformattempts", value<int>(&expParams.TransformAttempts),
+        "Number of attempts for each transform")(
+        "treeknowledge", value<int>(&knowledge.TreeLevel),
+        "Knowledge level in tree (0=Pure, 1=Legal, 2=Smart)")(
+        "rolloutknowledge", value<int>(&knowledge.RolloutLevel),
+        "Knowledge level in rollouts (0=Pure, 1=Legal, 2=Smart)")(
+        "smarttreecount", value<int>(&knowledge.SmartTreeCount),
+        "Prior count for preferred actions during smart tree search")(
+        "smarttreevalue", value<double>(&knowledge.SmartTreeValue),
+        "Prior value for preferred actions during smart tree search")(
+        "reusetree", value<bool>(&searchParams.ReuseTree),
+        "Reuse tree generated during previous search")(
+        "seeding", value<bool>(&seeding), "Use pid as random seed")(
+        "thompsonsampling", value<bool>(&searchParams.ThompsonSampling),
+        "use Thompson Sampling instead of UCB1")(
+        "timeoutperaction", value<double>(&searchParams.TimeOutPerAction),
+        "timeout per action (seconds)")(
+        "polling", value<bool>(&searchParams.Polling),
+        "use polling rollout for hplanning")(
+        "stack", value<bool>(&searchParams.Stack),
+        "use call stack for hplanning")(
+        "localreward", value<bool>(&searchParams.LocalReward),
+        "branching factor for rooms domains")(
+        "branchingfactor", value<int>(&knowledge.mBranchingFactor),
+        "spefify branching factor for rooms domains")(
+        "hplanning", value<bool>(&searchParams.Hplanning),
+        "use hplanning when possible")(
+        "actionabstraction", value<bool>(&searchParams.ActionAbstraction),
+        "use hplanning w/ action abstraction when possible")(
+        "visitedheuristic", value<bool>(&searchParams.VisitedHeuristic),
+        "use visited heuristic for hplanning w/ action abstraction");
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);

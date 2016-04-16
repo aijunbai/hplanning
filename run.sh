@@ -31,6 +31,7 @@ POLLING=1
 STACK=0
 LOCALREWARD=0
 ROLLOUTKNOWLEDGE=0
+VISITEDHEURISTIC=0
 BRANCHINGFACTOR=1
 
 FAKE="false"
@@ -40,7 +41,7 @@ LOG="log-$$.txt"
 
 make -j4
 
-while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:k:F" OPTION; do
+while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:k:V:F" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -61,6 +62,7 @@ while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:k:F" OPTION; do
         h) HPLANNING=$OPTARG ;;
         A) ACTIONABSTRACTION=$OPTARG ;;
         k) ROLLOUTKNOWLEDGE=$OPTARG ;;
+        V) VISITEDHEURISTIC=$OPTARG ;;
         F) FAKE="true" ;;
         *) exit ;;
     esac
@@ -92,4 +94,5 @@ run ./hplanning --outputfile $OUTPUT \
             --branchingfactor $BRANCHINGFACTOR \
             --hplanning $HPLANNING \
             --actionabstraction $ACTIONABSTRACTION \
-            --rolloutknowledge $ROLLOUTKNOWLEDGE
+            --rolloutknowledge $ROLLOUTKNOWLEDGE \
+            --visitedheuristic $VISITEDHEURISTIC

@@ -26,7 +26,6 @@ public:
     bool LocalReward;
     bool ActionAbstraction;
     bool Hplanning;
-    bool VisitedHeuristic;
   };
 
   MCTS(const SIMULATOR &simulator, const PARAMS &params, int first_observation);

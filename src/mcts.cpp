@@ -23,8 +23,7 @@ MCTS::PARAMS::PARAMS()
       Stack(true),
       LocalReward(false),
       ActionAbstraction(true),
-      Hplanning(false),
-      VisitedHeuristic(false) { }
+      Hplanning(false) { }
 
 
 MCTS::MCTS(const SIMULATOR &simulator, const PARAMS &params, int first_observation)

@@ -12,8 +12,8 @@ PROBLEM="rooms_1"
 
 MAP="data/10_rooms.map"
 MAP="data/4_rooms.map"
-MAP="data/8_rooms.map"
 MAP="data/16_rooms.map"
+MAP="data/8_rooms.map"
 MAP="data/32_rooms.map"
 SIZE=7
 NUM=8
@@ -27,9 +27,8 @@ TIMEOUTPERACTION=-1
 
 HPLANNING=1
 ACTIONABSTRACTION=1
-POLLING=0
-ROLLOUTKNOWLEDGE=0
-VISITEDHEURISTIC=0
+POLLING=1
+SMARTROLLOUT=1
 STACK=0
 LOCALREWARD=0
 BRANCHINGFACTOR=1
@@ -41,7 +40,7 @@ LOG="log-$$.txt"
 
 make -j4
 
-while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:k:V:F" OPTION; do
+while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:k:F" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -61,8 +60,7 @@ while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:k:V:F" OPTION; do
         b) BRANCHINGFACTOR=$OPTARG ;;
         h) HPLANNING=$OPTARG ;;
         A) ACTIONABSTRACTION=$OPTARG ;;
-        k) ROLLOUTKNOWLEDGE=$OPTARG ;;
-        V) VISITEDHEURISTIC=$OPTARG ;;
+        k) SMARTROLLOUT=$OPTARG ;;
         F) FAKE="true" ;;
         *) exit ;;
     esac
@@ -94,5 +92,4 @@ run ./hplanning --outputfile $OUTPUT \
             --branchingfactor $BRANCHINGFACTOR \
             --hplanning $HPLANNING \
             --actionabstraction $ACTIONABSTRACTION \
-            --rolloutknowledge $ROLLOUTKNOWLEDGE \
-            --visitedheuristic $VISITEDHEURISTIC
+            --rolloutknowledge $SMARTROLLOUT \

@@ -106,9 +106,7 @@ int main(int argc, const char *argv[]) {
                 "hplanning", value<bool>(&searchParams.Hplanning),
                 "use hplanning when possible")(
                 "actionabstraction", value<bool>(&searchParams.ActionAbstraction),
-                "use hplanning w/ action abstraction when possible")(
-                "visitedheuristic", value<bool>(&searchParams.VisitedHeuristic),
-                "use visited heuristic for hplanning w/ action abstraction");
+                "use hplanning w/ action abstraction when possible");
 
     variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);

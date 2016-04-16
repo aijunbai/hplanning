@@ -148,7 +148,6 @@ int HierarchicalMCTS::SelectAction() {
   }
 
   Search();
-  assert(mVisited.empty());
 
   if (mActionAbstraction) {
     if (Params.Stack) {
@@ -227,39 +226,14 @@ option_t HierarchicalMCTS::RandomOption(const input_t &input)
 {
   assert(mActionAbstraction);
 
-  if (Params.VisitedHeuristic) {
-    vector<option_t> available;
-    for (auto o : mAvailableOptions[input.ending_observation]) {
-      if (IsTerminated(o, input.ending_observation) ||
-          !Applicable(input.ending_observation, o)) {
-        continue;
-      }
+  option_t action;
+  do {
+    action = *next(begin(mAvailableOptions[input.ending_observation]),
+        SimpleRNG::ins().Random(mAvailableOptions[input.ending_observation].size()));
+  } while (IsTerminated(action, input.ending_observation) ||
+           !Applicable(input.ending_observation, action));
 
-      if (!mVisited.count(o.second)) {
-        available.push_back(o);
-      }
-    }
-
-    if (available.empty()) {
-      Params.VisitedHeuristic = false;
-      auto o = RandomOption(input);
-      Params.VisitedHeuristic = true;
-      return o;
-    }
-    else {
-      return SimpleRNG::ins().Sample(available);
-    }
-  }
-  else {
-    option_t action;
-    do {
-      action = *next(begin(mAvailableOptions[input.ending_observation]),
-          SimpleRNG::ins().Random(mAvailableOptions[input.ending_observation].size()));
-    } while (IsTerminated(action, input.ending_observation) ||
-             !Applicable(input.ending_observation, action));
-
-    return action;
-  }
+  return action;
 }
 
 option_t HierarchicalMCTS::SmartSubtask(option_t option, const input_t &input, STATE &state)
@@ -386,7 +360,6 @@ HierarchicalMCTS::SearchTree(
       Insert(option, input.belief_hash);
       return Rollout(option, input, state, depth);
     } else {
-      Visit(option, input.ending_observation);
       const option_t action = GreedyUCB(option, input.ending_observation, *data, true);
       const result_t subtask = SearchTree(action, input, state, depth);
       int steps = subtask.steps;
@@ -415,7 +388,6 @@ HierarchicalMCTS::SearchTree(
         data->V[1].qvalues[action].Add(totalReward + localReward);
       }
 
-      Unvisit(option, input.ending_observation);
       return result_t(totalReward, steps, subtask.global_terminal || completion.global_terminal,
                       completion.belief_hash, completion.ending_observation);
     }
@@ -531,8 +503,6 @@ HierarchicalMCTS::HierarchicalRollout(option_t option,
       return result_t(0.0, 0, false, input.belief_hash, input.ending_observation);
     }
 
-    Visit(option, input.ending_observation);
-
     option_t action = GetSubtask(option, input, *state);
     auto subtask = HierarchicalRollout(action, input, state, depth); // history and state will be updated
     int steps = subtask.steps;
@@ -548,7 +518,6 @@ HierarchicalMCTS::HierarchicalRollout(option_t option,
         pow(Simulator.GetDiscount(), steps) * completion.reward;
     steps += completion.steps;
 
-    Unvisit(option, input.ending_observation);
     return result_t(totalReward, steps, subtask.global_terminal || completion.global_terminal,
                     completion.belief_hash, completion.ending_observation);
   }
@@ -568,12 +537,6 @@ option_t HierarchicalMCTS::GreedyUCB(option_t option,
       continue;
     }
 
-    if (Params.VisitedHeuristic && option == mRootTask && mActionAbstraction) {
-      if (mVisited.count(action.second)) {
-        continue;
-      }
-    }
-
     int n = data.V[Params.LocalReward].qvalues[action].GetCount();
     double q = data.V[Params.LocalReward].qvalues[action].GetValue();
 
@@ -589,13 +552,6 @@ option_t HierarchicalMCTS::GreedyUCB(option_t option,
       bestq = q;
       besta.push_back(action);
     }
-  }
-
-  if (besta.empty() && Params.VisitedHeuristic) {
-    Params.VisitedHeuristic = false;
-    option_t o = GreedyUCB(option, last_observation, data, ucb);
-    Params.VisitedHeuristic = true;
-    return o;
   }
 
   assert(!besta.empty());

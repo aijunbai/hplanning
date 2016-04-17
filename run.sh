@@ -15,6 +15,7 @@ MAP="data/4_rooms.map"
 MAP="data/16_rooms.map"
 MAP="data/8_rooms.map"
 MAP="data/32_rooms.map"
+BRANCHINGFACTOR=1
 SIZE=7
 NUM=8
 RUNS=1
@@ -31,7 +32,6 @@ POLLING=1
 SMARTROLLOUT=1
 STACK=0
 LOCALREWARD=0
-BRANCHINGFACTOR=1
 
 FAKE="false"
 

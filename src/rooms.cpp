@@ -113,27 +113,6 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
     }
   }
 
-//  for (int i = 0; i < Knowledge.mBranchingFactor; ++i) {
-//    COORD pos = rstate.AgentPos + coord::Compass[action];
-//    if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {  // not wall
-//      rstate.AgentPos = pos;
-//
-//      if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
-//        if (SimpleRNG::ins().Bernoulli(0.5)) {
-//          action = coord::Clockwise(action);
-//        }
-//        else {
-//          action = coord::Anticlockwise(action);
-//        }
-//
-//        pos = rstate.AgentPos + coord::Compass[action];
-//        if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {  // not wall
-//          rstate.AgentPos = pos;
-//        }
-//      }
-//    }
-//  }
-
   observation = GetObservation(rstate);
 
   if (rstate.AgentPos == mGoalPos) {

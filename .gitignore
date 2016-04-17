@@ -31,7 +31,6 @@ log-*.*
 output-*.*
 rooms.map.orig
 profile_results
-experiment*
 valgrind.txt
 callgrind.txt
 results

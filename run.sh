@@ -15,7 +15,14 @@ MAP="data/4_rooms.map"
 MAP="data/16_rooms.map"
 MAP="data/8_rooms.map"
 MAP="data/32_rooms.map"
-BRANCHINGFACTOR=1
+
+HPLANNING=1
+ACTIONABSTRACTION=1
+POLLING=1
+SMARTROLLOUT=1
+STACK=0
+LOCALREWARD=0
+
 SIZE=7
 NUM=8
 RUNS=1
@@ -25,13 +32,7 @@ MAXPOWER2=11
 SEEDING=0
 TIMEOUT=3600
 TIMEOUTPERACTION=-1
-
-HPLANNING=1
-ACTIONABSTRACTION=1
-POLLING=1
-SMARTROLLOUT=1
-STACK=0
-LOCALREWARD=0
+BRANCHINGFACTOR=1
 
 FAKE="false"
 
@@ -92,4 +93,4 @@ run ./hplanning --outputfile $OUTPUT \
             --branchingfactor $BRANCHINGFACTOR \
             --hplanning $HPLANNING \
             --actionabstraction $ACTIONABSTRACTION \
-            --rolloutknowledge $SMARTROLLOUT \
+            --rolloutknowledge $SMARTROLLOUT

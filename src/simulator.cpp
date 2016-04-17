@@ -7,8 +7,7 @@ SIMULATOR::KNOWLEDGE::KNOWLEDGE()
     : TreeLevel(LEGAL),
       RolloutLevel(LEGAL),
       SmartTreeCount(10),
-      SmartTreeValue(1.0),
-      mBranchingFactor(1) { }
+      SmartTreeValue(1.0) { }
 
 SIMULATOR::SIMULATOR()
     : NumActions(0),

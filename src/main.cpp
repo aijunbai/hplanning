@@ -100,9 +100,7 @@ int main(int argc, const char *argv[]) {
                 "stack", value<bool>(&searchParams.Stack),
                 "use call stack for hplanning")(
                 "localreward", value<bool>(&searchParams.LocalReward),
-                "branching factor for rooms domains")(
-                "branchingfactor", value<int>(&knowledge.mBranchingFactor),
-                "spefify branching factor for rooms domains")(
+                "use local reward")(
                 "hplanning", value<bool>(&searchParams.Hplanning),
                 "use hplanning when possible")(
                 "actionabstraction", value<bool>(&searchParams.ActionAbstraction),

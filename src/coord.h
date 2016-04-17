@@ -284,10 +284,10 @@ inline int DirectionalDistance(const COORD &lhs, const COORD &rhs,
   }
 }
 
-inline int MoveTo(const COORD &pos, const COORD &target)
+inline int MoveTo(const COORD &pos, const COORD &target, int num_actions = 4 /*or 8*/)
 {
   if (pos == target) {
-    return SimpleRNG::ins().Random(4);
+    return SimpleRNG::ins().Random(num_actions);
   }
 
   int dx = target.X - pos.X;
@@ -307,6 +307,25 @@ inline int MoveTo(const COORD &pos, const COORD &target)
   }
   else if (dy < 0) {
     actions.push_back(E_SOUTH);
+  }
+
+  if (num_actions == 8 && actions.size() == 2) {
+    if (actions[0] == E_EAST) {
+      if (actions[1] == E_NORTH) {
+        actions.push_back(E_NORTHEAST);
+      }
+      else {
+        actions.push_back(E_SOUTHEAST);
+      }
+    }
+    else {
+      if (actions[1] == E_NORTH) {
+        actions.push_back(E_NORTHWEST);
+      }
+      else {
+        actions.push_back(E_SOUTHWEST);
+      }
+    }
   }
 
   assert(actions.size());

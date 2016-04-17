@@ -92,7 +92,7 @@ int ROOMS::SuggestAction(STATE &state, STATE &exit) const
   ROOMS_STATE &rstate = safe_cast<ROOMS_STATE &>(state);
   ROOMS_STATE &rexit = safe_cast<ROOMS_STATE &>(exit);
 
-  return coord::MoveTo(rstate.AgentPos, rexit.AgentPos);
+  return coord::MoveTo(rstate.AgentPos, rexit.AgentPos, GetNumActions());
 }
 
 bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) const {
@@ -102,15 +102,13 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
   ROOMS_STATE &rstate = safe_cast<ROOMS_STATE &>(state);
   reward = -1.0;
 
-  for (int i = 0; i < Knowledge.mBranchingFactor; ++i) {
-    if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
-      action = SimpleRNG::ins().Random(8);
-    }
+  if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
+    action = SimpleRNG::ins().Random(GetNumActions());
+  }
 
-    COORD pos = rstate.AgentPos + coord::Compass[action];
-    if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {  // not wall
-      rstate.AgentPos = pos;
-    }
+  COORD pos = rstate.AgentPos + coord::Compass[action];
+  if (mGrid->Inside(pos) && mGrid->operator()(pos) != 'x') {  // not wall
+    rstate.AgentPos = pos;
   }
 
   observation = GetObservation(rstate);

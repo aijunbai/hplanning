@@ -116,7 +116,10 @@ int ContinousROOMS::SuggestAction(STATE &state, STATE &exit) const
   ContinousROOMS_STATE &rstate = safe_cast<ContinousROOMS_STATE &>(state);
   ContinousROOMS_STATE &rexit = safe_cast<ContinousROOMS_STATE &>(exit);
 
-  return coord::MoveTo(Position2Grid(rstate.AgentPos), Position2Grid(rexit.AgentPos));
+  return coord::MoveTo(
+        Position2Grid(rstate.AgentPos),
+        Position2Grid(rexit.AgentPos),
+        GetNumActions());
 }
 
 bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &reward) const {
@@ -126,22 +129,20 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
   ContinousROOMS_STATE &rstate = safe_cast<ContinousROOMS_STATE &>(state);
   reward = -1.0;
 
-  for (int i = 0; i < Knowledge.mBranchingFactor; ++i) {
-    if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
-      action = SimpleRNG::ins().Random(8);
-    }
+  if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
+    action = SimpleRNG::ins().Random(GetNumActions());
+  }
 
-    Vector pos = rstate.AgentPos + Vector(coord::Compass[action].X, coord::Compass[action].Y);
-    if (IsValid(pos) && mGrid->operator()(Position2Grid(pos)) != 'x') {  // not wall
-      rstate.AgentPos = pos;
-    }
-
-    do { // add noise
-      pos = rstate.AgentPos + Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
-                                     SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
-    } while (Position2Grid(pos) != Position2Grid(rstate.AgentPos));
+  Vector pos = rstate.AgentPos + Vector(coord::Compass[action].X, coord::Compass[action].Y);
+  if (IsValid(pos) && mGrid->operator()(Position2Grid(pos)) != 'x') {  // not wall
     rstate.AgentPos = pos;
   }
+
+  do { // add noise
+    pos = rstate.AgentPos + Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
+                                   SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
+  } while (Position2Grid(pos) != Position2Grid(rstate.AgentPos));
+  rstate.AgentPos = pos;
 
   observation = GetObservation(rstate);
 

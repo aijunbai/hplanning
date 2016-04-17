@@ -32,7 +32,6 @@ MAXPOWER2=11
 SEEDING=0
 TIMEOUT=3600
 TIMEOUTPERACTION=-1
-BRANCHINGFACTOR=1
 
 FAKE="false"
 
@@ -41,7 +40,7 @@ LOG="log-$$.txt"
 
 make -j4
 
-while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:k:F" OPTION; do
+while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:h:A:k:F" OPTION; do
     case $OPTION in
         p) PROBLEM=$OPTARG ;;
         s) SIZE=$OPTARG ;;
@@ -58,7 +57,6 @@ while getopts "p:s:n:R:v:L:H:S:N:t:a:m:z:P:l:b:h:A:k:F" OPTION; do
         P) POLLING=$OPTARG ;;
         z) STACK=$OPTARG ;;
         l) LOCALREWARD=$OPTARG ;;
-        b) BRANCHINGFACTOR=$OPTARG ;;
         h) HPLANNING=$OPTARG ;;
         A) ACTIONABSTRACTION=$OPTARG ;;
         k) SMARTROLLOUT=$OPTARG ;;
@@ -90,7 +88,7 @@ run ./hplanning --outputfile $OUTPUT \
             --polling $POLLING \
             --stack $STACK \
             --localreward $LOCALREWARD \
-            --branchingfactor $BRANCHINGFACTOR \
+            --treeknowledge 0 \
             --hplanning $HPLANNING \
             --actionabstraction $ACTIONABSTRACTION \
             --rolloutknowledge $SMARTROLLOUT

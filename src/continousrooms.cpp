@@ -8,7 +8,7 @@ ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction)
       mSizePerGrid(1.0) {
   Parse(map_name);
 
-  NumActions = 4; //动作数
+  NumActions = 8;
   NumObservations = state_abstraction ? mRooms : numeric_limits<int>::max();
   Discount = 0.99;
   RewardRange = 20.0;

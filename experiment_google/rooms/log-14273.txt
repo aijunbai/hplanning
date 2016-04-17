@@ -2968,3 +2968,76 @@ using hplanning wo/ action abstraction
 #Undiscounted return = -687, average = -676.516
 Starting run 32 with 512 simulations... 
 using hplanning wo/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8395
+#Undiscounted return = -687, average = -676.844
+Starting run 33 with 512 simulations... 
+using hplanning wo/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8414
+#Undiscounted return = -687, average = -677.152
+Starting run 34 with 512 simulations... 
+using hplanning wo/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8431
+#Undiscounted return = -687, average = -677.441
+Starting run 35 with 512 simulations... 
+using hplanning wo/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8447
+#Undiscounted return = -687, average = -677.714
+Starting run 36 with 512 simulations... 
+using hplanning wo/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8462
+#Undiscounted return = -687, average = -677.972
+Starting run 37 with 512 simulations... 
+using hplanning wo/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8477
+#Undiscounted return = -687, average = -678.216
+Starting run 38 with 512 simulations... 
+using hplanning wo/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.849
+#Undiscounted return = -687, average = -678.447
+Starting run 39 with 512 simulations... 
+using hplanning wo/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8503
+#Undiscounted return = -687, average = -678.667
+Starting run 40 with 512 simulations... 
+using hplanning wo/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8516
+#Undiscounted return = -687, average = -678.875
+Starting run 41 with 512 simulations... 
+using hplanning wo/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8527
+#Undiscounted return = -687, average = -679.073
+Starting run 42 with 512 simulations... 
+using hplanning wo/ action abstraction
+Terminated
+
+#End of experiment:
+#Discounted return = -99.7983, average = -99.8514
+#Undiscounted return = -617, average = -677.595
+Starting run 43 with 512 simulations... 
+using hplanning wo/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8526
+#Undiscounted return = -687, average = -677.814
+Starting run 44 with 512 simulations... 
+using hplanning wo/ action abstraction

@@ -2255,3 +2255,65 @@ Terminated
 #Undiscounted return = -482, average = -652.786
 Starting run 15 with 128 simulations... 
 using hplanning w/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8167
+#Undiscounted return = -687, average = -655.067
+Starting run 16 with 128 simulations... 
+using hplanning w/ action abstraction
+Terminated
+
+#End of experiment:
+#Discounted return = -99.7354, average = -99.8116
+#Undiscounted return = -590, average = -651
+Starting run 17 with 128 simulations... 
+using hplanning w/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8168
+#Undiscounted return = -687, average = -653.118
+Starting run 18 with 128 simulations... 
+using hplanning w/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8214
+#Undiscounted return = -687, average = -655
+Starting run 19 with 128 simulations... 
+using hplanning w/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8255
+#Undiscounted return = -687, average = -656.684
+Starting run 20 with 128 simulations... 
+using hplanning w/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8293
+#Undiscounted return = -687, average = -658.2
+Starting run 21 with 128 simulations... 
+using hplanning w/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8326
+#Undiscounted return = -687, average = -659.571
+Starting run 22 with 128 simulations... 
+using hplanning w/ action abstraction
+Terminated
+
+#End of experiment:
+#Discounted return = -99.8493, average = -99.8334
+#Undiscounted return = -646, average = -658.955
+Starting run 23 with 128 simulations... 
+using hplanning w/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8363
+#Undiscounted return = -687, average = -660.174
+Starting run 24 with 128 simulations... 
+using hplanning w/ action abstraction
+
+#End of experiment:
+#Discounted return = -99.8997, average = -99.8389
+#Undiscounted return = -687, average = -661.292
+Starting run 25 with 128 simulations... 
+using hplanning w/ action abstraction

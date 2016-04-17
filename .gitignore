@@ -27,9 +27,6 @@
 *.out
 *.app
 
-log-*.*
-output-*.*
-rooms.map.orig
 profile_results
 valgrind.txt
 callgrind.txt

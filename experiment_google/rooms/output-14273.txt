@@ -1,0 +1,11 @@
+./hplanning --outputfile output-14273.txt --problem rooms_1 --size 7 --number 8 --map data/32_rooms.map --verbose 0 --mindoubles 0 --maxdoubles 18 --runs 50 --seeding 1 --timeout 3600 --timeoutperaction -1 --polling 1 --stack 0 --localreward 0 --branchingfactor 1 --hplanning 1 --actionabstraction 0 --rolloutknowledge 0
+#Simulations	Runs	UndiscountedReturn	UndiscountedError	DiscountedReturn	DiscountedError	Time	TimePerAction	ExploredNodes	ExploredNodesError	ExploredDepth	ExploredDepthError
+1	50	-687	0	-99.8997	2.6974e-07	0.0871502	0.000125332	1	0	0	0	
+2	50	-687	0	-99.8997	2.6974e-07	0.172655	0.000249496	2	0	1	0	
+4	50	-687	0	-99.8997	2.6974e-07	0.345915	0.000501281	4	0	1	0	
+8	50	-687	0	-99.8997	2.6974e-07	0.703103	0.00102014	8	0	1.99985	6.50919e-05	
+16	50	-687	0	-99.8997	2.6974e-07	1.40729	0.00204349	16	0	2.00093	0.000164606	
+32	50	-685.42	1.56412	-99.8973	0.00238486	2.82773	0.00411546	31.9981	0.000803562	3.00085	0.000177374	
+64	50	-678.82	6.48566	-99.8508	0.0453739	5.62675	0.00826829	63.9908	0.00307574	3.00657	0.000600203	
+128	50	-687	0	-99.8997	2.6974e-07	11.5572	0.0167892	128	0	4.00172	0.000286571	
+256	50	-686.74	0.257387	-99.8994	0.000265497	23.1585	0.0336302	255.968	0.0120078	4.00809	0.000728281	

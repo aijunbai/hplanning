@@ -3,7 +3,7 @@
 #ContinousROOMS::GetObservation
 #FlatMCTS::SearchImp
 #HierarchicalMCTS::SearchImp
-HierarchicalMCTS::SearchTree
+#HierarchicalMCTS::SearchTree
 #HierarchicalMCTS::Simulate
 #HierarchicalMCTS::GreedyUCB
 #HierarchicalMCTS::SelectAction
@@ -19,4 +19,5 @@ HierarchicalMCTS::SearchTree
 #EXPERIMENT::Run
 #coord::MoveTo
 #experiment.cpp:61 if t == 507
-HierarchicalMCTS::Simulate
+#HierarchicalMCTS::Simulate
+hierarchicalmcts.cpp:101

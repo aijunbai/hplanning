@@ -4,7 +4,7 @@ using namespace std;
 using namespace UTILS;
 
 ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction)
-    : mGrid(0), mRooms(0), mThreshold(0.25), mMotionUncertainty(0.25),
+    : mGrid(0), mRooms(0), mThreshold(0.5), mMotionUncertainty(0.2),
       mSizePerGrid(1.0) {
   Parse(map_name);
 

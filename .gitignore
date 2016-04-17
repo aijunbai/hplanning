@@ -35,4 +35,5 @@ results
 Debug/
 Release/
 backup/
-
+experiment*
+output-*

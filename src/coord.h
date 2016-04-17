@@ -286,14 +286,15 @@ inline int DirectionalDistance(const COORD &lhs, const COORD &rhs,
 
 inline int MoveTo(const COORD &pos, const COORD &target, int num_actions = 4 /*or 8*/)
 {
+  static std::vector<int> actions;
+  actions.clear();
+
   if (pos == target) {
     return SimpleRNG::ins().Random(num_actions);
   }
 
   int dx = target.X - pos.X;
   int dy = target.Y - pos.Y;
-
-  std::vector<int> actions;
 
   if (dx > 0) {
     actions.push_back(E_EAST);

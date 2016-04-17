@@ -9,34 +9,16 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
   : MCTS(simulator, params, first_observation),
     mRootTask(ROOT, '0'),
     mActionAbstraction(action_abstraction) {
+  mBelief.AddSample(Simulator.Copy(*ground_state));
+
   if (!mActionAbstraction) {
     for (int a = 0; a < Simulator.GetNumActions(); ++a) {
       mTaskGraph[mRootTask].insert(PrimitiveAction(a));
     }
   }
+  else {
+    ExploreOptions(1000, 5000);
 
-  mBelief.AddSample(Simulator.Copy(*ground_state));
-
-  if (mActionAbstraction) {
-    int iterations = 1000, max_depth = 1000;
-
-    for (int i = 0; i < iterations; ++i) {
-      HISTORY history(first_observation);
-      STATE *state = mBelief.CreateSample(Simulator);
-      Simulator.Validate(*state);
-      bool terminal = false;
-
-      for (int step = 0; !terminal && step < max_depth; ++step) {
-        int observation;
-        double reward;
-        int action = SimpleRNG::ins().Random(Simulator.GetNumActions());
-        terminal = Simulator.Step(*state, action, observation, reward);
-        AddOption(history.EndingObservation(), observation, state);
-        history.Add(action, observation);
-      }
-
-      Simulator.FreeState(state);
-    }
     if (Params.Verbose >= 2) {
       PRINT_VALUE(mAvailableOptions);
     }
@@ -112,6 +94,8 @@ int HierarchicalMCTS::SelectAction() {
   input_t input(0, History.EndingObservation());
 
   if (mActionAbstraction) {
+    ExploreOptions(100, 500);
+
     if (input.ending_observation == mRootTask.second) {  // enter target macro state XXX
       if (Params.Verbose >= 2) {
         cerr << "Cancelling action abstraction" << endl;
@@ -226,12 +210,10 @@ option_t HierarchicalMCTS::RandomOption(const input_t &input)
 {
   assert(mActionAbstraction);
 
-  option_t action;
-  do {
-    action = *next(begin(mAvailableOptions[input.ending_observation]),
-        SimpleRNG::ins().Random(mAvailableOptions[input.ending_observation].size()));
-  } while (IsTerminated(action, input.ending_observation) ||
-           !Applicable(input.ending_observation, action));
+  option_t action = *next(begin(mAvailableOptions[input.ending_observation]),
+      SimpleRNG::ins().Random(mAvailableOptions[input.ending_observation].size()));
+  assert(!IsTerminated(action, input.ending_observation) &&
+           Applicable(input.ending_observation, action));
 
   return action;
 }
@@ -249,6 +231,7 @@ option_t HierarchicalMCTS::SmartSubtask(option_t option, const input_t &input, S
       return PrimitiveAction(Simulator.SuggestAction(state, *exit));
     }
   }
+
   return *next(begin(mTaskGraph[option]),
                SimpleRNG::ins().Random(mTaskGraph[option].size()));
 }
@@ -279,14 +262,12 @@ option_t HierarchicalMCTS::RandomPrimitiveAction(
 }
 
 option_t HierarchicalMCTS::GreedyPrimitiveAction(
-    option_t option,
-    const input_t &input, STATE &state) {
+    option_t option, const input_t &input, STATE &state) {
   if (IsPrimitive(option)) {
     return option;
   }
 
   data_t *data = Query(option, input.belief_hash);
-  option_t action;
 
   if (data) {
     if (Params.Verbose >= 1) {
@@ -302,9 +283,10 @@ option_t HierarchicalMCTS::GreedyPrimitiveAction(
       }
     }
 
-    action = GreedyUCB(option, input.ending_observation, *data, false);
+    option_t action = GreedyUCB(option, input.ending_observation, *data, false);
     return GreedyPrimitiveAction(action, input, state);
-  } else {
+  }
+  else {
     if (Params.Verbose >= 1) {
       cerr << "Random Selecting V(" << option << ", ";
       cerr << "history)" << endl;
@@ -394,6 +376,29 @@ HierarchicalMCTS::SearchTree(
   }
 }
 
+void HierarchicalMCTS::ExploreOptions(int iterations, int max_depth)
+{
+  if (mActionAbstraction) {
+    for (int i = 0; i < iterations; ++i) {
+      int ending_observation = History.EndingObservation();
+      STATE *state = mBelief.CreateSample(Simulator);
+      Simulator.Validate(*state);
+      bool terminal = false;
+
+      for (int step = 0; !terminal && step < max_depth; ++step) {
+        int observation;
+        double reward;
+        int action = SimpleRNG::ins().Random(Simulator.GetNumActions());
+        terminal = Simulator.Step(*state, action, observation, reward);
+        AddOption(ending_observation, observation, state);
+        ending_observation = observation;
+      }
+
+      Simulator.FreeState(state);
+    }
+  }
+}
+
 void HierarchicalMCTS::AddOption(int from, int to, STATE *state) {
   if (mActionAbstraction) {
     assert(from >= 0 && to >= 0);
@@ -447,8 +452,7 @@ HierarchicalMCTS::PollingRollout(option_t option,
 }
 
 HierarchicalMCTS::result_t
-HierarchicalMCTS::Simulate(option_t action, const input_t &input, STATE *&state,
-                           int depth) {
+HierarchicalMCTS::Simulate(option_t action, const input_t &input, STATE *&state, int depth) {
   assert(IsPrimitive(action));
 
   int observation;
@@ -459,14 +463,20 @@ HierarchicalMCTS::Simulate(option_t action, const input_t &input, STATE *&state,
 
   size_t belief_hash = 0;
   if (Simulator.mStateAbstraction) { // whole history
-    belief_hash = input.belief_hash;
-    boost::hash_combine(belief_hash, action);
-    boost::hash_combine(belief_hash, observation);
-    boost::hash_combine(belief_hash, depth);
-  } else { // memory size = 1
-    boost::hash_combine(belief_hash, observation); // observation is the ground state
-    boost::hash_combine(belief_hash, depth);
+    if (observation != input.ending_observation) { // entering into new room
+      boost::hash_combine(belief_hash, input.ending_observation);
+      boost::hash_combine(belief_hash, observation);
+    }
+    else {
+      boost::hash_combine(belief_hash, input.belief_hash);
+      boost::hash_combine(belief_hash, action);
+      boost::hash_combine(belief_hash, observation);
+    }
   }
+  else { // memory size = 1
+    boost::hash_combine(belief_hash, observation); // observation is the ground state
+  }
+
   return result_t(immediateReward, 1, terminal, belief_hash, observation);
 }
 
@@ -526,17 +536,18 @@ HierarchicalMCTS::HierarchicalRollout(option_t option,
 option_t HierarchicalMCTS::GreedyUCB(option_t option,
                                      int last_observation, data_t &data,
                                      bool ucb) {
-  std::vector<option_t> besta;
+  static std::vector<option_t> besta;
+  besta.clear();
+
   double bestq = -Infinity;
   int N = data.V[Params.LocalReward].value.GetCount();
 
-  for (option_t action : mTaskGraph[option]) {
-    if (IsTerminated(action, last_observation) ||
-        !Applicable(last_observation, action) ||
-        action.first == action.second) {
-      continue;
-    }
+  std::unordered_set<option_t> &actions = (mActionAbstraction && option == mRootTask)?
+        mAvailableOptions[last_observation]: mTaskGraph[option];
 
+  for (option_t action : actions) {
+    assert(!IsTerminated(action, last_observation) &&
+             Applicable(last_observation, action));
     int n = data.V[Params.LocalReward].qvalues[action].GetCount();
     double q = data.V[Params.LocalReward].qvalues[action].GetValue();
 

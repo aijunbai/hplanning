@@ -37,3 +37,4 @@ Release/
 backup/
 experiment*
 output-*
+log-*

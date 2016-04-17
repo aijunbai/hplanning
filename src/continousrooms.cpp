@@ -10,7 +10,7 @@ ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction)
 
   NumActions = 8;
   NumObservations = state_abstraction ? mRooms : numeric_limits<int>::max();
-  Discount = 0.99;
+  Discount = 0.98;
   RewardRange = 20.0;
 
   if (state_abstraction) {

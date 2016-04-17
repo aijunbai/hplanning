@@ -148,6 +148,7 @@ public:
 
   double GetExplorationConstant(option_t option);
   void AddOption(int from, int to, STATE *state);
+  void ExploreOptions(int iterations, int max_depth);
   bool Applicable(int last_observation, option_t action);
   data_t *Query(option_t option, size_t belief_hash);
   data_t *Insert(option_t option, size_t belief_hash);

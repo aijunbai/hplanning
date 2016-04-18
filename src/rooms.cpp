@@ -137,6 +137,10 @@ void ROOMS::GenerateLegal(const STATE &state, vector<int> &legal) const {
   legal.push_back(coord::E_EAST);
   legal.push_back(coord::E_SOUTH);
   legal.push_back(coord::E_WEST);
+  legal.push_back(coord::E_NORTHEAST);
+  legal.push_back(coord::E_NORTHWEST);
+  legal.push_back(coord::E_SOUTHEAST);
+  legal.push_back(coord::E_SOUTHWEST);
 }
 
 void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &,  //手工策略

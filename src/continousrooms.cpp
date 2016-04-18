@@ -164,14 +164,17 @@ bool ContinousROOMS::LocalMove(STATE &state, const HISTORY &history,
   return false;
 }
 
-void ContinousROOMS::GenerateLegal(const STATE &state,
-                                   vector<int> &legal) const {
+void ContinousROOMS::GenerateLegal(const STATE &state, vector<int> &legal) const {
   Validate(state);
 
   legal.push_back(coord::E_NORTH);
   legal.push_back(coord::E_EAST);
   legal.push_back(coord::E_SOUTH);
   legal.push_back(coord::E_WEST);
+  legal.push_back(coord::E_NORTHEAST);
+  legal.push_back(coord::E_NORTHWEST);
+  legal.push_back(coord::E_SOUTHEAST);
+  legal.push_back(coord::E_SOUTHWEST);
 }
 
 void ContinousROOMS::GeneratePreferred(

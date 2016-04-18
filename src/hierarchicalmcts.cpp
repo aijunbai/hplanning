@@ -475,6 +475,7 @@ HierarchicalMCTS::Simulate(option_t action, const input_t &input, STATE *&state,
   }
   else { // memory size = 1
     boost::hash_combine(belief_hash, observation); // observation is the ground state
+    boost::hash_combine(belief_hash, depth);
   }
 
   return result_t(immediateReward, 1, terminal, belief_hash, observation);

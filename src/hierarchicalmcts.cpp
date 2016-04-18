@@ -94,8 +94,6 @@ int HierarchicalMCTS::SelectAction() {
   input_t input(0, History.EndingObservation());
 
   if (mActionAbstraction) {
-    ExploreOptions(100, 500);
-
     if (input.ending_observation == mRootTask.second) {  // enter target macro state XXX
       if (Params.Verbose >= 2) {
         cerr << "Cancelling action abstraction" << endl;

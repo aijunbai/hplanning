@@ -23,7 +23,7 @@ void EXPERIMENT::Run() {
   boost::timer timer;
   MCTS *mcts = 0;
 
-  STATE *state = Real.CreateStartState(); //真实的世界状态
+  STATE *state = Real.CreateStartState();
   int first_observation = Real.AbstractionFunction(*state);
 
   if (SearchParams.Hplanning) {

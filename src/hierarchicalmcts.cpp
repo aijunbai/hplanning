@@ -211,7 +211,7 @@ option_t HierarchicalMCTS::RandomOption(const input_t &input)
   option_t action = *next(begin(mAvailableOptions[input.ending_observation]),
       SimpleRNG::ins().Random(mAvailableOptions[input.ending_observation].size()));
   assert(!IsTerminated(action, input.ending_observation) &&
-           Applicable(input.ending_observation, action));
+         Applicable(input.ending_observation, action));
 
   return action;
 }
@@ -461,17 +461,23 @@ HierarchicalMCTS::Simulate(option_t action, const input_t &input, STATE *&state,
 
   size_t belief_hash = 0;
   if (Simulator.mStateAbstraction) { // whole history
-    if (observation != input.ending_observation) { // entering into new room
-      boost::hash_combine(belief_hash, input.ending_observation);
+    if (Params.MemoryLess) { // memory size = 1
       boost::hash_combine(belief_hash, observation);
+      boost::hash_combine(belief_hash, depth);
     }
     else {
-      boost::hash_combine(belief_hash, input.belief_hash);
-      boost::hash_combine(belief_hash, action);
-      boost::hash_combine(belief_hash, observation);
+      if (observation != input.ending_observation) { // entering into new room
+        boost::hash_combine(belief_hash, input.ending_observation);
+        boost::hash_combine(belief_hash, observation);
+      }
+      else {
+        boost::hash_combine(belief_hash, input.belief_hash);
+        boost::hash_combine(belief_hash, action);
+        boost::hash_combine(belief_hash, observation);
+      }
     }
   }
-  else { // memory size = 1
+  else {
     boost::hash_combine(belief_hash, observation); // observation is the ground state
     boost::hash_combine(belief_hash, depth);
   }
@@ -546,7 +552,7 @@ option_t HierarchicalMCTS::GreedyUCB(option_t option,
 
   for (option_t action : actions) {
     assert(!IsTerminated(action, last_observation) &&
-             Applicable(last_observation, action));
+           Applicable(last_observation, action));
     int n = data.V[Params.LocalReward].qvalues[action].GetCount();
     double q = data.V[Params.LocalReward].qvalues[action].GetValue();
 

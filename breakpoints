@@ -6,7 +6,7 @@
 #HierarchicalMCTS::SearchTree
 #HierarchicalMCTS::Simulate
 #HierarchicalMCTS::GreedyUCB
-#HierarchicalMCTS::SelectAction
+HierarchicalMCTS::SelectAction
 #ContinousROOMS::GetObservation
 #HierarchicalMCTS::AddAbstractAction
 #HierarchicalMCTS::GetPrimitiveAction
@@ -20,4 +20,4 @@
 #coord::MoveTo
 #experiment.cpp:61 if t == 507
 #HierarchicalMCTS::Simulate
-hierarchicalmcts.cpp:467
+#hierarchicalmcts.cpp:467

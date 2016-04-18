@@ -38,3 +38,4 @@ backup/
 experiment*
 output-*
 log-*
+plot_*.sh

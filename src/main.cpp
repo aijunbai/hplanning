@@ -105,7 +105,10 @@ int main(int argc, const char *argv[]) {
         "hplanning", value<bool>(&searchParams.Hplanning),
         "use hplanning when possible")(
         "actionabstraction", value<bool>(&searchParams.ActionAbstraction),
-        "use hplanning w/ action abstraction when possible");
+        "use hplanning w/ action abstraction when possible")(
+        "memoryless", value<bool>(&searchParams.MemoryLess),
+        "find a memoryless policy in hplanning")
+      ;
 
   variables_map vm;
   store(parse_command_line(argc, argv, desc), vm);

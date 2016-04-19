@@ -101,7 +101,7 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
   Validate(state);
 
   ROOMS_STATE &rstate = safe_cast<ROOMS_STATE &>(state);
-  reward = -1.0;
+  reward = SimpleRNG::ins().GetUniform(-2.0, 0.0);
 
   if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
     action = SimpleRNG::ins().Random(GetNumActions());
@@ -135,7 +135,7 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
   return false;  // not terminated
 }
 
-bool ROOMS::LocalMove(STATE &state, const HISTORY &history, int) const  
+bool ROOMS::LocalMove(STATE &state, const HISTORY &history, int) const
 {
   ROOMS_STATE rstate = safe_cast<ROOMS_STATE &>(state);
   if (GetObservation(rstate) == history.Back().Observation) {
@@ -158,7 +158,7 @@ void ROOMS::GenerateLegal(const STATE &state, vector<int> &legal) const {
 }
 
 void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &,
-                              vector<int> &actions) const  
+                              vector<int> &actions) const
 {
   GenerateLegal(state, actions);
 }

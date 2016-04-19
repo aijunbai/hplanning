@@ -27,14 +27,14 @@ class SIMULATOR {
 
     KNOWLEDGE();
 
-    int TreeLevel;     //标记使用何种方式初始化为 vnode
-    int RolloutLevel;  //标记使用何种方式 rollout
+    int TreeLevel;
+    int RolloutLevel;
     int SmartTreeCount;
     double SmartTreeValue;
   };
 
   SIMULATOR();
-  SIMULATOR(int numActions, int numObservations, double discount = 1.0);
+  SIMULATOR(int numActions, double discount = 1.0);
   virtual ~SIMULATOR();
 
   // Create start state (can be stochastic)
@@ -95,7 +95,6 @@ class SIMULATOR {
   // Accessors
   void SetKnowledge(const KNOWLEDGE &knowledge) { Knowledge = knowledge; }
   int GetNumActions() const { return NumActions; }
-  int GetNumObservations() const { return NumObservations; }
   bool IsEpisodic() const { return false; }
   double GetDiscount() const { return Discount; }
   double GetHorizon(double accuracy, int undiscountedHorizon = 100) const;
@@ -107,7 +106,7 @@ class SIMULATOR {
   }
 
  public:
-  int NumActions, NumObservations;
+  int NumActions;
   double Discount, RewardRange;
   KNOWLEDGE Knowledge;
   std::stringstream mName;

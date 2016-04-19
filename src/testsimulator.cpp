@@ -24,7 +24,7 @@ bool TEST_SIMULATOR::Step(STATE &state, int action, int &observation,
   else
     reward = 0.0;
 
-  observation = SimpleRNG::ins().Random(0, GetNumObservations());
+  observation = SimpleRNG::ins().Random(10);
   tstate.Depth++;
   return false;
 }

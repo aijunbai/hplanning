@@ -7,7 +7,6 @@ const int TAG::NumCells = 29;
 
 TAG::TAG(int opponents) : NumOpponents(opponents) {
   NumActions = 5;
-  NumObservations = NumCells + 1;
   Discount = 0.95;
   RewardRange = 10 * NumOpponents;
   mName << "tag_" << opponents;

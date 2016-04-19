@@ -4,10 +4,44 @@
 #include "simulator.h"
 #include "coord.h"
 #include "grid.h"
+#include <utility>
 
 class ROOMS_STATE : public STATE {
  public:
   COORD AgentPos;
+  COORD AgentVel;
+
+  ROOMS_STATE(): AgentPos(0, 0), AgentVel(0, 0) {
+
+  }
+
+  static int EncodeInt(int i) {
+    int sign = i > 0? 1: 0;
+    return sign << 7 | abs(i);
+  }
+
+  static int DecodeInt(int c) {
+    int v = c & 0x7F;
+    return c >> 7? v: -v;
+  }
+
+  int Encode() const {
+    int code = 0;
+    code = code << 8 | EncodeInt(AgentPos.X);
+    code = code << 8 | EncodeInt(AgentPos.Y);
+    code = code << 8 | EncodeInt(AgentVel.X);
+    code = code << 8 | EncodeInt(AgentVel.Y);
+    return code;
+  }
+
+  static std::pair<COORD, COORD> Decode(int code) {
+    COORD pos, vel;
+    vel.Y = DecodeInt(code & 0xFF); code >>= 8;
+    vel.X = DecodeInt(code & 0xFF); code >>= 8;
+    pos.Y = DecodeInt(code & 0xFF); code >>= 8;
+    pos.X = DecodeInt(code & 0xFF); code >>= 8;
+    return std::make_pair(pos, vel);
+  }
 
   virtual size_t hash() const {
     using boost::hash_combine;
@@ -18,6 +52,7 @@ class ROOMS_STATE : public STATE {
     // Modify 'seed' by XORing and bit-shifting in
     // one member of 'Key' after the other:
     hash_combine(seed, hash_value(AgentPos));
+    hash_combine(seed, hash_value(AgentVel));
 
     // Return the result.
     return seed;

@@ -23,18 +23,6 @@ POCMAN::POCMAN(int xsize, int ysize)
       RewardHitWall(-25),
       PowerNumSteps(15) {
   NumActions = 4;
-  NumObservations = 1 << 10;
-  // See ghost N
-  // See ghost E
-  // See ghost S
-  // See ghost W
-  // Can move N
-  // Can move E
-  // Can move S
-  // Can move W
-  // Smell food
-  // Hear ghost
-
   Discount = 0.95;
   RewardRange = 100;
   mName << "pocman_" << xsize << "_" << ysize;

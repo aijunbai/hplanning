@@ -461,20 +461,24 @@ HierarchicalMCTS::Simulate(option_t action, const input_t &input, STATE *&state,
 
   size_t belief_hash = 0;
   if (Simulator.mStateAbstraction) { // whole history
-    if (Params.MemoryLess) { // memory size = 1
+    if (Params.MemoryLess) { // memoryless policy
       boost::hash_combine(belief_hash, observation);
       boost::hash_combine(belief_hash, depth);
     }
     else {
-      if (observation != input.ending_observation) { // entering into new room
+#if ENTERING_BELIEF
+      if (observation != input.ending_observation) { // entering into new room => belief around the intersection area
         boost::hash_combine(belief_hash, input.ending_observation);
         boost::hash_combine(belief_hash, observation);
       }
       else {
+#endif
         boost::hash_combine(belief_hash, input.belief_hash);
         boost::hash_combine(belief_hash, action);
         boost::hash_combine(belief_hash, observation);
+#if ENTERING_BELIEF
       }
+#endif
     }
   }
   else {

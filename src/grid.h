@@ -104,6 +104,98 @@ public:
                  SimpleRNG::ins().Random(YSize));
   }
 
+  bool ValidPos(const COORD &pos) const {
+    return Inside(pos) && this->operator()(pos) != 'x';
+  }
+
+  bool ValidPos(int x, int y) const {
+    return ValidPos(COORD(x, y));
+  }
+
+  int ValidPath(const COORD &pos, const COORD &next, const COORD &goal, COORD& final) const {
+    return ValidPath(pos.X, pos.Y, next.X, next.Y, goal.X, goal.Y, final.X, final.Y);
+  }
+
+  int ValidPath(int x1, int y1, int x2, int y2, int gx, int gy, int &ox, int &oy) const {
+    assert(ValidPos(x1, y1));
+
+    short rv = 0, ix = 0, lx = 0, iy = 0, ly = 0;
+
+    if( (x1 != x2) && (y1 != y2) ) {
+      float m = (float)(y2 - y1) / (float)(x2 - x1);
+      float b = (float)(y1*x2 - y2*x1) / (float)(x2 - x1);
+      int inc = (x2 - x1 > 0 ? 1 : -1);
+
+      for( float x = x1; (x != x2 + inc) && (rv == 0); x += inc ) {
+        float y = m*x + b;
+        lx = ix;
+        ly = iy;
+        ix = (short)x;
+        iy = (short)floor(y + 0.5);
+        if( !ValidPos(ix, iy) )
+          rv = 1;
+        else if( ix == gx && iy == gy )
+          rv = 2;
+      }
+
+      if (rv == 0) {
+        std::swap(x1, y1);
+        std::swap(x2, y2);
+
+        float m = (float)(y2 - y1) / (float)(x2 - x1);
+        float b = (float)(y1*x2 - y2*x1) / (float)(x2 - x1);
+        int inc = (x2 - x1 > 0 ? 1 : -1);
+        for( float x = x1; (x != x2 + inc) && (rv == 0); x += inc ) {
+          float y = m*x + b;
+          lx = ix;
+          ly = iy;
+          ix = (short)x;
+          iy = (short)floor(y + 0.5);
+
+          std::swap(ix, iy);
+
+          if( !ValidPos(ix, iy) )
+            rv = 1;
+          else if( ix == gx && iy == gy )
+            rv = 2;
+        }
+      }
+    }
+    else if( (x1 != x2) && (y1 == y2) ) {
+      ly = iy = y1;
+      int inc = (x2 - x1 > 0 ? 1 : -1);
+      for( float x = x1; (x != x2 + inc) && (rv == 0); x += inc ) {
+        lx = ix;
+        ix = (short)x;
+        if( !ValidPos(ix, iy) )
+          rv = 1;
+        else if( ix == gx && iy == gy )
+          rv = 2;
+      }
+    }
+    else if( (x1 == x2) && (y1 != y2) ) {
+      lx = ix = x1;
+      int inc = (y2 - y1 > 0 ? 1 : -1);
+      for( float y = y1; (y != y2 + inc) && (rv == 0); y += inc ) {
+        ly = iy;
+        iy = (short)y;
+        if( !ValidPos(ix, iy) )
+          rv = 1;
+        else if( ix == gx && iy == gy )
+          rv = 2;
+      }
+    }
+
+    if( rv == 1 ) {
+      ox = lx;
+      oy = ly;
+    } else if( rv == 2 ) {
+      ox = ix;
+      oy = iy;
+    }
+    return rv;
+  }
+
 public:
   int XSize, YSize;
   std::vector<T> Grid;

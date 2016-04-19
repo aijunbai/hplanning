@@ -8,6 +8,7 @@
 class ContinousROOMS_STATE : public STATE {
  public:
   Vector AgentPos;
+  Vector AgentVel;
 
   virtual size_t hash() const {
     using boost::hash_combine;
@@ -18,6 +19,7 @@ class ContinousROOMS_STATE : public STATE {
     // Modify 'seed' by XORing and bit-shifting in
     // one member of 'Key' after the other:
     hash_combine(seed, hash_value(AgentPos));
+    hash_combine(seed, hash_value(AgentVel));
 
     // Return the result.
     return seed;

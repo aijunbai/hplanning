@@ -1,4 +1,6 @@
 #ROOMS::Step
+#ROOMS::DisplayObservation
+#ROOMS::GetObservation
 #ContinousROOMS::Step
 #ContinousROOMS::GetObservation
 #FlatMCTS::SearchImp
@@ -6,7 +8,7 @@
 #HierarchicalMCTS::SearchTree
 #HierarchicalMCTS::Simulate
 #HierarchicalMCTS::GreedyUCB
-HierarchicalMCTS::SelectAction
+#HierarchicalMCTS::SelectAction
 #ContinousROOMS::GetObservation
 #HierarchicalMCTS::AddAbstractAction
 #HierarchicalMCTS::GetPrimitiveAction
@@ -18,6 +20,6 @@ HierarchicalMCTS::SelectAction
 #HierarchicalMCTS::GetSubtask
 #EXPERIMENT::Run
 #coord::MoveTo
-#experiment.cpp:61 if t == 507
+experiment.cpp:61 if t == 99
 #HierarchicalMCTS::Simulate
 #hierarchicalmcts.cpp:467

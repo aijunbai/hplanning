@@ -8,8 +8,6 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
       mStartPos(0, 0),
       mGoalPos(size - 1, size - 1) {
   NumActions = 4;  //动作数
-  int grids = mGrid.GetSize();
-  NumObservations = state_abstraction ? grids : grids * grids;
   Discount = 0.95;
   RewardRange = 20.0;
   mName << "redundant_object_" << size << "_" << state_abstraction;

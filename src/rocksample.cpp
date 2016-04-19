@@ -5,8 +5,7 @@ using namespace UTILS;
 
 ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
     : Grid(size, size), Size(size), NumRocks(rocks) {
-  NumActions = NumRocks + 5;  //动作数
-  NumObservations = 3;        //观察数
+  NumActions = NumRocks + 5;
   Discount = 0.95;
   RewardRange = 20;
   mName << "rocksample_" << size << "_" << rocks;
@@ -422,8 +421,7 @@ void ROCKSAMPLE::DisplayAction(int action, std::ostream &ostr) const {
 
 FieldVisionRockSample::FieldVisionRockSample(int size, int rocks)
     : ROCKSAMPLE(size, rocks) {
-  NumActions = 5;                //动作数
-  NumObservations = 1 << rocks;  //观察数
+  NumActions = 5;
   mName.clear();
   mName << "fieldvisionrocksample_" << size << "_" << rocks;
 }

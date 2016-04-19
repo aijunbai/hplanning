@@ -6,7 +6,6 @@ using namespace UTILS;
 BATTLESHIP::BATTLESHIP(int xsize, int ysize, int maxlength)
     : XSize(xsize), YSize(ysize), MaxLength(maxlength + 1) {
   NumActions = XSize * YSize;
-  NumObservations = 2;
   Discount = 1;
   TotalRemaining = MaxLength - 1;
   RewardRange = NumActions / 4.0;

@@ -60,6 +60,11 @@ public:
 
   virtual void DisplayAction(int action, std::ostream &ostr) const;
 
+  virtual int AbstractionFunction(const STATE &state) const {
+    const REDUNDANT_OBJECT_STATE &rstate = safe_cast<const REDUNDANT_OBJECT_STATE &>(state);
+    return GetObservation(rstate);
+  }
+
 protected:
   int GetObservation(const REDUNDANT_OBJECT_STATE &state) const;
   int Encode(const REDUNDANT_OBJECT_STATE &rstate) const;

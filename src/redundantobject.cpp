@@ -7,10 +7,16 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
     : mGrid(size, size),
       mStartPos(0, 0),
       mGoalPos(size - 1, size - 1) {
-  NumActions = 4;  
+  NumActions = 8;
   Discount = 0.95;
   RewardRange = 20.0;
-  mName << "redundant_object_" << size << "_" << state_abstraction;
+
+  if (state_abstraction) {
+    mName << "redundant_object_" << size << " w/ state abstraction";
+  }
+  else {
+    mName << "redundant_object_" << size << " wo/ state abstraction";
+  }
 
   mHierarchicalPlanning = true;
   mFullyObservable = true;
@@ -53,8 +59,8 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &
   REDUNDANT_OBJECT_STATE &rstate = safe_cast<REDUNDANT_OBJECT_STATE &>(state);
   reward = -1.0;
 
-  if (SimpleRNG::ins().Bernoulli(0.2)) {  
-    action = coord::Opposite(action);
+  if (SimpleRNG::ins().Bernoulli(0.2)) { // fail
+    action = SimpleRNG::ins().Random(GetNumActions());
   }
 
   COORD pos = rstate.AgentPos + coord::Compass[action];
@@ -63,16 +69,12 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &
   }
   rstate.AgentPos = pos;
 
-  action = SimpleRNG::ins().Random(NumActions);
+  action = SimpleRNG::ins().Random(GetNumActions());
   pos = rstate.ObjectPos + coord::Compass[action];
   if (!mGrid.Inside(pos)) {
     pos = rstate.ObjectPos;
   }
   rstate.ObjectPos = pos;
-
-  if (rstate.AgentPos == rstate.ObjectPos) {
-    reward = -10.0;
-  }
 
   observation = GetObservation(rstate);
   if (rstate.AgentPos == mGoalPos) {
@@ -80,10 +82,10 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &
     return true;
   }
 
-  return false;  
+  return false;
 }
 
-bool REDUNDANT_OBJECT::LocalMove(STATE &state, const HISTORY &history, int) const  
+bool REDUNDANT_OBJECT::LocalMove(STATE &state, const HISTORY &history, int) const
 {
   REDUNDANT_OBJECT_STATE rstate = safe_cast<REDUNDANT_OBJECT_STATE &>(state);
   if (GetObservation(rstate) == history.Back().Observation) {
@@ -102,8 +104,8 @@ void REDUNDANT_OBJECT::GenerateLegal(const STATE &state, vector<int> &legal) con
 }
 
 void REDUNDANT_OBJECT::GeneratePreferred(
-    const STATE &state, const HISTORY &,               
-    vector<int> &actions) const  
+    const STATE &state, const HISTORY &,
+    vector<int> &actions) const
 {
   GenerateLegal(state, actions);
 }

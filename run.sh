@@ -3,12 +3,12 @@
 set -o nounset
 
 PROBLEM="rocksample"
-PROBLEM="redundant_object_0"
-PROBLEM="redundant_object_1"
 PROBLEM="rooms_0"
 PROBLEM="rooms_1"
 PROBLEM="continousrooms_1"
 PROBLEM="continousrooms_0"
+PROBLEM="redundant_object_0"
+PROBLEM="redundant_object_1"
 
 MAP="data/10_rooms_blocked.map"
 MAP="data/16_rooms_blocked.map"
@@ -24,14 +24,14 @@ MAP="data/32_rooms.map"
 MAP="data/8_rooms.map"
 
 HPLANNING=1
-ACTIONABSTRACTION=0
+ACTIONABSTRACTION=1
 POLLING=1
 SMARTROLLOUT=0
 MEMORYLESS=0
 STACK=0
 LOCALREWARD=0
 
-SIZE=7
+SIZE=10
 NUM=8
 RUNS=1
 VERBOSE=2

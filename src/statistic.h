@@ -61,8 +61,8 @@ public:
 
   double GetVariance() const;
 
-  double GetStdDev() const;  //标准差
-  double GetStdErr() const;  //标准误差（平均值的标准差）
+  double GetStdDev() const;  
+  double GetStdErr() const;  
   double GetMax() const;
 
   double GetMin() const;
@@ -87,8 +87,8 @@ public:
 
 private:
   double Count;
-  double Mean;      //平均值
-  double Variance;  //方差
+  double Mean; 
+  double Variance;
   double Min, Max;
 };
 
@@ -221,7 +221,7 @@ public:
   double GetExpectation() const { return ThompsonSampling(false); }
 
   double ThompsonSampling(bool sampling = true)
-  const {  // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
+  const { 
     if (sampling) {
       double x = SimpleRNG::ins().GetGamma(Alpha);
       double y = SimpleRNG::ins().GetGamma(Beta);
@@ -303,7 +303,6 @@ public:
   }
 
   double ThompsonSampling(bool sampling = true) const {
-    // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
     return sampling ? NormalGammaGenerator(Mu, Lambda, Alpha, Beta)() : Mu;
   }
 
@@ -355,7 +354,7 @@ public:
 
   const std::vector<std::pair<T, double>> &ThompsonSampling(
       bool sampling = true)
-  const {  // Two Step: 采样一个模型参数，并计算出该模型参数对应的期望收益
+  const {
     outcomes_.clear();
 
     double sum = 0.0;

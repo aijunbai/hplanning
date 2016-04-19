@@ -7,7 +7,7 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
     : mGrid(size, size),
       mStartPos(0, 0),
       mGoalPos(size - 1, size - 1) {
-  NumActions = 4;  //动作数
+  NumActions = 4;  
   Discount = 0.95;
   RewardRange = 20.0;
   mName << "redundant_object_" << size << "_" << state_abstraction;
@@ -53,7 +53,7 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &
   REDUNDANT_OBJECT_STATE &rstate = safe_cast<REDUNDANT_OBJECT_STATE &>(state);
   reward = -1.0;
 
-  if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
+  if (SimpleRNG::ins().Bernoulli(0.2)) {  
     action = coord::Opposite(action);
   }
 
@@ -80,10 +80,10 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &
     return true;
   }
 
-  return false;  // not terminated
+  return false;  
 }
 
-bool REDUNDANT_OBJECT::LocalMove(STATE &state, const HISTORY &history, int) const  //局部扰动
+bool REDUNDANT_OBJECT::LocalMove(STATE &state, const HISTORY &history, int) const  
 {
   REDUNDANT_OBJECT_STATE rstate = safe_cast<REDUNDANT_OBJECT_STATE &>(state);
   if (GetObservation(rstate) == history.Back().Observation) {
@@ -102,8 +102,8 @@ void REDUNDANT_OBJECT::GenerateLegal(const STATE &state, vector<int> &legal) con
 }
 
 void REDUNDANT_OBJECT::GeneratePreferred(
-    const STATE &state, const HISTORY &,               //手工策略
-    vector<int> &actions) const  //获得优先动作
+    const STATE &state, const HISTORY &,               
+    vector<int> &actions) const  
 {
   GenerateLegal(state, actions);
 }

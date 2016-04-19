@@ -16,7 +16,7 @@ EXPERIMENT::EXPERIMENT(const SIMULATOR &real, const SIMULATOR &simulator,
   : Real(real), Simulator(simulator), ExpParams(expParams),
     SearchParams(searchParams),
     OutputFile(outputFile.c_str(), fstream::out | fstream::app) {
-  MCTS::InitFastUCB(); //初始化 UCB 表格缓存
+  MCTS::InitFastUCB(); 
 }
 
 void EXPERIMENT::Run() {
@@ -58,12 +58,12 @@ void EXPERIMENT::Run() {
     }
 
     boost::timer timer_per_action;
-    int action = mcts->SelectAction(); // 用 Monte Carlo 方法选择一个动作
+    int action = mcts->SelectAction(); 
     Results.TimePerAction.Add(timer_per_action.elapsed());
 
     terminal = Real.Step(
           *state, action, observation,
-          reward); //根据 state 和 action 转移到下一个状态，获得实际观察和回报
+          reward); 
     Results.Reward.Add(reward);
     undiscountedReturn += reward;
     discountedReturn += reward * discount;
@@ -85,7 +85,7 @@ void EXPERIMENT::Run() {
     }
 
     outOfParticles = !mcts->Update(
-          action, observation, *state); //更新历史信息，得到新的 Root 节点，设置好初始信念状态
+          action, observation, *state); 
     if (outOfParticles) {
       assert(!Real.mHierarchicalPlanning);
       break; // Out of particles, finishing episode with SelectRandom
@@ -98,7 +98,7 @@ void EXPERIMENT::Run() {
     }
   }
 
-  if (outOfParticles) //特殊情况处理
+  if (outOfParticles) 
   {
     cout << "Out of particles, finishing episode with SelectRandom" << endl;
     while (++t < ExpParams.NumSteps) {
@@ -146,7 +146,7 @@ void EXPERIMENT::Run() {
 }
 
 void EXPERIMENT::MultiRun() {
-  for (int n = 0; n < ExpParams.NumRuns; n++) //实验次数
+  for (int n = 0; n < ExpParams.NumRuns; n++) 
   {
     cout << "Starting run " << n + 1 << " with " << SearchParams.NumSimulations
          << " simulations... " << endl;
@@ -171,15 +171,15 @@ void EXPERIMENT::DiscountedReturn() {
 
   SearchParams.MaxDepth = Simulator.GetHorizon(
         ExpParams.Accuracy,
-        ExpParams.UndiscountedHorizon); //搜索过程中的最大深度
+        ExpParams.UndiscountedHorizon); 
   ExpParams.NumSteps = Real.GetHorizon(
-        ExpParams.Accuracy, ExpParams.UndiscountedHorizon); //实验的最大步长
+        ExpParams.Accuracy, ExpParams.UndiscountedHorizon); 
 
   for (int i = ExpParams.MinDoubles; i <= ExpParams.MaxDoubles; i++) {
-    SearchParams.NumSimulations = 1 << i; //迭代次数 iterations
+    SearchParams.NumSimulations = 1 << i; 
 
-    if (SearchParams.TimeOutPerAction < 0.0) { //非anytime模式
-      SearchParams.NumStartStates = 1 << i;    //初始粒子数
+    if (SearchParams.TimeOutPerAction < 0.0) { 
+      SearchParams.NumStartStates = 1 << i;    
     }
 
     if (i + ExpParams.TransformDoubles >= 0)

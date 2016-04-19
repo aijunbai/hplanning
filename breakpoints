@@ -5,7 +5,7 @@
 #ContinousROOMS::GetObservation
 #FlatMCTS::SearchImp
 #HierarchicalMCTS::SearchImp
-#HierarchicalMCTS::SearchTree
+HierarchicalMCTS::SearchTree
 #HierarchicalMCTS::Simulate
 #HierarchicalMCTS::GreedyUCB
 #HierarchicalMCTS::SelectAction
@@ -23,4 +23,4 @@
 #experiment.cpp:61 if t == 335
 #HierarchicalMCTS::Simulate
 #hierarchicalmcts.cpp:467
-grid.h:124
+#grid.h:124

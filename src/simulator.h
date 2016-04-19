@@ -9,6 +9,9 @@
 #include <math.h>
 #include <sstream>
 
+#define ROOMS_NOT_USING_VEL 1
+#define HPLANNING_ENTERING_BELIEF 0
+
 class BELIEF_STATE;
 class VNODE;
 

@@ -22,7 +22,7 @@ ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
 }
 
 void ROCKSAMPLE::InitGeneral() {
-  vector<COORD> rocks;  //保持模拟器和真实环境一致性
+  vector<COORD> rocks; 
 
   SimpleRNG::ins().RandomSeed(0);
 
@@ -82,7 +82,7 @@ STATE *ROCKSAMPLE::CreateStartState() const {
     RS_ENTRY entry;
 
     entry.Collected = false;
-    entry.Valuable = SimpleRNG::ins().Bernoulli(0.5);  //随机决定（50/50）
+    entry.Valuable = SimpleRNG::ins().Bernoulli(0.5);
     entry.Count = 0;
     entry.Measured = 0;
     entry.ProbValuable = 0.5;
@@ -101,7 +101,7 @@ void ROCKSAMPLE::FreeState(STATE *state) const {
 }
 
 bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
-                      double &reward) const  // 进行一步模拟：state, action |-> state, reward, observation
+                      double &reward) const
 {
   ROCKSAMPLE_STATE &rockstate = safe_cast<ROCKSAMPLE_STATE &>(state);
   reward = 0;
@@ -123,7 +123,7 @@ bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
         if (rockstate.AgentPos.Y + 1 < Size)
           rockstate.AgentPos.Y++;
         else
-          reward = -100;  //为什么设置 -100，原始论文里面好像没有？
+          reward = -100; 
         break;
 
       case coord::E_SOUTH:
@@ -160,7 +160,7 @@ bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
   {
     int rock = action - E_SAMPLE - 1;
     assert(rock < NumRocks);
-    observation = GetObservation(rockstate, rock);  //获得观察
+    observation = GetObservation(rockstate, rock);
     rockstate.Rocks[rock].Measured++;
 
     double distance =
@@ -187,7 +187,7 @@ bool ROCKSAMPLE::Step(STATE &state, int action, int &observation,
   return false;  // not terminated
 }
 
-bool ROCKSAMPLE::LocalMove(STATE &state, const HISTORY &history, int stepObs) const  //局部扰动
+bool ROCKSAMPLE::LocalMove(STATE &state, const HISTORY &history, int stepObs) const  
 {
   if (NumRocks) {
     ROCKSAMPLE_STATE &rockstate = safe_cast<ROCKSAMPLE_STATE &>(state);
@@ -237,8 +237,8 @@ void ROCKSAMPLE::GenerateLegal(const STATE &state, vector<int> &legal) const {
 }
 
 void ROCKSAMPLE::GeneratePreferred(const STATE &state,
-                                   const HISTORY &history,  //手工策略
-                                   vector<int> &actions) const  //获得优先动作
+                                   const HISTORY &history,  
+                                   vector<int> &actions) const  
 {
   //	static const bool UseBlindPolicy = false;
   //

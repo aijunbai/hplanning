@@ -67,10 +67,10 @@ void SIMULATOR::Prior(const STATE *state, const HISTORY &history, VNODE *vnode) 
   static std::vector<int> actions;
 
   if (Knowledge.TreeLevel == KNOWLEDGE::PURE || state == 0) {
-    vnode->SetPrior(NumActions, 0, 0, true);  //所有动作初始化为 (0, 0)
+    vnode->SetPrior(NumActions, 0, 0, true); 
     return;
   } else {
-    vnode->SetPrior(NumActions, +LargeInteger, -Infinity, false);  //为后面设置做准备，所有动作初始化为 (+inf, -inf)
+    vnode->SetPrior(NumActions, +LargeInteger, -Infinity, false);
   }
 
   if (Knowledge.TreeLevel >= KNOWLEDGE::LEGAL) {
@@ -87,7 +87,7 @@ void SIMULATOR::Prior(const STATE *state, const HISTORY &history, VNODE *vnode) 
 
   if (Knowledge.TreeLevel >= KNOWLEDGE::SMART) {
     actions.clear();
-    GeneratePreferred(*state, history, actions);  //产生优先动作
+    GeneratePreferred(*state, history, actions);
 
     for (vector<int>::const_iterator i_action = actions.begin();
          i_action != actions.end(); ++i_action) {

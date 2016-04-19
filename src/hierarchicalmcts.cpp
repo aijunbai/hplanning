@@ -1,5 +1,6 @@
 #include "hierarchicalmcts.h"
 #include "coord.h"
+#include "simulator.h"
 
 using namespace std;
 
@@ -329,7 +330,8 @@ HierarchicalMCTS::SearchTree(
 
   if (IsPrimitive(option)) {
     return Simulate(option, input, state, depth); // simulate primitive option
-  } else {
+  }
+  else {
     if (depth >= Params.MaxDepth || IsTerminated(option, input.ending_observation)) {
       return result_t(0.0, 0, false, input.belief_hash, input.ending_observation);
     }
@@ -339,7 +341,8 @@ HierarchicalMCTS::SearchTree(
     if (!data) {
       Insert(option, input.belief_hash);
       return Rollout(option, input, state, depth);
-    } else {
+    }
+    else {
       const option_t action = GreedyUCB(option, input.ending_observation, *data, true);
       const result_t subtask = SearchTree(action, input, state, depth);
       int steps = subtask.steps;
@@ -466,8 +469,8 @@ HierarchicalMCTS::Simulate(option_t action, const input_t &input, STATE *&state,
       boost::hash_combine(belief_hash, depth);
     }
     else {
-#if ENTERING_BELIEF
-      if (observation != input.ending_observation) { // entering into new room => belief around the intersection area
+#if HPLANNING_ENTERING_BELIEF
+      if (observation != input.ending_observation) { // entering into a new room => belief around the intersection area
         boost::hash_combine(belief_hash, input.ending_observation);
         boost::hash_combine(belief_hash, observation);
       }
@@ -476,7 +479,7 @@ HierarchicalMCTS::Simulate(option_t action, const input_t &input, STATE *&state,
         boost::hash_combine(belief_hash, input.belief_hash);
         boost::hash_combine(belief_hash, action);
         boost::hash_combine(belief_hash, observation);
-#if ENTERING_BELIEF
+#if HPLANNING_ENTERING_BELIEF
       }
 #endif
     }

@@ -137,8 +137,8 @@ int main(int argc, const char *argv[]) {
     knowledge.RolloutLevel = SIMULATOR::KNOWLEDGE::SMART;
   }
 
-  SIMULATOR *real = 0;      //真实环境
-  SIMULATOR *simulator = 0; //模拟器
+  SIMULATOR *real = 0;
+  SIMULATOR *simulator = 0;
 
   if (problem == "battleship") {
     real = new BATTLESHIP(size, size, number);
@@ -173,19 +173,19 @@ int main(int argc, const char *argv[]) {
   } else if (problem == "tag") {
     real = new TAG(number);
     simulator = new TAG(number);
-  } else if (problem == "rooms_0") {
+  } else if (problem == "rooms_0" && !searchParams.ActionAbstraction) {
     real = new ROOMS(map.c_str(), false);
     simulator = new ROOMS(map.c_str(), false);
   } else if (problem == "rooms_1") {
     real = new ROOMS(map.c_str(), true);
     simulator = new ROOMS(map.c_str(), true);
-  } else if (problem == "continousrooms_0") {
+  } else if (problem == "continousrooms_0" && !searchParams.ActionAbstraction) {
     real = new ContinousROOMS(map.c_str(), false);
     simulator = new ContinousROOMS(map.c_str(), false);
   } else if (problem == "continousrooms_1") {
     real = new ContinousROOMS(map.c_str(), true);
     simulator = new ContinousROOMS(map.c_str(), true);
-  } else if (problem == "redundant_object_0") {
+  } else if (problem == "redundant_object_0" && !searchParams.ActionAbstraction) {
     real = new REDUNDANT_OBJECT(size, false);
     simulator = new REDUNDANT_OBJECT(size, false);
   } else if (problem == "redundant_object_1") {

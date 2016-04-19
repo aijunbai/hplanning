@@ -121,9 +121,10 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
     rstate.AgentVel = COORD(0, 0);
   }
 
-#if NOT_USING_VEL
+#if ROOMS_NOT_USING_VEL
   rstate.AgentVel = COORD(0, 0);
 #endif
+
   observation = GetObservation(rstate);
 
   if (rstate.AgentPos == mGoalPos) {
@@ -134,7 +135,7 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
   return false;  // not terminated
 }
 
-bool ROOMS::LocalMove(STATE &state, const HISTORY &history, int) const  //局部扰动
+bool ROOMS::LocalMove(STATE &state, const HISTORY &history, int) const  
 {
   ROOMS_STATE rstate = safe_cast<ROOMS_STATE &>(state);
   if (GetObservation(rstate) == history.Back().Observation) {
@@ -156,15 +157,16 @@ void ROOMS::GenerateLegal(const STATE &state, vector<int> &legal) const {
   legal.push_back(coord::E_SOUTHWEST);
 }
 
-void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &,  //手工策略
-                              vector<int> &actions) const  //获得优先动作
+void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &,
+                              vector<int> &actions) const  
 {
   GenerateLegal(state, actions);
 }
 
 int ROOMS::GetObservation(const ROOMS_STATE &rstate) const {
-  return mStateAbstraction ? mGrid->operator()(rstate.AgentPos) : // room number
-                             rstate.Encode(); // full state
+  return mStateAbstraction ?
+        mGrid->operator()(rstate.AgentPos) : // room number
+        rstate.Encode(); // full state
 }
 
 void ROOMS::DisplayBeliefs(const BELIEF_STATE &belief, std::ostream &ostr) const {

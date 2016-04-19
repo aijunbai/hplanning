@@ -135,8 +135,8 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
 
   Vector vel = rstate.AgentVel + Vector(coord::Compass[action].X, coord::Compass[action].Y);
   Vector pos = rstate.AgentPos + vel;
-
   COORD final;
+
   int rv = mGrid->ValidPath(
         Position2Grid(rstate.AgentPos),
         Position2Grid(pos),
@@ -156,12 +156,14 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
                                    SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
   } while (Position2Grid(pos) != Position2Grid(rstate.AgentPos));
   rstate.AgentPos = pos;
+
+#if ROOMS_NOT_USING_VEL
+  rstate.AgentVel = Vector(0.0, 0.0);
+#else
   rstate.AgentVel += Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
                             SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
-
-#if NOT_USING_VEL
-  rstate.AgentVel = Vector(0.0, 0.0);
 #endif
+
   observation = GetObservation(rstate);
 
   if (rstate.AgentPos.Dist(mGoalPos) < mThreshold) {
@@ -173,7 +175,7 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
 }
 
 bool ContinousROOMS::LocalMove(STATE &state, const HISTORY &history,
-                               int) const //局部扰动
+                               int) const 
 {
   ContinousROOMS_STATE rstate = safe_cast<ContinousROOMS_STATE &>(state);
   if (GetObservation(rstate) == history.Back().Observation) {
@@ -196,8 +198,8 @@ void ContinousROOMS::GenerateLegal(const STATE &state, vector<int> &legal) const
 }
 
 void ContinousROOMS::GeneratePreferred(
-    const STATE &state, const HISTORY &, //手工策略
-    vector<int> &actions) const          //获得优先动作
+    const STATE &state, const HISTORY &, 
+    vector<int> &actions) const          
 {
   GenerateLegal(state, actions);
 }

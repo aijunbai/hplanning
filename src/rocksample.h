@@ -32,8 +32,8 @@ inline std::size_t hash_value(const RS_ENTRY &v) {
 
 class ROCKSAMPLE_STATE : public STATE {
  public:
-  COORD AgentPos;               //机器人位置
-  std::vector<RS_ENTRY> Rocks;  //每个石头的状态
+  COORD AgentPos;               
+  std::vector<RS_ENTRY> Rocks;  
 
   virtual size_t hash() const {
     using boost::hash_combine;

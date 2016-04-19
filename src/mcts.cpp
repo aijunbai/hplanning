@@ -74,9 +74,8 @@ void MCTS::Search() {
       }
     }
   } else {
-    for (int i = 0; i < Params.NumSimulations; i++)  //总共仿真（迭代）次数
+    for (int i = 0; i < Params.NumSimulations; i++)  
     {
-      //cerr << "i: " << i << endl;
       SearchImp();
     }
   }

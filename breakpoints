@@ -5,7 +5,8 @@
 #ContinousROOMS::GetObservation
 #FlatMCTS::SearchImp
 #HierarchicalMCTS::SearchImp
-HierarchicalMCTS::SearchTree
+#HierarchicalMCTS::SearchTree
+REDUNDANT_OBJECT::Step
 #HierarchicalMCTS::Simulate
 #HierarchicalMCTS::GreedyUCB
 #HierarchicalMCTS::SelectAction

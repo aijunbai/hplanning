@@ -192,7 +192,8 @@ int main(int argc, const char *argv[]) {
     real = new REDUNDANT_OBJECT(size, true);
     simulator = new REDUNDANT_OBJECT(size, true);
   } else {
-    cout << "Unknown problem: " << problem << endl;
+    cout << "Unknown problem: " << problem << " w/ ";
+    PRINT_VALUE(searchParams.ActionAbstraction);
     exit(1);
   }
 

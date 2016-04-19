@@ -8,7 +8,7 @@ REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
       mStartPos(0, 0),
       mGoalPos(size - 1, size - 1) {
   NumActions = 8;
-  Discount = 0.95;
+  Discount = 0.98;
   RewardRange = 20.0;
 
   if (state_abstraction) {

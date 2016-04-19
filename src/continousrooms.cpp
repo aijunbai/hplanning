@@ -175,7 +175,7 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
 }
 
 bool ContinousROOMS::LocalMove(STATE &state, const HISTORY &history,
-                               int) const 
+                               int) const
 {
   ContinousROOMS_STATE rstate = safe_cast<ContinousROOMS_STATE &>(state);
   if (GetObservation(rstate) == history.Back().Observation) {
@@ -198,8 +198,8 @@ void ContinousROOMS::GenerateLegal(const STATE &state, vector<int> &legal) const
 }
 
 void ContinousROOMS::GeneratePreferred(
-    const STATE &state, const HISTORY &, 
-    vector<int> &actions) const          
+    const STATE &state, const HISTORY &,
+    vector<int> &actions) const
 {
   GenerateLegal(state, actions);
 }

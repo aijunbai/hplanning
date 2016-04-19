@@ -4,8 +4,7 @@
 #include "coord.h"
 #include "distribution.h"
 
-template<class T>
-class GRID {
+template <class T> class GRID {
 public:
   GRID(int xsize = 0, int ysize = 0) : XSize(xsize), YSize(ysize) {
     Grid.resize(xsize * ysize);
@@ -67,31 +66,34 @@ public:
   int DistToEdge(const COORD &coord, int direction) {
     assert(Inside(coord));
     switch (direction) {
-      case coord::E_NORTH:
-        return YSize - 1 - coord.Y;
-      case coord::E_EAST:
-        return XSize - 1 - coord.X;
-      case coord::E_SOUTH:
-        return coord.Y;
-      case coord::E_WEST:
-        return coord.X;
-      default:
-        assert(false);
-        return -1;
+    case coord::E_NORTH:
+      return YSize - 1 - coord.Y;
+    case coord::E_EAST:
+      return XSize - 1 - coord.X;
+    case coord::E_SOUTH:
+      return coord.Y;
+    case coord::E_WEST:
+      return coord.X;
+    default:
+      assert(false);
+      return -1;
     }
   }
 
   void SetAllValues(const T &value) {
     for (int x = 0; x < XSize; x++)
-      for (int y = 0; y < YSize; y++) Grid[Index(x, y)] = value;
+      for (int y = 0; y < YSize; y++)
+        Grid[Index(x, y)] = value;
   }
 
   void SetRow(int y, T *values) {
-    for (int x = 0; x < XSize; x++) Grid[Index(x, y)] = values[x];
+    for (int x = 0; x < XSize; x++)
+      Grid[Index(x, y)] = values[x];
   }
 
   void SetCol(int x, T *values) {
-    for (int y = 0; y < YSize; y++) Grid[Index(x, y)] = values[y];
+    for (int y = 0; y < YSize; y++)
+      Grid[Index(x, y)] = values[y];
   }
 
   COORD Coord(int index) const {
@@ -108,88 +110,67 @@ public:
     return Inside(pos) && this->operator()(pos) != 'x';
   }
 
-  bool ValidPos(int x, int y) const {
-    return ValidPos(COORD(x, y));
+  bool ValidPos(int x, int y) const { return ValidPos(COORD(x, y)); }
+
+  int ValidPath(const COORD &pos, const COORD &next, const COORD &goal,
+                COORD &final) const {
+    return ValidPath(pos.X, pos.Y, next.X, next.Y, goal.X, goal.Y, final.X,
+                     final.Y);
   }
 
-  int ValidPath(const COORD &pos, const COORD &next, const COORD &goal, COORD& final) const {
-    return ValidPath(pos.X, pos.Y, next.X, next.Y, goal.X, goal.Y, final.X, final.Y);
-  }
-
-  int ValidPath(int x1, int y1, int x2, int y2, int gx, int gy, int &ox, int &oy) const {
+  // based on Bresenham's line algorithm
+  int ValidPath(int x1, int y1, int x2, int y2, int gx, int gy, int &ox,
+                int &oy) const {
     assert(ValidPos(x1, y1));
+    int rv = 0, ix = x1, iy = y1, lx = x1, ly = y1;
 
-    short rv = 0, ix = 0, lx = 0, iy = 0, ly = 0;
-
-    if( (x1 != x2) && (y1 != y2) ) {
-      float m = (float)(y2 - y1) / (float)(x2 - x1);
-      float b = (float)(y1*x2 - y2*x1) / (float)(x2 - x1);
-      int inc = (x2 - x1 > 0 ? 1 : -1);
-
-      for( float x = x1; (x != x2 + inc) && (rv == 0); x += inc ) {
-        float y = m*x + b;
-        lx = ix;
-        ly = iy;
-        ix = (short)x;
-        iy = (short)floor(y + 0.5);
-        if( !ValidPos(ix, iy) )
-          rv = 1;
-        else if( ix == gx && iy == gy )
-          rv = 2;
-      }
-
-      if (rv == 0) {
-        std::swap(x1, y1);
-        std::swap(x2, y2);
-
-        float m = (float)(y2 - y1) / (float)(x2 - x1);
-        float b = (float)(y1*x2 - y2*x1) / (float)(x2 - x1);
-        int inc = (x2 - x1 > 0 ? 1 : -1);
-        for( float x = x1; (x != x2 + inc) && (rv == 0); x += inc ) {
-          float y = m*x + b;
-          lx = ix;
-          ly = iy;
-          ix = (short)x;
-          iy = (short)floor(y + 0.5);
-
-          std::swap(ix, iy);
-
-          if( !ValidPos(ix, iy) )
-            rv = 1;
-          else if( ix == gx && iy == gy )
-            rv = 2;
-        }
-      }
+    const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
+    if (steep) {
+      std::swap(x1, y1);
+      std::swap(x2, y2);
     }
-    else if( (x1 != x2) && (y1 == y2) ) {
-      ly = iy = y1;
-      int inc = (x2 - x1 > 0 ? 1 : -1);
-      for( float x = x1; (x != x2 + inc) && (rv == 0); x += inc ) {
-        lx = ix;
-        ix = (short)x;
-        if( !ValidPos(ix, iy) )
-          rv = 1;
-        else if( ix == gx && iy == gy )
-          rv = 2;
-      }
+
+    if (x1 > x2) {
+      std::swap(x1, x2);
+      std::swap(y1, y2);
     }
-    else if( (x1 == x2) && (y1 != y2) ) {
-      lx = ix = x1;
-      int inc = (y2 - y1 > 0 ? 1 : -1);
-      for( float y = y1; (y != y2 + inc) && (rv == 0); y += inc ) {
-        ly = iy;
-        iy = (short)y;
-        if( !ValidPos(ix, iy) )
-          rv = 1;
-        else if( ix == gx && iy == gy )
-          rv = 2;
+
+    const float dx = x2 - x1;
+    const float dy = fabs(y2 - y1);
+
+    float error = dx / 2.0f;
+    const int ystep = (y1 < y2) ? 1 : -1;
+    int y = (int)y1;
+
+    const int maxX = (int)x2;
+
+    for (int x = (int)x1; rv == 0 && x <= maxX; x++) {
+      lx = ix;
+      ly = iy;
+      ix = x, iy = y;
+      if (steep) {
+        std::swap(ix, iy);
+      }
+
+      ix = MinMax(0, ix, XSize - 1);
+      iy = MinMax(0, iy, YSize - 1);
+
+      if (!ValidPos(ix, iy))
+        rv = 1;
+      else if (ix == gx && iy == gy)
+        rv = 2;
+
+      error -= dy;
+      if (error < 0) {
+        y += ystep;
+        error += dx;
       }
     }
 
-    if( rv == 1 ) {
+    if (rv == 1) {
       ox = lx;
       oy = ly;
-    } else if( rv == 2 ) {
+    } else if (rv == 2) {
       ox = ix;
       oy = iy;
     }
@@ -201,8 +182,7 @@ public:
   std::vector<T> Grid;
 };
 
-template<class T>
-inline std::size_t hash_value(const GRID<T> &v) {
+template <class T> inline std::size_t hash_value(const GRID<T> &v) {
   using boost::hash_value;
   using boost::hash_combine;
 
@@ -219,4 +199,4 @@ inline std::size_t hash_value(const GRID<T> &v) {
   return seed;
 }
 
-#endif  // GRID_H
+#endif // GRID_H

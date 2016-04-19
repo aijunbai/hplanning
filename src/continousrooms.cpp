@@ -147,19 +147,21 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
     rstate.AgentPos = pos;
     rstate.AgentVel = vel;
   } else { // collided
-    do {
-      pos = Grid2Position(final) + Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
-                                          SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
-    } while (Position2Grid(pos) != final);
-    rstate.AgentPos = pos;
+    rstate.AgentPos = Grid2Position(final);
     rstate.AgentVel = Vector(0.0, 0.0);
   }
 
+  do {
+    pos = rstate.AgentPos + Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
+                                   SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
+  } while (Position2Grid(pos) != Position2Grid(rstate.AgentPos));
+  rstate.AgentPos = pos;
   rstate.AgentVel += Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
                             SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
 
-//  rstate.AgentVel.SetX(MinMax(-2.0, rstate.AgentVel.X(), 2.0));
-//  rstate.AgentVel.SetY(MinMax(-2.0, rstate.AgentVel.Y(), 2.0));
+#if NOT_USING_VEL
+  rstate.AgentVel = Vector(0.0, 0.0);
+#endif
   observation = GetObservation(rstate);
 
   if (rstate.AgentPos.Dist(mGoalPos) < mThreshold) {

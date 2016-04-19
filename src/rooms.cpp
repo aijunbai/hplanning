@@ -121,8 +121,9 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
     rstate.AgentVel = COORD(0, 0);
   }
 
-//  rstate.AgentVel.X = MinMax(-2, rstate.AgentVel.X, 2);
-//  rstate.AgentVel.X = MinMax(-2, rstate.AgentVel.Y, 2);
+#if NOT_USING_VEL
+  rstate.AgentVel = COORD(0, 0);
+#endif
   observation = GetObservation(rstate);
 
   if (rstate.AgentPos == mGoalPos) {

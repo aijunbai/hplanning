@@ -77,6 +77,7 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &
   rstate.ObjectPos = pos;
 
   observation = GetObservation(rstate);
+
   if (rstate.AgentPos == mGoalPos) {
     reward = 10.0;
     return true;
@@ -128,9 +129,17 @@ REDUNDANT_OBJECT_STATE REDUNDANT_OBJECT::Decode(int index) const {
 
 int REDUNDANT_OBJECT::GetObservation(
     const REDUNDANT_OBJECT_STATE &rstate) const {
-  return mStateAbstraction ?
-         mGrid.Index(rstate.AgentPos) :  // only agent's position
-         Encode(rstate);  // agent's and object's positions
+  if (mStateAbstraction) {
+    if (rstate.AgentPos == mGoalPos) {
+      return '0'; // special case
+    }
+    else {
+      return '1' + mGrid.Index(rstate.AgentPos);
+    }
+  }
+  else {
+    return Encode(rstate);  // agent's and object's positions
+  }
 }
 
 void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE &belief,
@@ -189,7 +198,7 @@ void REDUNDANT_OBJECT::DisplayObservation(const STATE &, int observation,
                                           std::ostream &ostr) const {
   if (mStateAbstraction) {
     ostr << "Observation: "
-    << "Agent " << mGrid.Coord(observation) << endl;
+    << "Agent " << mGrid.Coord(observation - '1') << endl;
   } else {
     REDUNDANT_OBJECT_STATE rstate = Decode(observation);
     ostr << "Observation: "

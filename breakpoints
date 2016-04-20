@@ -6,8 +6,8 @@
 #FlatMCTS::SearchImp
 #HierarchicalMCTS::SearchImp
 #HierarchicalMCTS::SearchTree
-REDUNDANT_OBJECT::Step
-#HierarchicalMCTS::Simulate
+#REDUNDANT_OBJECT::Step
+HierarchicalMCTS::Simulate
 #HierarchicalMCTS::GreedyUCB
 #HierarchicalMCTS::SelectAction
 #ContinousROOMS::GetObservation
@@ -22,6 +22,5 @@ REDUNDANT_OBJECT::Step
 #EXPERIMENT::Run
 #coord::MoveTo
 #experiment.cpp:61 if t == 335
-#HierarchicalMCTS::Simulate
 #hierarchicalmcts.cpp:467
 #grid.h:124

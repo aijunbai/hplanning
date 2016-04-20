@@ -57,7 +57,7 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &
   Validate(state);
 
   REDUNDANT_OBJECT_STATE &rstate = safe_cast<REDUNDANT_OBJECT_STATE &>(state);
-  reward = SimpleRNG::ins().GetUniform(-2.0, 0.0);
+  reward = -1.0;
 
   if (SimpleRNG::ins().Bernoulli(0.2)) { // fail
     action = SimpleRNG::ins().Random(GetNumActions());

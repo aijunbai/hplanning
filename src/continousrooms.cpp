@@ -127,7 +127,7 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
   Validate(state);
 
   ContinousROOMS_STATE &rstate = safe_cast<ContinousROOMS_STATE &>(state);
-  reward = SimpleRNG::ins().GetUniform(-2.0, 0.0);
+  reward = -1.0;
 
   if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
     action = SimpleRNG::ins().Random(GetNumActions());

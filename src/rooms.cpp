@@ -104,7 +104,7 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
   reward = SimpleRNG::ins().GetUniform(-2.0, 0.0);
 
   if (SimpleRNG::ins().Bernoulli(0.2)) {  // fail
-    action = SimpleRNG::ins().Random(GetNumActions());
+    action = -1.0;
   }
 
   COORD vel = rstate.AgentVel + coord::Compass[action];

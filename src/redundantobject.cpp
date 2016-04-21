@@ -197,8 +197,14 @@ void REDUNDANT_OBJECT::DisplayState(const STATE &state,
 void REDUNDANT_OBJECT::DisplayObservation(const STATE &, int observation,
                                           std::ostream &ostr) const {
   if (mStateAbstraction) {
-    ostr << "Observation: "
-    << "Agent " << mGrid.Coord(observation - '1') << endl;
+    if (observation == '0') {
+      ostr << "Observation: "
+      << "Agent " << mGoalPos << endl;
+    }
+    else {
+      ostr << "Observation: "
+           << "Agent " << mGrid.Coord(observation - '1') << endl;
+    }
   } else {
     REDUNDANT_OBJECT_STATE rstate = Decode(observation);
     ostr << "Observation: "

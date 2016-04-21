@@ -3,10 +3,10 @@
 set -o nounset
 
 PROBLEM="rocksample"
-PROBLEM="continousrooms_1"
-PROBLEM="continousrooms_0"
 PROBLEM="redundant_object_0"
 PROBLEM="redundant_object_1"
+PROBLEM="continousrooms_1"
+PROBLEM="continousrooms_0"
 PROBLEM="rooms_0"
 PROBLEM="rooms_1"
 
@@ -31,7 +31,7 @@ MEMORYLESS=0
 STACK=0
 LOCALREWARD=0
 
-SIZE=25
+SIZE=10
 NUM=8
 RUNS=1
 VERBOSE=2

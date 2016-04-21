@@ -7,7 +7,7 @@
 #HierarchicalMCTS::SearchImp
 #HierarchicalMCTS::SearchTree
 #REDUNDANT_OBJECT::Step
-HierarchicalMCTS::Simulate
+#HierarchicalMCTS::Simulate
 #HierarchicalMCTS::GreedyUCB
 #HierarchicalMCTS::SelectAction
 #ContinousROOMS::GetObservation
@@ -24,3 +24,4 @@ HierarchicalMCTS::Simulate
 #experiment.cpp:61 if t == 335
 #hierarchicalmcts.cpp:467
 #grid.h:124
+REDUNDANT_OBJECT::GetObservation

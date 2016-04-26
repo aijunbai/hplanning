@@ -24,7 +24,7 @@ double BetaInfo::BETA = 0.5;
 
 void UnitTests() {
   cout << "Testing UTILS" << endl;
-  UTILS::UnitTest();
+  utils::UnitTest();
   cout << "Testing COORD" << endl;
   COORD::UnitTest();
   cout << "Testing FlatMCTS" << endl;

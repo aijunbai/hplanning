@@ -79,7 +79,7 @@ class POCMAN : public SIMULATOR {
   bool SmellFood(const POCMAN_STATE &pocstate) const;
   COORD NextPos(const COORD &from, int dir) const;
   bool Passable(const COORD &pos) const {
-    return UTILS::CheckFlag(Maze(pos), E_PASSABLE);
+    return utils::CheckFlag(Maze(pos), E_PASSABLE);
   }
   int MakeObservations(const POCMAN_STATE &pocstate) const;
 

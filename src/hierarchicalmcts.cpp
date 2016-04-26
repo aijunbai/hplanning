@@ -8,7 +8,7 @@ HierarchicalMCTS::HierarchicalMCTS(const SIMULATOR &simulator,
                                    const PARAMS &params, bool action_abstraction,
                                    int first_observation, STATE *ground_state)
   : MCTS(simulator, params, first_observation),
-    mRootTask(ROOT, '0'),
+    mRootTask(ROOT, ABSTRACT_GOAL),
     mActionAbstraction(action_abstraction) {
   mBelief.AddSample(Simulator.Copy(*ground_state));
 

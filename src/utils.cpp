@@ -2,7 +2,7 @@
 #include "distribution.h"
 #include <boost/functional/hash.hpp>
 
-namespace UTILS {
+namespace utils {
 
 void UnitTest() {
   assert(Sign(+10) == +1);

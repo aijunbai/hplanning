@@ -100,11 +100,11 @@ public:
     assertion();
   }
 
-  void SetValuePolar(const double &r, const AngleDeg &theta) {
-    SinCosT value = SinCos(theta);
+  void SetValuePolar(const double &r, const utils::AngleDeg &theta) {
+    utils::SinCosT value = utils::SinCos(theta);
 
-    mX = r * Cos(value);
-    mY = r * Sin(value);
+    mX = r * utils::Cos(value);
+    mY = r * utils::Sin(value);
 
     assertion();
   }
@@ -151,7 +151,7 @@ public:
     return os << "(" << v.mX << ", " << v.mY << ")";
   }
 
-  double Mod() const { return Sqrt(mX * mX + mY * mY); }
+  double Mod() const { return utils::Sqrt(mX * mX + mY * mY); }
 
   double Mod2() const { return mX * mX + mY * mY; }
 
@@ -159,7 +159,7 @@ public:
 
   double Dist2(const Vector &v) const { return (*this - v).Mod2(); }
 
-  AngleDeg Dir() const { return ATan2(mY, mX); }
+  utils::AngleDeg Dir() const { return utils::ATan2(mY, mX); }
 
   /**
    * \return a Vector with length r at the same direction, or Vector (0, 0) if the original Vector was (0, 0).
@@ -177,12 +177,12 @@ public:
   /**
    * \return a Vector rotated by angle.
    */
-  Vector Rotate(const AngleDeg &angle) const {
-    return Rotate(SinCos(angle));
+  Vector Rotate(const utils::AngleDeg &angle) const {
+    return Rotate(utils::SinCos(angle));
   }
 
-  Vector Rotate(const SinCosT &value) const {
-    return Vector(mX * Cos(value) - mY * Sin(value), mY * Cos(value) + mX * Sin(value));
+  Vector Rotate(const utils::SinCosT &value) const {
+    return Vector(mX * utils::Cos(value) - mY * utils::Sin(value), mY * utils::Cos(value) + mX * utils::Sin(value));
   }
 
   /**
@@ -205,9 +205,9 @@ private:
   double mY;
 };
 
-inline Vector Polar2Vector(const double &mod, const AngleDeg &ang) {
-  SinCosT value = SinCos(ang);
-  return Vector(mod * Cos(value), mod * Sin(value));
+inline Vector Polar2Vector(const double &mod, const utils::AngleDeg &ang) {
+  utils::SinCosT value = utils::SinCos(ang);
+  return Vector(mod * utils::Cos(value), mod * utils::Sin(value));
 }
 
 inline std::size_t hash_value(const Vector &v) {

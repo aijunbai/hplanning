@@ -1,7 +1,7 @@
 #include "rocksample.h"
 
 using namespace std;
-using namespace UTILS;
+using namespace utils;
 
 ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
     : Grid(size, size), Size(size), NumRocks(rocks) {

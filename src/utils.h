@@ -33,7 +33,7 @@
     std::cerr << #x " = '" << x << "'" << std::endl; \
   } while (0)
 
-namespace UTILS {
+namespace utils {
 
 inline int Sign(int x) { return (x > 0) - (x < 0); }
 
@@ -49,12 +49,21 @@ inline bool Contains(std::vector<T> &vec, const T &item) {
 }
 
 void UnitTest();
+
+inline int EncodeInt(int i) {
+  int sign = i > 0? 1: 0;
+  return sign << 7 | abs(i);
+}
+
+inline int DecodeInt(int c) {
+  int v = c & 0x7F;
+  return c >> 7? v: -v;
 }
 
 #define FLOAT_EPS 1.0e-6
 
 inline bool IsNan(const double &x) {
-  return isnan(x) || isinf(x);
+  return std::isnan(x) || std::isinf(x);
 }
 
 inline double Sqr(const double &x) {
@@ -148,6 +157,7 @@ inline AngleDeg ATan(const double &x) //[-90.0, 90.0]
 inline AngleDeg ATan2(const double &y, const double &x) //[-180.0, 180.0]
 {
   return ((fabs(x) < 0.000006 && fabs(y) < 0.000006) ? 0 : (Rad2Deg(atan2(y, x))));
+}
 }
 
 #endif  // UTILS_H

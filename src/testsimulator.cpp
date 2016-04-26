@@ -2,7 +2,7 @@
 #include "utils.h"
 #include "distribution.h"
 
-using namespace UTILS;
+using namespace utils;
 
 STATE *TEST_SIMULATOR::Copy(const STATE &state) const {
   const TEST_STATE &tstate = safe_cast<const TEST_STATE &>(state);

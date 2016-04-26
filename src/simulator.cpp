@@ -1,7 +1,7 @@
 #include "simulator.h"
 
 using namespace std;
-using namespace UTILS;
+using namespace utils;
 
 SIMULATOR::KNOWLEDGE::KNOWLEDGE()
     : TreeLevel(LEGAL),

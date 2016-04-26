@@ -156,11 +156,14 @@ public:
 
   static void UnitTest();
 
-private:
+public:
   enum {
     ROOT = -1,
-    PRIMITIVE = -2
+    PRIMITIVE = -2,
+    ABSTRACT_GOAL = '0'
   };
+
+private:
 
   std::unordered_map<option_t, std::unordered_set<option_t>> mTaskGraph;
   std::unordered_map<option_t, STATE*> mExits;

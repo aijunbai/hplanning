@@ -1,7 +1,7 @@
 #include "continousrooms.h"
 
 using namespace std;
-using namespace UTILS;
+using namespace utils;
 
 ContinousROOMS::ContinousROOMS(const char *map_name, bool state_abstraction)
     : mGrid(0), mRooms(0), mThreshold(0.5), mMotionUncertainty(0.2),

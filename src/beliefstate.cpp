@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "distribution.h"
 
-using namespace UTILS;
+using namespace utils;
 
 BELIEF_STATE::BELIEF_STATE() { Samples.clear(); }
 

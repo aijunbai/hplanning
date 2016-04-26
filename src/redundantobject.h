@@ -10,6 +10,24 @@ public:
   COORD AgentPos;
   COORD ObjectPos;
 
+  int Encode() const {
+    int code = 0;
+    code = code << 8 | utils::EncodeInt(AgentPos.X);
+    code = code << 8 | utils::EncodeInt(AgentPos.Y);
+    code = code << 8 | utils::EncodeInt(ObjectPos.X);
+    code = code << 8 | utils::EncodeInt(ObjectPos.Y);
+    return code;
+  }
+
+  static std::pair<COORD, COORD> Decode(int code) {
+    COORD pos, o_pos;
+    o_pos.Y = utils::DecodeInt(code & 0xFF); code >>= 8;
+    o_pos.X = utils::DecodeInt(code & 0xFF); code >>= 8;
+    pos.Y = utils::DecodeInt(code & 0xFF); code >>= 8;
+    pos.X = utils::DecodeInt(code & 0xFF); code >>= 8;
+    return std::make_pair(pos, o_pos);
+  }
+
   virtual size_t hash() const {
     using boost::hash_combine;
 
@@ -67,8 +85,6 @@ public:
 
 protected:
   int GetObservation(const REDUNDANT_OBJECT_STATE &state) const;
-  int Encode(const REDUNDANT_OBJECT_STATE &rstate) const;
-  REDUNDANT_OBJECT_STATE Decode(int index) const;
 
   GRID<int> mGrid;
   COORD mStartPos;

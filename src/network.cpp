@@ -3,7 +3,7 @@
 #include "utils.h"
 
 using namespace std;
-using namespace UTILS;
+using namespace utils;
 
 NETWORK::NETWORK(int numMachines, int ntype)
     : NumMachines(numMachines),

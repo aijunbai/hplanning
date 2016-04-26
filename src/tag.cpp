@@ -1,7 +1,7 @@
 #include "tag.h"
 
 using namespace std;
-using namespace UTILS;
+using namespace utils;
 
 const int TAG::NumCells = 29;
 

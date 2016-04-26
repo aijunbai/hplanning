@@ -2,7 +2,7 @@
 #include "boost/timer.hpp"
 
 using namespace std;
-using namespace UTILS;
+using namespace utils;
 
 double MCTS::UCB[UCB_N][UCB_n];
 bool MCTS::InitialisedFastUCB = false;

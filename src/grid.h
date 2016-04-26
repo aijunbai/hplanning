@@ -152,8 +152,8 @@ public:
         std::swap(ix, iy);
       }
 
-      ix = MinMax(0, ix, XSize - 1);
-      iy = MinMax(0, iy, YSize - 1);
+      ix = utils::MinMax(0, ix, XSize - 1);
+      iy = utils::MinMax(0, iy, YSize - 1);
 
       if (!ValidPos(ix, iy))
         rv = 1;

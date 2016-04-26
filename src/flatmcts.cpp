@@ -2,7 +2,7 @@
 #include "testsimulator.h"
 
 using namespace std;
-using namespace UTILS;
+using namespace utils;
 
 FlatMCTS::FlatMCTS(const SIMULATOR &simulator, const PARAMS &params, int first_observation)
     : MCTS(simulator, params, first_observation) {

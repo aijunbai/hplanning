@@ -30,7 +30,7 @@ set key right bottom Right
 #set ylabel '$y$'
 # Axis ranges
 #set xrange[1:100000]
-#set yrange[-1.5:1.5]
+#set yrange[-55:]
 # Tics in LaTeX format
 # Axis labels
 set format x "%g"

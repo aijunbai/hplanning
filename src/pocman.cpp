@@ -3,7 +3,7 @@
 #include "utils.h"
 
 using namespace std;
-using namespace UTILS;
+using namespace utils;
 
 POCMAN::POCMAN(int xsize, int ysize)
     : Maze(xsize, ysize),

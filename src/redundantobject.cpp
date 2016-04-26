@@ -1,12 +1,13 @@
 #include "redundantobject.h"
+#include "hierarchicalmcts.h"
 
 using namespace std;
-using namespace UTILS;
+using namespace utils;
 
 REDUNDANT_OBJECT::REDUNDANT_OBJECT(int size, bool state_abstraction)
-    : mGrid(size, size),
-      mStartPos(0, 0),
-      mGoalPos(size - 1, size - 1) {
+  : mGrid(size, size),
+    mStartPos(0, 0),
+    mGoalPos(size - 1, size - 1) {
   NumActions = 8;
   Discount = 0.98;
   RewardRange = 20.0;
@@ -102,6 +103,10 @@ void REDUNDANT_OBJECT::GenerateLegal(const STATE &state, vector<int> &legal) con
   legal.push_back(coord::E_EAST);
   legal.push_back(coord::E_SOUTH);
   legal.push_back(coord::E_WEST);
+  legal.push_back(coord::E_NORTHEAST);
+  legal.push_back(coord::E_NORTHWEST);
+  legal.push_back(coord::E_SOUTHEAST);
+  legal.push_back(coord::E_SOUTHWEST);
 }
 
 void REDUNDANT_OBJECT::GeneratePreferred(
@@ -111,34 +116,18 @@ void REDUNDANT_OBJECT::GeneratePreferred(
   GenerateLegal(state, actions);
 }
 
-int REDUNDANT_OBJECT::Encode(const REDUNDANT_OBJECT_STATE &rstate) const {
-  int index = mGrid.Index(rstate.AgentPos) * mGrid.GetSize() +
-              mGrid.Index(rstate.ObjectPos);
-  return index;
-}
-
-REDUNDANT_OBJECT_STATE REDUNDANT_OBJECT::Decode(int index) const {
-  int agent = index / mGrid.GetSize();
-  int object = index % mGrid.GetSize();
-
-  REDUNDANT_OBJECT_STATE rstate;
-  rstate.AgentPos = mGrid.Coord(agent);
-  rstate.ObjectPos = mGrid.Coord(object);
-  return rstate;
-}
-
 int REDUNDANT_OBJECT::GetObservation(
     const REDUNDANT_OBJECT_STATE &rstate) const {
   if (mStateAbstraction) {
     if (rstate.AgentPos == mGoalPos) {
-      return '0'; // special case
+      return HierarchicalMCTS::ABSTRACT_GOAL; // special case
     }
     else {
-      return '1' + mGrid.Index(rstate.AgentPos);
+      return HierarchicalMCTS::ABSTRACT_GOAL + 1 + mGrid.Index(rstate.AgentPos);
     }
   }
   else {
-    return Encode(rstate);  // agent's and object's positions
+    return rstate.Encode();  // agent's and object's positions
   }
 }
 
@@ -148,7 +137,7 @@ void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE &belief,
   for (int i = 0; i < belief.GetNumSamples(); ++i) {
     const REDUNDANT_OBJECT_STATE &rstate =
         safe_cast<const REDUNDANT_OBJECT_STATE &>(*belief.GetSample(i));
-    int index = Encode(rstate);
+    int index = rstate.Encode();
     m[index] += 1;
   }
 
@@ -162,9 +151,9 @@ void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE &belief,
 
   ostr << "#Belief: ";
   for (uint i = 0; i < sorted.size(); ++i) {
-    REDUNDANT_OBJECT_STATE state = Decode(sorted[i].second);
-    ostr << "#" << state.AgentPos << ":" << state.ObjectPos << " ("
-    << sorted[i].first << ") ";
+    auto s = REDUNDANT_OBJECT_STATE::Decode(sorted[i].second);
+    ostr << "#" << s.first << ":" << s.second << " ("
+         << sorted[i].first << ") ";
   }
   ostr << std::endl;
 }
@@ -197,19 +186,18 @@ void REDUNDANT_OBJECT::DisplayState(const STATE &state,
 void REDUNDANT_OBJECT::DisplayObservation(const STATE &, int observation,
                                           std::ostream &ostr) const {
   if (mStateAbstraction) {
-    if (observation == '0') {
+    if (observation == HierarchicalMCTS::ABSTRACT_GOAL) {
       ostr << "Observation: "
-      << "Agent " << mGoalPos << endl;
+           << "Agent " << mGoalPos << endl;
     }
     else {
       ostr << "Observation: "
            << "Agent " << mGrid.Coord(observation - '1') << endl;
     }
   } else {
-    REDUNDANT_OBJECT_STATE rstate = Decode(observation);
+    auto s = REDUNDANT_OBJECT_STATE::Decode(observation);
     ostr << "Observation: "
-    << "Agent " << rstate.AgentPos << " Object " << rstate.ObjectPos
-    << endl;
+         << "Agent " << s.first << " Object " << s.second << endl;
   }
 }
 

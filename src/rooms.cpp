@@ -1,7 +1,7 @@
 #include "rooms.h"
 
 using namespace std;
-using namespace UTILS;
+using namespace utils;
 
 ROOMS::ROOMS(const char *map_name, bool state_abstraction)
     : mGrid(0), mRooms(0) {

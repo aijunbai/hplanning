@@ -1,7 +1,7 @@
 #include "battleship.h"
 
 using namespace std;
-using namespace UTILS;
+using namespace utils;
 
 BATTLESHIP::BATTLESHIP(int xsize, int ysize, int maxlength)
     : XSize(xsize), YSize(ysize), MaxLength(maxlength + 1) {

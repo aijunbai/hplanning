@@ -97,27 +97,38 @@ plot() {
         fi
 
         local TITLE=""
+        local LT=""
         if grep -q "rooms0" <<<$PROBLEM; then
-            if [ -z $HPLANNING ]; then
-                TITLE="UCT"
-            else
-                TITLE="MCTS"
-            fi
+            TITLE="UCT"
+            LT="5"
         elif grep -q "rooms1" <<<$PROBLEM; then
             if [ -z $HPLANNING ]; then
-                TITLE="POMCP"
+                TITLE="?"
+                LT="1"
             else
                 if [ ! -z $ACTIONABSTRACTION ]; then
-                    TITLE="MCTS\$|_{\phi,\mathcal{O}}\$${STACK}${LOCALREWARD}${KNOWLEDGE}${POLLING}"
+                    if [ ! -z ${KNOWLEDGE} ]; then
+                        TITLE="smart-POMCP(\$M, \varphi, \mathcal{O}\$)"
+                        LT="2"
+                    else
+                        TITLE="POMCP(\$M, \varphi, \mathcal{O}\$)"
+                        LT="3"
+                    fi
                 else
-                    TITLE="MCTS\$|_\phi\$${MEMORYLESS}"
+                    if [ ! -z ${MEMORYLESS} ]; then
+                        TITLE="UCT\$_\varphi\$"
+                        LT="4"
+                    else
+                        TITLE="POMCP(\$M, \varphi\$)"
+                        LT="1"
+                    fi
                 fi
             fi
         fi
 
         if [ $MAP -eq $ROOMS ]; then
             echo $TITLE
-            echo -n "'$i' u ${x}:${y}:${error} w yerrorlines t '$TITLE', " >>"$PLT"
+            echo -n "'$i' u ${x}:${y}:${error} w yerrorlines t '$TITLE' ls $LT, " >>"$PLT"
         fi
     done
 

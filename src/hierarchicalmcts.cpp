@@ -41,6 +41,8 @@ void HierarchicalMCTS::UnitTest() {
 }
 
 bool HierarchicalMCTS::Applicable(int last_observation, option_t action) {
+  assert(last_observation >= 0);
+
   if (last_observation >= 0 && !IsPrimitive(action) && action != mRootTask) {
     assert(mActionAbstraction);
     return action.first == last_observation &&
@@ -403,6 +405,7 @@ void HierarchicalMCTS::ExploreOptions(int iterations, int max_depth)
 void HierarchicalMCTS::AddOption(int from, int to, STATE *state) {
   if (mActionAbstraction) {
     assert(from >= 0 && to >= 0);
+
     if (from >= 0 && to >= 0 && from != to) {
       option_t options[2] = {Option(from, to), Option(to, from)};
 
@@ -588,6 +591,8 @@ option_t HierarchicalMCTS::GreedyUCB(option_t option,
  * @return
  */
 bool HierarchicalMCTS::IsTerminated(option_t option, int last_observation) {
+  assert(last_observation >= 0);
+
   if (mActionAbstraction) {
     if (Params.LocalReward) {
       if (option == mRootTask) {
@@ -612,6 +617,8 @@ bool HierarchicalMCTS::IsTerminated(option_t option, int last_observation) {
 }
 
 bool HierarchicalMCTS::IsGoal(option_t option, int last_observation) {
+  assert(last_observation >= 0);
+
   if (mActionAbstraction) {
     return !IsPrimitive(option) &&
         last_observation >= 0 &&

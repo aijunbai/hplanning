@@ -86,12 +86,12 @@ public:
 
   void SetX(const double &x) {
     mX = x;
-    assert(!IsNan(mX));
+    assert(!utils::IsNan(mX));
   }
 
   void SetY(const double &y) {
     mY = y;
-    assert(!IsNan(mY));
+    assert(!utils::IsNan(mY));
   }
 
   void SetValue(const double &x, const double &y) {
@@ -196,8 +196,8 @@ public:
 
 public:
   void assertion() const {
-    assert(!IsNan(mX));
-    assert(!IsNan(mY));
+    assert(!utils::IsNan(mX));
+    assert(!utils::IsNan(mY));
   }
 
 private:

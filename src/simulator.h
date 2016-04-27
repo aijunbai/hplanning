@@ -105,7 +105,7 @@ class SIMULATOR {
 
   virtual int SuggestAction(STATE &, STATE &) const {
     assert(0);
-    return 0;
+    return SimpleRNG::ins().Random(NumActions);
   }
 
  public:

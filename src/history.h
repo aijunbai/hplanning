@@ -30,8 +30,11 @@ class HISTORY {
 
   int EndingObservation() const {
     if (History.size()) {
+      assert(History.back().Observation >= 0);
       return History.back().Observation;
     }
+
+    assert(0);
     return -1;
   }
 

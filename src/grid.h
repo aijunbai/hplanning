@@ -124,7 +124,7 @@ public:
     assert(ValidPos(x1, y1));
     int rv = 0, ix = x1, iy = y1, lx = x1, ly = y1;
 
-    const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
+    const bool steep = (std::fabs(y2 - y1) > std::fabs(x2 - x1));
     if (steep) {
       std::swap(x1, y1);
       std::swap(x2, y2);
@@ -136,7 +136,7 @@ public:
     }
 
     const float dx = x2 - x1;
-    const float dy = fabs(y2 - y1);
+    const float dy = std::fabs(y2 - y1);
 
     float error = dx / 2.0f;
     const int ystep = (y1 < y2) ? 1 : -1;

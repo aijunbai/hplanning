@@ -35,7 +35,8 @@ results
 Debug/
 Release/
 backup/
-experiment_*
+experiment*
+experiment/*
 output-*
 log-*
 plot_*.sh

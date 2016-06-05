@@ -64,30 +64,6 @@ public:
     }
   };
 
-  struct bound_t {
-    bound_t() : lower(-Infinity), upper(Infinity) { }
-
-    bound_t(double l, double u) : lower(l), upper(u) { }
-
-    double lower;
-    double upper;
-
-    void set(double l, double u) {
-      lower = l;
-      upper = u;
-    }
-
-    double width() const { return upper - lower; }
-
-    double sample() const { return SimpleRNG::ins().GetUniform(lower, upper); }
-
-    friend std::ostream &operator<<(std::ostream &os, const bound_t &o) {
-      return os << "{"
-             << "lower=" << o.lower << ", upper=" << o.upper
-             << ", width=" << o.width() << "}";
-    }
-  };
-
   struct data_t {
     struct {
       STATISTIC value;
@@ -164,7 +140,6 @@ public:
   };
 
 private:
-
   std::unordered_map<option_t, std::unordered_set<option_t>> mTaskGraph;
   std::unordered_map<option_t, STATE*> mExits;
   std::unordered_map<int, std::unordered_set<option_t>> mAvailableOptions;

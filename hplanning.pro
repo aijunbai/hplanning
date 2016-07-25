@@ -4,8 +4,8 @@
 
 TEMPLATE = app
 TARGET = hplanning
-DEPENDPATH += . src
-INCLUDEPATH += . src
+DEPENDPATH += . src /usr/local/include
+INCLUDEPATH += . src /usr/local/include
 INCLUDEPATH -= qt
 LIBS += -lboost_program_options
 CONFIG -= qt

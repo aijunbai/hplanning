@@ -44,7 +44,9 @@ void REDUNDANT_OBJECT::Validate(const STATE &state) const {
 STATE *REDUNDANT_OBJECT::CreateStartState() const {
   REDUNDANT_OBJECT_STATE *rstate = mMemoryPool.Allocate();
   rstate->AgentPos = mStartPos;
-  rstate->ObjectPos = mGoalPos;
+  for (auto & o: rstate->ObjectPos) {
+    o = mGoalPos;
+  }
   return rstate;
 }
 
@@ -70,12 +72,14 @@ bool REDUNDANT_OBJECT::Step(STATE &state, int action, int &observation, double &
   }
   rstate.AgentPos = pos;
 
-  action = SimpleRNG::ins().Random(GetNumActions());
-  pos = rstate.ObjectPos + coord::Compass[action];
-  if (!mGrid.Inside(pos)) {
-    pos = rstate.ObjectPos;
+  for (auto & o: rstate.ObjectPos) {
+    action = SimpleRNG::ins().Random(GetNumActions());
+    pos = o + coord::Compass[action];
+    if (!mGrid.Inside(pos)) {
+      pos = o;
+    }
+    o = pos;
   }
-  rstate.ObjectPos = pos;
 
   observation = GetObservation(rstate);
 
@@ -127,35 +131,35 @@ int REDUNDANT_OBJECT::GetObservation(
     }
   }
   else {
-    return rstate.Encode();  // agent's and object's positions
+    return std::abs(int(rstate.hash() % numeric_limits<int>::max())); // full state
   }
 }
 
-void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE &belief,
-                                      std::ostream &ostr) const {
-  unordered_map<int, int> m;
-  for (int i = 0; i < belief.GetNumSamples(); ++i) {
-    const REDUNDANT_OBJECT_STATE &rstate =
-        safe_cast<const REDUNDANT_OBJECT_STATE &>(*belief.GetSample(i));
-    int index = rstate.Encode();
-    m[index] += 1;
-  }
+void REDUNDANT_OBJECT::DisplayBeliefs(const BELIEF_STATE &/*belief*/,
+                                      std::ostream &/*ostr*/) const {
+//  unordered_map<int, int> m;
+//  for (int i = 0; i < belief.GetNumSamples(); ++i) {
+//    const REDUNDANT_OBJECT_STATE &rstate =
+//        safe_cast<const REDUNDANT_OBJECT_STATE &>(*belief.GetSample(i));
+//    int index = rstate.Encode();
+//    m[index] += 1;
+//  }
 
-  vector<pair<double, int>> sorted;
-  for (unordered_map<int, int>::iterator it = m.begin(); it != m.end();
-       ++it) {
-    double p = double(it->second) / double(belief.GetNumSamples());
-    sorted.push_back(make_pair(p, it->first));
-  }
-  sort(sorted.begin(), sorted.end(), greater<pair<double, int>>());
+//  vector<pair<double, int>> sorted;
+//  for (unordered_map<int, int>::iterator it = m.begin(); it != m.end();
+//       ++it) {
+//    double p = double(it->second) / double(belief.GetNumSamples());
+//    sorted.push_back(make_pair(p, it->first));
+//  }
+//  sort(sorted.begin(), sorted.end(), greater<pair<double, int>>());
 
-  ostr << "#Belief: ";
-  for (uint i = 0; i < sorted.size(); ++i) {
-    auto s = REDUNDANT_OBJECT_STATE::Decode(sorted[i].second);
-    ostr << "#" << s.first << ":" << s.second << " ("
-         << sorted[i].first << ") ";
-  }
-  ostr << std::endl;
+//  ostr << "#Belief: ";
+//  for (uint i = 0; i < sorted.size(); ++i) {
+//    auto s = REDUNDANT_OBJECT_STATE::Decode(sorted[i].second);
+//    ostr << "#" << s.first << ":" << s.second << " ("
+//         << sorted[i].first << ") ";
+//  }
+//  ostr << std::endl;
 }
 
 void REDUNDANT_OBJECT::DisplayState(const STATE &state,
@@ -168,7 +172,7 @@ void REDUNDANT_OBJECT::DisplayState(const STATE &state,
     for (int x = 0; x < mGrid.GetXSize(); ++x) {
       if (rstate.AgentPos == COORD(x, y)) {
         ostr << "@";
-      } else if (rstate.ObjectPos == COORD(x, y)) {
+      } else if (std::find(rstate.ObjectPos.begin(), rstate.ObjectPos.end(), COORD(x, y)) != rstate.ObjectPos.end()) {
         ostr << "x";
       } else {
         ostr << ".";
@@ -195,9 +199,7 @@ void REDUNDANT_OBJECT::DisplayObservation(const STATE &, int observation,
            << "Agent " << mGrid.Coord(observation - '1') << endl;
     }
   } else {
-    auto s = REDUNDANT_OBJECT_STATE::Decode(observation);
-    ostr << "Observation: "
-         << "Agent " << s.first << " Object " << s.second << endl;
+    ostr << "Observation: " << observation << endl;
   }
 }
 

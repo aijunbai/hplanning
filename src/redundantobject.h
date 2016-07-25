@@ -7,41 +7,33 @@
 
 class REDUNDANT_OBJECT_STATE : public STATE {
 public:
+  REDUNDANT_OBJECT_STATE() {
+    ObjectPos.resize(NUM_REDUNDANT_OBJECT);
+  }
+
+  virtual ~REDUNDANT_OBJECT_STATE() {
+
+  }
+
   COORD AgentPos;
-  COORD ObjectPos;
-
-  int Encode() const {
-    int code = 0;
-    code = code << 8 | utils::EncodeInt(AgentPos.X);
-    code = code << 8 | utils::EncodeInt(AgentPos.Y);
-    code = code << 8 | utils::EncodeInt(ObjectPos.X);
-    code = code << 8 | utils::EncodeInt(ObjectPos.Y);
-    return code;
-  }
-
-  static std::pair<COORD, COORD> Decode(int code) {
-    COORD pos, o_pos;
-    o_pos.Y = utils::DecodeInt(code & 0xFF); code >>= 8;
-    o_pos.X = utils::DecodeInt(code & 0xFF); code >>= 8;
-    pos.Y = utils::DecodeInt(code & 0xFF); code >>= 8;
-    pos.X = utils::DecodeInt(code & 0xFF); code >>= 8;
-    return std::make_pair(pos, o_pos);
-  }
+  std::vector<COORD> ObjectPos;
 
   virtual size_t hash() const {
     using boost::hash_combine;
 
-    // Start with a hash value of 0    .
+    // Start with a hash value of 0
     std::size_t seed = 0;
 
     // Modify 'seed' by XORing and bit-shifting in
     // one member of 'Key' after the other:
     hash_combine(seed, hash_value(AgentPos));
-    hash_combine(seed, hash_value(ObjectPos));
+    hash_combine(seed, boost::hash_value(ObjectPos));
 
     // Return the result.
     return seed;
   }
+
+  static const int NUM_REDUNDANT_OBJECT = 5;
 };
 
 class REDUNDANT_OBJECT : public SIMULATOR {

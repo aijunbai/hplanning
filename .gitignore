@@ -42,3 +42,4 @@ log-*
 plot_*.sh
 *~
 .qmake.stash
+running_*

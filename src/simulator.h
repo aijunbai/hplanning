@@ -9,7 +9,7 @@
 #include <math.h>
 #include <sstream>
 
-#define NUM_REDUNDANT_OBJECT 5
+#define NUM_REDUNDANT_OBJECT 0
 #define HPLANNING_ENTERING_BELIEF 0
 
 class BELIEF_STATE;

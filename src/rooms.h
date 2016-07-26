@@ -9,40 +9,26 @@
 class ROOMS_STATE : public STATE {
  public:
   COORD AgentPos;
-  COORD AgentVel;
+  std::vector<COORD> ObjectPos;
 
-  ROOMS_STATE(): AgentPos(0, 0), AgentVel(0, 0) {
-
+  ROOMS_STATE(): AgentPos(0, 0) {
+    ObjectPos.resize(NUM_REDUNDANT_OBJECT);
   }
 
-  int Encode() const {
-    int code = 0;
-    code = code << 8 | utils::EncodeInt(AgentPos.X);
-    code = code << 8 | utils::EncodeInt(AgentPos.Y);
-    code = code << 8 | utils::EncodeInt(AgentVel.X);
-    code = code << 8 | utils::EncodeInt(AgentVel.Y);
-    return code;
-  }
+  virtual ~ROOMS_STATE() {
 
-  static std::pair<COORD, COORD> Decode(int code) {
-    COORD pos, vel;
-    vel.Y = utils::DecodeInt(code & 0xFF); code >>= 8;
-    vel.X = utils::DecodeInt(code & 0xFF); code >>= 8;
-    pos.Y = utils::DecodeInt(code & 0xFF); code >>= 8;
-    pos.X = utils::DecodeInt(code & 0xFF); code >>= 8;
-    return std::make_pair(pos, vel);
   }
 
   virtual size_t hash() const {
     using boost::hash_combine;
 
-    // Start with a hash value of 0    .
+    // Start with a hash value of 0.
     std::size_t seed = 0;
 
     // Modify 'seed' by XORing and bit-shifting in
     // one member of 'Key' after the other:
     hash_combine(seed, hash_value(AgentPos));
-    hash_combine(seed, hash_value(AgentVel));
+    hash_combine(seed, boost::hash_value(ObjectPos));
 
     // Return the result.
     return seed;

@@ -7,6 +7,9 @@
 
 class REDUNDANT_OBJECT_STATE : public STATE {
 public:
+  COORD AgentPos;
+  std::vector<COORD> ObjectPos;
+
   REDUNDANT_OBJECT_STATE() {
     ObjectPos.resize(NUM_REDUNDANT_OBJECT);
   }
@@ -14,9 +17,6 @@ public:
   virtual ~REDUNDANT_OBJECT_STATE() {
 
   }
-
-  COORD AgentPos;
-  std::vector<COORD> ObjectPos;
 
   virtual size_t hash() const {
     using boost::hash_combine;
@@ -32,8 +32,6 @@ public:
     // Return the result.
     return seed;
   }
-
-  static const int NUM_REDUNDANT_OBJECT = 5;
 };
 
 class REDUNDANT_OBJECT : public SIMULATOR {

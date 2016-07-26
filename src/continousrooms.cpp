@@ -102,7 +102,9 @@ bool ContinousROOMS::IsValid(const Vector &pos) const {
 STATE *ContinousROOMS::CreateStartState() const {
   ContinousROOMS_STATE *rstate = mMemoryPool.Allocate();
   rstate->AgentPos = mStartPos;
-  rstate->AgentVel = Vector(0.0, 0.0);
+  for (auto & o: rstate->ObjectPos) {
+    o = mStartPos;
+  }
   return rstate;
 }
 
@@ -133,8 +135,7 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
     action = SimpleRNG::ins().Random(GetNumActions());
   }
 
-  Vector vel = rstate.AgentVel + Vector(coord::Compass[action].X, coord::Compass[action].Y);
-  Vector pos = rstate.AgentPos + vel;
+  Vector pos = rstate.AgentPos + Vector(coord::Compass[action].X, coord::Compass[action].Y);
   COORD final;
 
   int rv = mGrid->ValidPath(
@@ -145,10 +146,8 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
 
   if( rv == 0 ) { // valid
     rstate.AgentPos = pos;
-    rstate.AgentVel = vel;
   } else { // collided
     rstate.AgentPos = Grid2Position(final);
-    rstate.AgentVel = Vector(0.0, 0.0);
   }
 
   do {
@@ -157,12 +156,16 @@ bool ContinousROOMS::Step(STATE &state, int action, int &observation, double &re
   } while (Position2Grid(pos) != Position2Grid(rstate.AgentPos));
   rstate.AgentPos = pos;
 
-#if ROOMS_NOT_USING_VEL
-  rstate.AgentVel = Vector(0.0, 0.0);
-#else
-  rstate.AgentVel += Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
-                            SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
-#endif
+  for (auto & o: rstate.ObjectPos) {
+    action = SimpleRNG::ins().Random(GetNumActions());
+    pos = o + Vector(coord::Compass[action].X, coord::Compass[action].Y);
+    pos += Vector(SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty),
+                  SimpleRNG::ins().GetNormal(0.0, mMotionUncertainty));
+    if (!mGrid->Inside(Position2Grid(pos))) {
+      pos = o;
+    }
+    o = pos;
+  }
 
   observation = GetObservation(rstate);
 
@@ -248,6 +251,8 @@ void ContinousROOMS::DisplayState(const STATE &state,
 
       if (agent_grid == COORD(x, y)) {
         ostr << "@";
+      } else if (find_if(rstate.ObjectPos.begin(), rstate.ObjectPos.end(), [&] (const Vector& v) { return Position2Grid(v) == COORD(x, y); } ) != rstate.ObjectPos.end()) {
+        ostr << "o";
       } else if (cell != 'x') {
         ostr << ".";
       } else {
@@ -261,7 +266,6 @@ void ContinousROOMS::DisplayState(const STATE &state,
     }
   }
   ostr << "AgentPos=" << rstate.AgentPos << endl;
-  ostr << "AgentVel=" << rstate.AgentVel << endl;
   ostr << "GoalDist=" << rstate.AgentPos.Dist(mGoalPos) << endl;
 }
 
@@ -272,7 +276,7 @@ void ContinousROOMS::DisplayObservation(const STATE &, int observation,
     << "Room " << char(observation) << endl;
   else
     ostr << "Observation: "
-         << "Hash(AgentPosition) " << observation << endl;
+         << "Hash(state) " << observation << endl;
 }
 
 void ContinousROOMS::DisplayAction(int action, std::ostream &ostr) const {

@@ -77,9 +77,9 @@ void ROOMS::Validate(const STATE &state) const {
 STATE *ROOMS::CreateStartState() const {
   ROOMS_STATE *rstate = mMemoryPool.Allocate();
   rstate->AgentPos = mStartPos;
-  rstate->AgentVel = COORD(0, 0);
-  assert(rstate->Decode(rstate->Encode()).first == rstate->AgentPos);
-  assert(rstate->Decode(rstate->Encode()).second == rstate->AgentVel);
+  for (auto & o: rstate->ObjectPos) {
+    o = mStartPos;
+  }
   return rstate;
 }
 
@@ -107,23 +107,25 @@ bool ROOMS::Step(STATE &state, int action, int &observation, double &reward) con
     action = SimpleRNG::ins().Random(GetNumActions());
   }
 
-  COORD vel = rstate.AgentVel + coord::Compass[action];
-  COORD pos = rstate.AgentPos + vel;
+  COORD pos = rstate.AgentPos + coord::Compass[action];
   COORD final;
 
   int rv = mGrid->ValidPath(rstate.AgentPos, pos, mGoalPos, final);
 
   if( rv == 0 ) { // valid
     rstate.AgentPos = pos;
-    rstate.AgentVel = vel;
   } else { // collided
     rstate.AgentPos = final;
-    rstate.AgentVel = COORD(0, 0);
   }
 
-#if ROOMS_NOT_USING_VEL
-  rstate.AgentVel = COORD(0, 0);
-#endif
+  for (auto & o: rstate.ObjectPos) {
+    action = SimpleRNG::ins().Random(GetNumActions());
+    pos = o + coord::Compass[action];
+    if (!mGrid->Inside(pos)) {
+      pos = o;
+    }
+    o = pos;
+  }
 
   observation = GetObservation(rstate);
 
@@ -166,7 +168,7 @@ void ROOMS::GeneratePreferred(const STATE &state, const HISTORY &,
 int ROOMS::GetObservation(const ROOMS_STATE &rstate) const {
   return mStateAbstraction ?
         mGrid->operator()(rstate.AgentPos) : // room number
-        rstate.Encode(); // full state
+        std::abs(int(rstate.hash() % numeric_limits<int>::max())); // full state
 }
 
 void ROOMS::DisplayBeliefs(const BELIEF_STATE &belief, std::ostream &ostr) const {
@@ -202,10 +204,12 @@ void ROOMS::DisplayState(const STATE &state, std::ostream &ostr) const {
 
       if (rstate.AgentPos == COORD(x, y)) {
         ostr << "@";
+      } else if (std::find(rstate.ObjectPos.begin(), rstate.ObjectPos.end(), COORD(x, y)) != rstate.ObjectPos.end()) {
+        ostr << "o";
       } else if (cell != 'x') {
         ostr << ".";
       } else {
-        ostr << cell;
+        ostr << 'x';
       }
     }
     if (y == 0) {
@@ -215,7 +219,6 @@ void ROOMS::DisplayState(const STATE &state, std::ostream &ostr) const {
     }
   }
   ostr << "AgentPos=" << rstate.AgentPos << endl;
-  ostr << "AgentVel=" << rstate.AgentVel << endl;
 }
 
 void ROOMS::DisplayObservation(const STATE &, int observation,
@@ -224,9 +227,7 @@ void ROOMS::DisplayObservation(const STATE &, int observation,
     ostr << "Observation: "
     << "Room " << char(observation) << endl;
   else {
-    auto state = ROOMS_STATE::Decode(observation);
-    ostr << "Observation: "
-    << "Pos " << state.first << " Vel " << state.second << endl;
+    ostr << "Observation: " << observation << endl;
   }
 }
 

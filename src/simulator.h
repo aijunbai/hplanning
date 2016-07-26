@@ -9,7 +9,7 @@
 #include <math.h>
 #include <sstream>
 
-#define ROOMS_NOT_USING_VEL 1
+#define NUM_REDUNDANT_OBJECT 5
 #define HPLANNING_ENTERING_BELIEF 0
 
 class BELIEF_STATE;

@@ -8,7 +8,15 @@
 class ContinousROOMS_STATE : public STATE {
  public:
   Vector AgentPos;
-  Vector AgentVel;
+  std::vector<Vector> ObjectPos;
+
+  ContinousROOMS_STATE() {
+    ObjectPos.resize(NUM_REDUNDANT_OBJECT);
+  }
+
+  virtual ~ContinousROOMS_STATE() {
+
+  }
 
   virtual size_t hash() const {
     using boost::hash_combine;
@@ -19,7 +27,7 @@ class ContinousROOMS_STATE : public STATE {
     // Modify 'seed' by XORing and bit-shifting in
     // one member of 'Key' after the other:
     hash_combine(seed, hash_value(AgentPos));
-    hash_combine(seed, hash_value(AgentVel));
+    hash_combine(seed, boost::hash_value(ObjectPos));
 
     // Return the result.
     return seed;

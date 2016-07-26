@@ -45,7 +45,7 @@ STATE *REDUNDANT_OBJECT::CreateStartState() const {
   REDUNDANT_OBJECT_STATE *rstate = mMemoryPool.Allocate();
   rstate->AgentPos = mStartPos;
   for (auto & o: rstate->ObjectPos) {
-    o = mGoalPos;
+    o = mStartPos;
   }
   return rstate;
 }
